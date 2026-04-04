@@ -1,0 +1,5 @@
+users.db
+users.db-shm
+users.db-wal
+__pycache__/
+*.pyc

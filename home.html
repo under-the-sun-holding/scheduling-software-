@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FieldOps Scheduler | Dispatch Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: "#1e3a8a",
+              action: "#f97316"
+            }
+          },
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body.manual-block-mode,
+    body.manual-block-mode * {
+      cursor: copy !important;
+    }
+
+    .lux-grid {
+      background-image:
+        linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+
+    .elevated {
+      box-shadow: 0 24px 55px -30px rgba(15, 23, 42, 0.45);
+    }
+
+    .soft-glow {
+      box-shadow:
+        0 10px 30px -15px rgba(30, 58, 138, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body class="min-h-screen bg-slate-100 font-sans text-slate-900">
+  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -left-24 top-24 h-80 w-80 rounded-full bg-blue-300/25 blur-3xl"></div>
+    <div class="absolute right-0 top-0 h-96 w-96 rounded-full bg-indigo-300/25 blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-cyan-200/30 blur-3xl"></div>
+  </div>
+
+  <header class="fixed inset-x-0 top-0 z-50 border-b border-white/20 bg-gradient-to-r from-brand-blue/95 via-blue-800/95 to-slate-900/95 text-white shadow-2xl backdrop-blur-md">
+    <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-4 lg:px-6">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 ring-1 ring-white/40 soft-glow">
+          <i class="fa-solid fa-calendar-check text-base"></i>
+        </span>
+        <div>
+          <p class="text-xs uppercase tracking-[0.14em] text-blue-100">Daily Dispatch</p>
+          <h1 class="text-lg font-bold tracking-tight">FieldOps Scheduler Board</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <p class="hidden text-sm text-blue-100 md:block">Dispatcher: <span id="user-name">User</span></p>
+        <button id="logout-btn" class="rounded-lg bg-brand-action px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-orange-500">Log Out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-[1500px] px-4 pb-8 pt-24 lg:px-6 lg:pt-28">
+    <section class="mb-5 rounded-2xl border border-white/60 bg-white/85 p-4 elevated backdrop-blur sm:p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-bold tracking-tight text-brand-blue">Premium Dispatch Grid</h2>
+          <p class="mt-1 text-sm text-slate-600">Operate your day like a high-performance control tower with fluid assignment and live time blocking.</p>
+        </div>
+        <div id="manual-block-indicator" class="hidden rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-lg">
+          Manual Block Mode (Ctrl)
+        </div>
+      </div>
+      <div class="mt-4 grid gap-3 sm:grid-cols-3">
+        <article class="rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">On-Time Arrival</p>
+          <p class="mt-1 text-2xl font-extrabold text-blue-900">96.4%</p>
+        </article>
+        <article class="rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">In Progress Jobs</p>
+          <p class="mt-1 text-2xl font-extrabold text-emerald-900">12</p>
+        </article>
+        <article class="rounded-xl border border-amber-100 bg-amber-50/70 px-4 py-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Unassigned</p>
+          <p class="mt-1 text-2xl font-extrabold text-amber-900">5</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="grid gap-5 lg:grid-cols-[320px_1fr]">
+      <aside class="rounded-2xl border border-white/70 bg-white/90 p-4 elevated backdrop-blur">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <h3 class="text-base font-bold text-brand-blue">Pending Tray</h3>
+          <button id="toggle-pending" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">Collapse</button>
+        </div>
+        <p class="mb-3 text-xs text-slate-500">Unassigned jobs waiting for dispatch.</p>
+        <div id="pending-tray" class="lux-grid space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-3">
+          <p class="text-sm text-slate-500">Loading pending jobs...</p>
+        </div>
+      </aside>
+
+      <section class="rounded-2xl border border-white/70 bg-white/90 p-4 elevated backdrop-blur">
+        <div class="overflow-x-auto">
+          <div id="dispatch-board" class="min-w-[980px]"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <template id="job-card-template">
+    <article class="job-card cursor-grab rounded-xl border p-3 shadow-sm transition active:cursor-grabbing" draggable="false">
+      <div class="flex items-start justify-between gap-2">
+        <p class="job-customer truncate text-sm font-bold"></p>
+        <div class="job-icons flex items-center gap-1 text-xs"></div>
+      </div>
+      <p class="job-type mt-1 text-xs"></p>
+      <div class="mt-2 flex items-center justify-between">
+        <span class="job-status inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold"></span>
+        <button type="button" class="job-detail-btn rounded-md bg-slate-800 px-2 py-1 text-[11px] font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-900">Details</button>
+      </div>
+    </article>
+  </template>
+
+  <script>
+    const TECHNICIANS = ["Dave", "Sarah", "Alex"];
+    const TIMES = [
+      "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
+      "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM"
+    ];
+
+    const boardEl = document.getElementById("dispatch-board");
+    const pendingTrayEl = document.getElementById("pending-tray");
+    const manualIndicatorEl = document.getElementById("manual-block-indicator");
+    const togglePendingBtn = document.getElementById("toggle-pending");
+    const jobTemplate = document.getElementById("job-card-template");
+
+    let isCtrlPressed = false;
+    let isDraggingJob = false;
+
+    function updateManualUI() {
+      const active = isDraggingJob && isCtrlPressed;
+      manualIndicatorEl.classList.toggle("hidden", !active);
+      document.body.classList.toggle("manual-block-mode", active);
+    }
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Control") {
+        isCtrlPressed = true;
+        updateManualUI();
+      }
+    });
+
+    window.addEventListener("keyup", (event) => {
+      if (event.key === "Control") {
+        isCtrlPressed = false;
+        updateManualUI();
+      }
+    });
+
+    function isManualBlockRequested(evt) {
+      return Boolean(evt?.originalEvent?.ctrlKey || isCtrlPressed);
+    }
+
+    function statusStyle(status) {
+      if (status === "In Progress") {
+        return {
+          card: "border-emerald-300 bg-emerald-50/90 hover:shadow-md",
+          text: "text-emerald-700",
+          pill: "bg-emerald-100 text-emerald-700",
+          icon: "fa-solid fa-circle-play"
+        };
+      }
+      if (status === "Completed" || status === "Finished") {
+        return {
+          card: "border-slate-300 bg-slate-50/90 hover:shadow-md",
+          text: "text-slate-700",
+          pill: "bg-slate-200 text-slate-700",
+          icon: "fa-solid fa-circle-check"
+        };
+      }
+      return {
+        card: "border-blue-300 bg-blue-50/90 hover:shadow-md",
+        text: "text-blue-700",
+        pill: "bg-blue-100 text-blue-700",
+        icon: "fa-solid fa-calendar-day"
+      };
+    }
+
+    function durationSlots(minutes) {
+      const value = Number(minutes);
+      if (!Number.isFinite(value) || value <= 0) return 1;
+      return Math.max(1, Math.ceil(value / 60));
+    }
+
+    function jobTimeIndex(time) {
+      return TIMES.indexOf(time);
+    }
+
+    function createJobCard(job) {
+      const fragment = jobTemplate.content.cloneNode(true);
+      const card = fragment.querySelector(".job-card");
+      const customer = fragment.querySelector(".job-customer");
+      const type = fragment.querySelector(".job-type");
+      const icons = fragment.querySelector(".job-icons");
+      const statusEl = fragment.querySelector(".job-status");
+      const detailBtn = fragment.querySelector(".job-detail-btn");
+
+      const status = String(job.status || "Scheduled");
+      const style = statusStyle(status);
+
+      card.className = `job-card cursor-grab rounded-xl border p-3 shadow-sm active:cursor-grabbing ${style.card}`;
+      card.dataset.jobId = String(job.id);
+      card.dataset.durationMinutes = String(job.duration_minutes || 60);
+      card.dataset.assignedTech = job.assigned_tech || "";
+      card.dataset.time = job.time || "Unscheduled";
+      card.dataset.manualBlockMinutes = job.manual_block_minutes ? String(job.manual_block_minutes) : "";
+      card.dataset.status = status;
+      card.dataset.emergency = String(Boolean(job.emergency));
+      card.dataset.recurring = String(Boolean(job.recurring));
+
+      customer.textContent = job.customer_name;
+      customer.className = `job-customer truncate text-sm font-bold ${style.text}`;
+      type.textContent = job.service_type;
+      type.className = "job-type mt-1 text-xs text-slate-600";
+
+      if (job.emergency) {
+        icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-600" title="Emergency"><i class="fa-solid fa-bolt"></i></span>';
+      }
+      if (job.recurring) {
+        icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-amber-600" title="Recurring"><i class="fa-solid fa-arrows-rotate"></i></span>';
+      }
+
+      statusEl.className = `job-status inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${style.pill}`;
+      statusEl.innerHTML = `<i class="${style.icon}"></i><span>${status === "Completed" ? "Finished" : status}</span>`;
+
+      detailBtn.addEventListener("click", () => {
+        alert(`Job ID: ${job.id}`);
+      });
+
+      return card;
+    }
+
+    function buildDispatchBoard() {
+      if (!boardEl) return;
+
+      const grid = document.createElement("div");
+      grid.className = "grid overflow-hidden rounded-xl border border-slate-200 bg-white";
+      grid.style.gridTemplateColumns = `92px repeat(${TECHNICIANS.length}, minmax(0, 1fr))`;
+
+      const corner = document.createElement("div");
+      corner.className = "sticky left-0 top-0 z-20 border-b border-r border-slate-200 bg-slate-100 px-3 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500";
+      corner.textContent = "Time";
+      grid.appendChild(corner);
+
+      TECHNICIANS.forEach((tech) => {
+        const head = document.createElement("div");
+        head.className = "border-b border-r border-slate-200 bg-gradient-to-b from-slate-50 to-slate-100 px-3 py-3 text-sm font-bold text-brand-blue";
+        head.textContent = tech;
+        grid.appendChild(head);
+      });
+
+      TIMES.forEach((time) => {
+        const timeCell = document.createElement("div");
+        timeCell.className = "border-r border-t border-slate-200 bg-slate-50/60 px-3 py-4 text-xs font-semibold text-slate-500";
+        timeCell.textContent = time;
+        grid.appendChild(timeCell);
+
+        TECHNICIANS.forEach((tech) => {
+          const cell = document.createElement("div");
+          cell.className = "dispatch-cell lux-grid min-h-[92px] border-r border-t border-slate-200 bg-white/90 p-2";
+          cell.dataset.time = time;
+          cell.dataset.tech = tech;
+          grid.appendChild(cell);
+        });
+      });
+
+      boardEl.innerHTML = "";
+      boardEl.appendChild(grid);
+    }
+
+    function clearUnavailableBlocks() {
+      document.querySelectorAll(".unavailable-slot").forEach((el) => el.remove());
+    }
+
+    function renderUnavailableBlocks() {
+      clearUnavailableBlocks();
+      const cards = document.querySelectorAll(".dispatch-cell .job-card");
+
+      cards.forEach((card) => {
+        const tech = card.dataset.assignedTech;
+        const time = card.dataset.time;
+        if (!tech || !time) return;
+
+        const startIndex = jobTimeIndex(time);
+        if (startIndex < 0) return;
+
+        const manualMinutes = Number(card.dataset.manualBlockMinutes || "0");
+        const baseMinutes = Number(card.dataset.durationMinutes || "60");
+        const minutesToUse = manualMinutes > 0 ? manualMinutes : baseMinutes;
+        const slotCount = durationSlots(minutesToUse);
+
+        for (let i = startIndex + 1; i < Math.min(TIMES.length, startIndex + slotCount); i += 1) {
+          const blockCell = document.querySelector(`.dispatch-cell[data-tech=\"${tech}\"][data-time=\"${TIMES[i]}\"]`);
+          if (!blockCell) continue;
+
+          const marker = document.createElement("div");
+          marker.className = "unavailable-slot mt-1 rounded-lg border border-slate-300 bg-slate-300/80 px-2 py-2 text-[11px] font-semibold text-slate-700";
+          marker.textContent = "Unavailable";
+          blockCell.appendChild(marker);
+        }
+      });
+    }
+
+    async function persistJobSchedule(jobId, status, time, assignedTech, manualBlockMinutes) {
+      const response = await fetch("/api/jobs/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: Number(jobId),
+          status,
+          time,
+          assigned_tech: assignedTech,
+          manual_block_minutes: manualBlockMinutes
+        })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to save job update.");
+      }
+      return response.json();
+    }
+
+    function applyScheduledVisual(card, status) {
+      const style = statusStyle(status);
+      const statusEl = card.querySelector(".job-status");
+      card.className = `job-card cursor-grab rounded-xl border p-3 shadow-sm transition hover:-translate-y-0.5 active:cursor-grabbing ${style.card}`;
+      if (statusEl) {
+        statusEl.className = `job-status inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${style.pill}`;
+        statusEl.innerHTML = `<i class="${style.icon}"></i><span>${status === "Completed" ? "Finished" : status}</span>`;
+      }
+    }
+
+    function setupSortable() {
+      if (typeof Sortable === "undefined") return;
+
+      Sortable.create(pendingTrayEl, {
+        group: { name: "jobs", pull: true, put: ["jobs"] },
+        animation: 180,
+        ghostClass: "opacity-50",
+        onStart: (evt) => {
+          if (evt.item.classList.contains("job-card")) {
+            isDraggingJob = true;
+            updateManualUI();
+          }
+        },
+        onAdd: async (evt) => {
+          const card = evt.item;
+          card.dataset.assignedTech = "";
+          card.dataset.time = "Unscheduled";
+          card.dataset.status = "Pending";
+          card.dataset.manualBlockMinutes = "";
+          applyScheduledVisual(card, "Scheduled");
+          try {
+            await persistJobSchedule(card.dataset.jobId, "Pending", "Unscheduled", null, null);
+          } catch (error) {
+            alert(error.message);
+          }
+          renderUnavailableBlocks();
+        },
+        onEnd: (evt) => {
+          if (evt.item.classList.contains("job-card")) {
+            isDraggingJob = false;
+            updateManualUI();
+          }
+        }
+      });
+
+      document.querySelectorAll(".dispatch-cell").forEach((cell) => {
+        Sortable.create(cell, {
+          group: { name: "jobs", pull: true, put: ["jobs"] },
+          animation: 180,
+          ghostClass: "opacity-50",
+          onStart: (evt) => {
+            if (evt.item.classList.contains("job-card")) {
+              isDraggingJob = true;
+              updateManualUI();
+            }
+          },
+          onAdd: async (evt) => {
+            const card = evt.item;
+            if (!card.classList.contains("job-card")) return;
+
+            const status = card.dataset.status === "Completed" ? "Completed" : "Scheduled";
+            const time = evt.to.dataset.time;
+            const tech = evt.to.dataset.tech;
+
+            let manualBlock = null;
+            if (isManualBlockRequested(evt)) {
+              const response = window.prompt("How many minutes to block?", "60");
+              const parsed = Number(response);
+              if (response !== null && Number.isFinite(parsed) && parsed > 0) {
+                manualBlock = parsed;
+              }
+            }
+
+            card.dataset.status = status;
+            card.dataset.time = time;
+            card.dataset.assignedTech = tech;
+            card.dataset.manualBlockMinutes = manualBlock ? String(manualBlock) : "";
+            applyScheduledVisual(card, status);
+
+            try {
+              await persistJobSchedule(card.dataset.jobId, status, time, tech, manualBlock);
+            } catch (error) {
+              alert(error.message);
+            }
+
+            renderUnavailableBlocks();
+          },
+          onEnd: (evt) => {
+            if (evt.item.classList.contains("job-card")) {
+              isDraggingJob = false;
+              updateManualUI();
+            }
+          }
+        });
+      });
+    }
+
+    function placeCards(jobs) {
+      pendingTrayEl.innerHTML = "";
+      document.querySelectorAll(".dispatch-cell").forEach((cell) => {
+        cell.querySelectorAll(".job-card").forEach((card) => card.remove());
+      });
+
+      jobs.forEach((job) => {
+        const normalized = { ...job };
+        if (!normalized.assigned_tech && normalized.status === "Scheduled") {
+          normalized.assigned_tech = TECHNICIANS[0];
+        }
+
+        const card = createJobCard(normalized);
+        const target = document.querySelector(
+          `.dispatch-cell[data-tech=\"${normalized.assigned_tech || ""}\"][data-time=\"${normalized.time || ""}\"]`
+        );
+
+        if (
+          target &&
+          (normalized.status === "Scheduled" || normalized.status === "Completed" || normalized.status === "In Progress") &&
+          normalized.time !== "Unscheduled"
+        ) {
+          target.appendChild(card);
+        } else {
+          pendingTrayEl.appendChild(card);
+        }
+      });
+
+      if (pendingTrayEl.childElementCount === 0) {
+        pendingTrayEl.innerHTML = '<p class="text-sm text-slate-500">No pending jobs.</p>';
+      }
+
+      renderUnavailableBlocks();
+    }
+
+    async function loadJobs() {
+      try {
+        const response = await fetch("/api/jobs");
+        if (!response.ok) {
+          throw new Error("Unable to load jobs.");
+        }
+        const jobs = await response.json();
+        placeCards(jobs);
+      } catch (error) {
+        pendingTrayEl.innerHTML = `<p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">${error.message}</p>`;
+      }
+    }
+
+    function initPendingToggle() {
+      let collapsed = false;
+      togglePendingBtn.addEventListener("click", () => {
+        collapsed = !collapsed;
+        pendingTrayEl.classList.toggle("hidden", collapsed);
+        togglePendingBtn.textContent = collapsed ? "Expand" : "Collapse";
+      });
+    }
+
+    const user = localStorage.getItem("fieldops_auth_user");
+    if (!user) {
+      window.location.href = "/index.html#login";
+    } else {
+      const userNameEl = document.getElementById("user-name");
+      if (userNameEl) {
+        userNameEl.textContent = user;
+      }
+      buildDispatchBoard();
+      initPendingToggle();
+      setupSortable();
+      loadJobs();
+    }
+
+    document.getElementById("logout-btn")?.addEventListener("click", () => {
+      localStorage.removeItem("fieldops_auth_user");
+      window.location.href = "/index.html#login";
+    });
+  </script>
+</body>
+</html>

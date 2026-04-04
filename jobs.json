@@ -1,0 +1,50 @@
+[
+  {
+    "id": 101,
+    "customer_name": "Harbor View Apartments",
+    "service_type": "HVAC Repair",
+    "time": "08:00 AM",
+    "status": "Scheduled",
+    "duration_minutes": 60,
+    "assigned_tech": null,
+    "emergency": false,
+    "recurring": false,
+    "manual_block_minutes": null
+  },
+  {
+    "id": 102,
+    "customer_name": "Baker Family Residence",
+    "service_type": "Electrical Inspection",
+    "time": "08:00 AM",
+    "status": "Scheduled",
+    "duration_minutes": 60,
+    "assigned_tech": "Sarah",
+    "emergency": false,
+    "recurring": false,
+    "manual_block_minutes": null
+  },
+  {
+    "id": 103,
+    "customer_name": "Oak Street Dental",
+    "service_type": "Plumbing Maintenance",
+    "time": "11:00 AM",
+    "status": "Scheduled",
+    "duration_minutes": 60,
+    "assigned_tech": null,
+    "emergency": false,
+    "recurring": false,
+    "manual_block_minutes": null
+  },
+  {
+    "id": 104,
+    "customer_name": "Northside Warehouse",
+    "service_type": "Generator Service",
+    "time": "03:00 PM",
+    "status": "Completed",
+    "duration_minutes": 60,
+    "assigned_tech": null,
+    "emergency": false,
+    "recurring": false,
+    "manual_block_minutes": null
+  }
+]

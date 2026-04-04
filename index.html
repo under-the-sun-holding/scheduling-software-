@@ -201,26 +201,48 @@
             </ul>
           </div>
 
-          <form class="space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-            <div>
-              <label for="login-email" class="mb-2 block text-sm font-semibold text-slate-700">Business Email</label>
-              <input id="login-email" name="login-email" type="email" placeholder="you@company.com" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
+          <div class="space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <form id="login-form" class="space-y-5">
+              <h3 class="text-lg font-bold text-brand-blue">Sign In</h3>
+              <div>
+                <label for="login-email" class="mb-2 block text-sm font-semibold text-slate-700">Business Email</label>
+                <input id="login-email" name="login-email" type="email" placeholder="you@company.com" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
+              </div>
+              <div>
+                <label for="login-password" class="mb-2 block text-sm font-semibold text-slate-700">Password</label>
+                <input id="login-password" name="login-password" type="password" placeholder="Enter your password" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <label class="inline-flex items-center gap-2 text-slate-600">
+                  <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand-action focus:ring-brand-action">
+                  Remember me
+                </label>
+                <a href="#" class="font-medium text-brand-blue hover:underline">Forgot password?</a>
+              </div>
+              <button type="submit" class="w-full rounded-lg bg-brand-blue px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800">
+                Sign In
+              </button>
+              <p id="login-status" class="text-sm font-medium text-slate-600" aria-live="polite"></p>
+            </form>
+
+            <div class="border-t border-slate-200 pt-5">
+              <form id="register-form" class="space-y-4">
+                <h3 class="text-lg font-bold text-brand-blue">Create New User</h3>
+                <div>
+                  <label for="register-email" class="mb-2 block text-sm font-semibold text-slate-700">Business Email</label>
+                  <input id="register-email" name="register-email" type="email" placeholder="newuser@company.com" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
+                </div>
+                <div>
+                  <label for="register-password" class="mb-2 block text-sm font-semibold text-slate-700">Password</label>
+                  <input id="register-password" name="register-password" type="password" minlength="8" placeholder="At least 8 characters" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
+                </div>
+                <button type="submit" class="w-full rounded-lg bg-brand-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-500">
+                  Create Account
+                </button>
+                <p id="register-status" class="text-sm font-medium text-slate-600" aria-live="polite"></p>
+              </form>
             </div>
-            <div>
-              <label for="login-password" class="mb-2 block text-sm font-semibold text-slate-700">Password</label>
-              <input id="login-password" name="login-password" type="password" placeholder="Enter your password" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
-            </div>
-            <div class="flex items-center justify-between text-sm">
-              <label class="inline-flex items-center gap-2 text-slate-600">
-                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand-action focus:ring-brand-action">
-                Remember me
-              </label>
-              <a href="#" class="font-medium text-brand-blue hover:underline">Forgot password?</a>
-            </div>
-            <button type="submit" class="w-full rounded-lg bg-brand-blue px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800">
-              Sign In
-            </button>
-          </form>
+          </div>
         </div>
       </section>
 
@@ -265,5 +287,63 @@
       </section>
     </main>
   </div>
+  <script>
+    async function postJson(url, data) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || "Request failed.");
+      }
+      return payload;
+    }
+
+    const loginForm = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
+    const loginStatus = document.getElementById("login-status");
+    const registerStatus = document.getElementById("register-status");
+
+    loginForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      loginStatus.textContent = "Signing in...";
+      loginStatus.className = "text-sm font-medium text-slate-600";
+
+      const username = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      try {
+        const data = await postJson("/api/login", { username, password });
+        loginStatus.textContent = data.message || "Login successful.";
+        loginStatus.className = "text-sm font-medium text-emerald-600";
+        localStorage.setItem("fieldops_auth_user", username);
+        window.location.href = data.redirect || "/home.html";
+      } catch (error) {
+        loginStatus.textContent = error.message;
+        loginStatus.className = "text-sm font-medium text-red-600";
+      }
+    });
+
+    registerForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      registerStatus.textContent = "Creating account...";
+      registerStatus.className = "text-sm font-medium text-slate-600";
+
+      const username = document.getElementById("register-email").value.trim();
+      const password = document.getElementById("register-password").value;
+
+      try {
+        const data = await postJson("/api/register", { username, password });
+        registerStatus.textContent = data.message || "User created.";
+        registerStatus.className = "text-sm font-medium text-emerald-600";
+        registerForm.reset();
+      } catch (error) {
+        registerStatus.textContent = error.message;
+        registerStatus.className = "text-sm font-medium text-red-600";
+      }
+    });
+  </script>
 </body>
 </html>
