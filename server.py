@@ -14,7 +14,7 @@ import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from auth_db import create_user, init_db, verify_user
+from auth_db import create_user, grant_admin, init_db, verify_user
 
 
 ROOT = Path(__file__).resolve().parent
@@ -138,6 +138,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         if self.path == "/api/login":
             self._handle_login()
             return
+        if self.path == "/api/users":
+            self._handle_get_users()
+            return
 
         self._send_json(404, {"error": "Not found"})
 
@@ -190,6 +193,27 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         self._send_json(401, {"ok": False, "error": "invalid credentials"})
+
+    def _handle_get_users(self) -> None:
+        # Fetch all users with their admin status
+        try:
+            from auth_db import get_connection
+            with get_connection() as conn:
+                rows = conn.execute(
+                    "SELECT username, is_admin, created_at FROM users ORDER BY username"
+                ).fetchall()
+            
+            users = [
+                {
+                    "username": row[0],
+                    "role": "Admin" if row[1] else "User",
+                    "created_at": row[2]
+                }
+                for row in rows
+            ]
+            self._send_json(200, {"users": users})
+        except Exception as exc:
+            self._send_json(500, {"error": str(exc)})
 
     def _handle_schedule_job(self) -> None:
         payload = self._read_json_body()

@@ -5,6 +5,7 @@ Usage:
   python3 auth_db.py init
   python3 auth_db.py create-user <username> <password>
   python3 auth_db.py verify-user <username> <password>
+  python3 auth_db.py grant-admin <username>
 """
 
 from __future__ import annotations
@@ -34,10 +35,16 @@ def init_db() -> None:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
+                is_admin INTEGER DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
+        # Add is_admin column if it doesn't exist (migration)
+        cursor = conn.execute("PRAGMA table_info(users)")
+        columns = {row[1] for row in cursor.fetchall()}
+        if "is_admin" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0")
         conn.commit()
 
 
@@ -84,6 +91,18 @@ def create_user(username: str, password: str) -> None:
             "INSERT INTO users (username, password_hash) VALUES (?, ?)",
             (username, password_hash),
         )
+        conn.commit()
+
+
+def grant_admin(username: str) -> None:
+    """Grant admin access to a user."""
+    with get_connection() as conn:
+        result = conn.execute(
+            "UPDATE users SET is_admin = 1 WHERE username = ?",
+            (username,)
+        )
+        if result.rowcount == 0:
+            raise ValueError(f"User '{username}' not found.")
         conn.commit()
 
 
@@ -137,6 +156,18 @@ def main(argv: list[str]) -> int:
         init_db()
         print("valid" if verify_user(argv[2], argv[3]) else "invalid")
         return 0
+
+    if command == "grant-admin":
+        if len(argv) != 3:
+            print("Usage: python3 auth_db.py grant-admin <username>")
+            return 1
+        try:
+            grant_admin(argv[2])
+            print(f"Admin access granted to user '{argv[2]}'.")
+            return 0
+        except ValueError as exc:
+            print(f"Error: {exc}")
+            return 1
 
     print_usage()
     return 1

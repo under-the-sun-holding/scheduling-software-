@@ -71,6 +71,7 @@
       </div>
       <div class="flex items-center gap-3">
         <p class="hidden text-sm text-blue-100 md:block">Dispatcher: <span id="user-name">User</span></p>
+        <button id="admin-btn" class="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-blue-600" style="display: none;">Admin</button>
         <button id="logout-btn" class="rounded-lg bg-brand-action px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-orange-500">Log Out</button>
       </div>
     </div>
@@ -136,6 +137,39 @@
       </div>
     </article>
   </template>
+
+  <!-- Admin Modal -->
+  <div id="admin-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-brand-blue">System Administration</h2>
+          <p class="mt-1 text-sm text-slate-600">Manage users and their roles</p>
+        </div>
+        <button id="close-admin-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+      </div>
+      
+      <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+        <h3 class="mb-4 text-lg font-bold text-brand-blue">User Management</h3>
+        <div id="users-table-container" class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-300">
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">Username</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">Role</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">Created</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <tr>
+                <td colspan="3" class="px-4 py-3 text-center text-slate-500">Loading users...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     const TECHNICIANS = ["Dave", "Sarah", "Alex"];
@@ -518,6 +552,87 @@
     document.getElementById("logout-btn")?.addEventListener("click", () => {
       localStorage.removeItem("fieldops_auth_user");
       window.location.href = "/index.html#login";
+    });
+
+    // Admin functionality
+    const adminBtn = document.getElementById("admin-btn");
+    const adminModal = document.getElementById("admin-modal");
+    const closeAdminModalBtn = document.getElementById("close-admin-modal");
+
+    // Check if user is admin by fetching users list
+    async function checkAdminStatus() {
+      try {
+        const response = await fetch("/api/users", { method: "POST" });
+        if (!response.ok) return false;
+        
+        const data = await response.json();
+        const currentUser = localStorage.getItem("fieldops_auth_user");
+        const users = data.users || [];
+        const currentUserData = users.find(u => u.username === currentUser);
+        
+        return currentUserData?.role === "Admin";
+      } catch {
+        return false;
+      }
+    }
+
+    async function loadUsersTable() {
+      try {
+        const response = await fetch("/api/users", { method: "POST" });
+        if (!response.ok) {
+          document.getElementById("users-table-body").innerHTML = '<tr><td colspan="3" class="px-4 py-3 text-center text-red-600">Failed to load users</td></tr>';
+          return;
+        }
+
+        const data = await response.json();
+        const users = data.users || [];
+        
+        const tbody = document.getElementById("users-table-body");
+        if (users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-3 text-center text-slate-500">No users found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = users.map(user => `
+          <tr class="border-b border-slate-200 transition hover:bg-slate-100">
+            <td class="px-4 py-3 font-medium text-slate-900">${user.username}</td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                user.role === "Admin" 
+                  ? "bg-amber-100 text-amber-700" 
+                  : "bg-slate-100 text-slate-700"
+              }">
+                ${user.role}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-slate-600 text-xs">${new Date(user.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        document.getElementById("users-table-body").innerHTML = '<tr><td colspan="3" class="px-4 py-3 text-center text-red-600">Error loading users</td></tr>';
+      }
+    }
+
+    adminBtn?.addEventListener("click", () => {
+      loadUsersTable();
+      adminModal.classList.remove("hidden");
+    });
+
+    closeAdminModalBtn?.addEventListener("click", () => {
+      adminModal.classList.add("hidden");
+    });
+
+    adminModal?.addEventListener("click", (e) => {
+      if (e.target === adminModal) {
+        adminModal.classList.add("hidden");
+      }
+    });
+
+    // Initialize admin button visibility
+    checkAdminStatus().then(isAdmin => {
+      if (adminBtn) {
+        adminBtn.style.display = isAdmin ? "block" : "none";
+      }
     });
   </script>
 </body>
