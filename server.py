@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Co-authored by John and James.
 """Serve the landing page and auth APIs.
 
 Usage:

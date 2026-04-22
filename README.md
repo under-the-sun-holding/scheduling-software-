@@ -1,6 +1,8 @@
 # scheduling-software-
 schedules field services 
 
+Co-authored by John and James.
+
 ## Local User Database
 
 This project now includes a simple local SQLite user database with secure password hashing.

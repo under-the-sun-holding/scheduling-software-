@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Co-authored by John and James.
 """Simple local user database with secure password hashing.
 
 Usage:
