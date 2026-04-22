@@ -84,8 +84,16 @@
           <h2 class="text-xl font-bold tracking-tight text-brand-blue">Premium Dispatch Grid</h2>
           <p class="mt-1 text-sm text-slate-600">Operate your day like a high-performance control tower with fluid assignment and live time blocking.</p>
         </div>
-        <div id="manual-block-indicator" class="hidden rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-lg">
-          Manual Block Mode (Ctrl)
+        <div class="flex items-center gap-2">
+          <button id="clients-btn" class="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-brand-blue transition hover:-translate-y-0.5 hover:bg-blue-50">
+            <i class="fa-solid fa-address-book mr-1"></i>Clients
+          </button>
+          <button id="add-appointment-btn" class="rounded-lg bg-brand-action px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-orange-500">
+            <i class="fa-solid fa-plus mr-1"></i>Add Appointment
+          </button>
+          <div id="manual-block-indicator" class="hidden rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-lg">
+            Manual Block Mode (Ctrl)
+          </div>
         </div>
       </div>
       <div class="mt-4 grid gap-3 sm:grid-cols-3">
@@ -138,6 +146,140 @@
     </article>
   </template>
 
+  <!-- Job Details Modal -->
+  <div id="job-detail-modal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-brand-blue">Appointment Details</h2>
+          <p id="job-detail-subtitle" class="mt-1 text-sm text-slate-600"></p>
+        </div>
+        <button id="close-job-detail-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Client Name</p>
+          <p id="job-detail-client" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Phone</p>
+          <p id="job-detail-phone" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</p>
+          <p id="job-detail-email" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Service</p>
+          <p id="job-detail-service" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:col-span-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Address</p>
+          <p id="job-detail-address" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
+          <p id="job-detail-status" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Scheduled Time</p>
+          <p id="job-detail-time" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Assigned Tech</p>
+          <p id="job-detail-tech" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Duration</p>
+          <p id="job-detail-duration" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:col-span-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Notes</p>
+          <p id="job-detail-notes" class="mt-1 text-sm font-semibold text-slate-900"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clients Modal -->
+  <div id="clients-modal" class="hidden fixed inset-0 z-[96] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-brand-blue">Client Database</h2>
+          <p class="mt-1 text-sm text-slate-600">Save client details once, then reuse them for appointments.</p>
+        </div>
+        <button id="close-clients-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+      </div>
+
+      <form id="client-form" class="mb-5 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
+        <input id="client-name" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Client name">
+        <input id="client-phone" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Phone number">
+        <input id="client-email" type="email" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Email address">
+        <input id="client-address-line1" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Address line 1">
+        <input id="client-address-line2" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Address line 2">
+        <input id="client-city" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="City">
+        <input id="client-state" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="State">
+        <input id="client-postal-code" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Postal code">
+        <textarea id="client-notes" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:col-span-2" rows="2" placeholder="Client notes"></textarea>
+        <div class="sm:col-span-2">
+          <button id="save-client-btn" type="submit" class="rounded-lg bg-brand-blue px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">Save Client</button>
+        </div>
+      </form>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Name</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Phone</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Email</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Address</th>
+            </tr>
+          </thead>
+          <tbody id="clients-table-body">
+            <tr><td colspan="4" class="px-3 py-3 text-center text-slate-500">No clients yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Appointment Modal -->
+  <div id="appointment-modal" class="hidden fixed inset-0 z-[97] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-brand-blue">Create Appointment</h2>
+          <p class="mt-1 text-sm text-slate-600">Choose a saved client and create a new appointment.</p>
+        </div>
+        <button id="close-appointment-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+      </div>
+
+      <form id="appointment-form" class="grid gap-3 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Client</label>
+          <select id="appointment-client-id" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+            <option value="">Select a client</option>
+          </select>
+        </div>
+        <input id="appointment-service" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:col-span-2" placeholder="Service type">
+        <input id="appointment-duration" required type="number" min="1" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Duration minutes" value="60">
+        <textarea id="appointment-notes" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:col-span-2" rows="2" placeholder="Appointment notes (optional)"></textarea>
+
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 sm:col-span-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Client Preview</p>
+          <p id="appointment-client-preview" class="mt-1 whitespace-pre-line">Select a client to preview phone, email, and address.</p>
+        </div>
+
+        <div class="sm:col-span-2">
+          <button id="create-appointment-submit" type="submit" class="rounded-lg bg-brand-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500">Create Appointment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Admin Modal -->
   <div id="admin-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
     <div class="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
@@ -183,10 +325,29 @@
     const pendingTrayEl = document.getElementById("pending-tray");
     const manualIndicatorEl = document.getElementById("manual-block-indicator");
     const togglePendingBtn = document.getElementById("toggle-pending");
+    const clientsBtn = document.getElementById("clients-btn");
+    const addAppointmentBtn = document.getElementById("add-appointment-btn");
     const jobTemplate = document.getElementById("job-card-template");
+    const jobDetailModal = document.getElementById("job-detail-modal");
+    const closeJobDetailModalBtn = document.getElementById("close-job-detail-modal");
+    const clientsModal = document.getElementById("clients-modal");
+    const closeClientsModalBtn = document.getElementById("close-clients-modal");
+    const clientsTableBody = document.getElementById("clients-table-body");
+    const clientForm = document.getElementById("client-form");
+    const saveClientBtn = document.getElementById("save-client-btn");
+    const appointmentModal = document.getElementById("appointment-modal");
+    const closeAppointmentModalBtn = document.getElementById("close-appointment-modal");
+    const appointmentForm = document.getElementById("appointment-form");
+    const appointmentClientIdEl = document.getElementById("appointment-client-id");
+    const appointmentServiceEl = document.getElementById("appointment-service");
+    const appointmentDurationEl = document.getElementById("appointment-duration");
+    const appointmentNotesEl = document.getElementById("appointment-notes");
+    const appointmentClientPreviewEl = document.getElementById("appointment-client-preview");
+    const createAppointmentSubmitBtn = document.getElementById("create-appointment-submit");
 
     let isCtrlPressed = false;
     let isDraggingJob = false;
+    let clientsCache = [];
 
     function updateManualUI() {
       const active = isDraggingJob && isCtrlPressed;
@@ -285,10 +446,62 @@
       statusEl.innerHTML = `<i class="${style.icon}"></i><span>${status === "Completed" ? "Finished" : status}</span>`;
 
       detailBtn.addEventListener("click", () => {
-        alert(`Job ID: ${job.id}`);
+        openJobDetailModal(job);
       });
 
       return card;
+    }
+
+    function textOrFallback(value) {
+      const text = String(value || "").trim();
+      return text || "Not provided";
+    }
+
+    function formatAddress(job) {
+      const line1 = String(job.address_line1 || "").trim();
+      const line2 = String(job.address_line2 || "").trim();
+      const city = String(job.city || "").trim();
+      const state = String(job.state || "").trim();
+      const postal = String(job.postal_code || "").trim();
+
+      const cityStatePostal = [city, state, postal].filter(Boolean).join(", ");
+      const parts = [line1, line2, cityStatePostal].filter(Boolean);
+      return parts.length > 0 ? parts.join("\n") : "Not provided";
+    }
+
+    function openJobDetailModal(job) {
+      if (!jobDetailModal) return;
+
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+
+      setText("job-detail-subtitle", `Job #${job.id}`);
+      setText("job-detail-client", textOrFallback(job.customer_name));
+      setText("job-detail-phone", textOrFallback(job.phone));
+      setText("job-detail-email", textOrFallback(job.email));
+      setText("job-detail-service", textOrFallback(job.service_type));
+      setText("job-detail-address", formatAddress(job));
+      setText("job-detail-status", textOrFallback(job.status));
+      setText("job-detail-time", textOrFallback(job.time));
+      setText("job-detail-tech", textOrFallback(job.assigned_tech));
+      setText("job-detail-duration", `${Number(job.duration_minutes || 0) || 0} minutes`);
+      setText("job-detail-notes", textOrFallback(job.notes));
+
+      jobDetailModal.classList.remove("hidden");
+    }
+
+    function initJobDetailModal() {
+      closeJobDetailModalBtn?.addEventListener("click", () => {
+        jobDetailModal?.classList.add("hidden");
+      });
+
+      jobDetailModal?.addEventListener("click", (event) => {
+        if (event.target === jobDetailModal) {
+          jobDetailModal.classList.add("hidden");
+        }
+      });
     }
 
     function buildDispatchBoard() {
@@ -380,6 +593,248 @@
         throw new Error(payload.error || "Failed to save job update.");
       }
       return response.json();
+    }
+
+    async function createAppointment(payload) {
+      const response = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to create appointment.");
+      }
+      return response.json();
+    }
+
+    async function fetchClients() {
+      const response = await fetch("/api/clients");
+      if (!response.ok) {
+        throw new Error("Failed to load clients.");
+      }
+      const payload = await response.json();
+      return Array.isArray(payload.clients) ? payload.clients : [];
+    }
+
+    async function createClient(payload) {
+      const response = await fetch("/api/clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to save client.");
+      }
+      return response.json();
+    }
+
+    function clientAddressText(client) {
+      const line1 = String(client.address_line1 || "").trim();
+      const line2 = String(client.address_line2 || "").trim();
+      const city = String(client.city || "").trim();
+      const state = String(client.state || "").trim();
+      const postal = String(client.postal_code || "").trim();
+      const cityStatePostal = [city, state, postal].filter(Boolean).join(", ");
+      return [line1, line2, cityStatePostal].filter(Boolean).join(" ");
+    }
+
+    function renderClientsTable(clients) {
+      if (!clientsTableBody) return;
+
+      if (clients.length === 0) {
+        clientsTableBody.innerHTML = '<tr><td colspan="4" class="px-3 py-3 text-center text-slate-500">No clients yet.</td></tr>';
+        return;
+      }
+
+      clientsTableBody.innerHTML = clients
+        .map((client) => {
+          const address = clientAddressText(client) || "Not provided";
+          return `
+            <tr class="border-t border-slate-200">
+              <td class="px-3 py-2 font-medium text-slate-900">${client.name || ""}</td>
+              <td class="px-3 py-2 text-slate-700">${client.phone || "Not provided"}</td>
+              <td class="px-3 py-2 text-slate-700">${client.email || "Not provided"}</td>
+              <td class="px-3 py-2 text-slate-700">${address}</td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function renderClientOptions(clients) {
+      if (!appointmentClientIdEl) return;
+
+      const options = ['<option value="">Select a client</option>'];
+      clients.forEach((client) => {
+        options.push(`<option value="${client.id}">${client.name}</option>`);
+      });
+      appointmentClientIdEl.innerHTML = options.join("");
+    }
+
+    function selectedClientFromForm() {
+      const selectedId = Number(appointmentClientIdEl?.value || 0);
+      if (!selectedId) return null;
+      return clientsCache.find((client) => Number(client.id) === selectedId) || null;
+    }
+
+    function renderAppointmentClientPreview() {
+      if (!appointmentClientPreviewEl) return;
+      const client = selectedClientFromForm();
+      if (!client) {
+        appointmentClientPreviewEl.textContent = "Select a client to preview phone, email, and address.";
+        return;
+      }
+
+      const preview = [
+        `Name: ${client.name || "Not provided"}`,
+        `Phone: ${client.phone || "Not provided"}`,
+        `Email: ${client.email || "Not provided"}`,
+        `Address: ${clientAddressText(client) || "Not provided"}`,
+        `Notes: ${client.notes || "Not provided"}`
+      ];
+      appointmentClientPreviewEl.textContent = preview.join("\n");
+    }
+
+    async function refreshClientsData() {
+      clientsCache = await fetchClients();
+      renderClientsTable(clientsCache);
+      renderClientOptions(clientsCache);
+      renderAppointmentClientPreview();
+    }
+
+    function resetClientForm() {
+      clientForm?.reset();
+    }
+
+    function resetAppointmentForm() {
+      appointmentForm?.reset();
+      if (appointmentDurationEl) {
+        appointmentDurationEl.value = "60";
+      }
+      renderAppointmentClientPreview();
+    }
+
+    function initClientsModal() {
+      clientsBtn?.addEventListener("click", async () => {
+        clientsModal?.classList.remove("hidden");
+        try {
+          await refreshClientsData();
+        } catch (error) {
+          alert(error.message || "Unable to load clients.");
+        }
+      });
+
+      closeClientsModalBtn?.addEventListener("click", () => {
+        clientsModal?.classList.add("hidden");
+      });
+
+      clientsModal?.addEventListener("click", (event) => {
+        if (event.target === clientsModal) {
+          clientsModal.classList.add("hidden");
+        }
+      });
+
+      clientForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const name = String(document.getElementById("client-name")?.value || "").trim();
+        if (!name) {
+          alert("Client name is required.");
+          return;
+        }
+
+        const payload = {
+          name,
+          phone: String(document.getElementById("client-phone")?.value || "").trim(),
+          email: String(document.getElementById("client-email")?.value || "").trim(),
+          address_line1: String(document.getElementById("client-address-line1")?.value || "").trim(),
+          address_line2: String(document.getElementById("client-address-line2")?.value || "").trim(),
+          city: String(document.getElementById("client-city")?.value || "").trim(),
+          state: String(document.getElementById("client-state")?.value || "").trim(),
+          postal_code: String(document.getElementById("client-postal-code")?.value || "").trim(),
+          notes: String(document.getElementById("client-notes")?.value || "").trim()
+        };
+
+        if (saveClientBtn) saveClientBtn.disabled = true;
+        try {
+          await createClient(payload);
+          resetClientForm();
+          await refreshClientsData();
+        } catch (error) {
+          alert(error.message || "Unable to save client.");
+        } finally {
+          if (saveClientBtn) saveClientBtn.disabled = false;
+        }
+      });
+    }
+
+    function initAddAppointment() {
+      if (!addAppointmentBtn) return;
+
+      addAppointmentBtn.addEventListener("click", async () => {
+        appointmentModal?.classList.remove("hidden");
+        try {
+          await refreshClientsData();
+          resetAppointmentForm();
+        } catch (error) {
+          alert(error.message || "Unable to load clients.");
+        }
+      });
+
+      closeAppointmentModalBtn?.addEventListener("click", () => {
+        appointmentModal?.classList.add("hidden");
+      });
+
+      appointmentModal?.addEventListener("click", (event) => {
+        if (event.target === appointmentModal) {
+          appointmentModal.classList.add("hidden");
+        }
+      });
+
+      appointmentClientIdEl?.addEventListener("change", () => {
+        renderAppointmentClientPreview();
+      });
+
+      appointmentForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const client = selectedClientFromForm();
+        const serviceType = String(appointmentServiceEl?.value || "").trim();
+        const durationMinutes = Number(appointmentDurationEl?.value || "0");
+        const notes = String(appointmentNotesEl?.value || "").trim();
+
+        if (!client) {
+          alert("Please select a client.");
+          return;
+        }
+        if (!serviceType) {
+          alert("Service type is required.");
+          return;
+        }
+        if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
+          alert("Duration must be a positive number.");
+          return;
+        }
+
+        if (createAppointmentSubmitBtn) createAppointmentSubmitBtn.disabled = true;
+        try {
+          await createAppointment({
+            client_id: client.id,
+            customer_name: client.name,
+            service_type: serviceType,
+            duration_minutes: durationMinutes,
+            notes
+          });
+          appointmentModal?.classList.add("hidden");
+          await loadJobs();
+        } catch (error) {
+          alert(error.message || "Unable to create appointment.");
+        } finally {
+          if (createAppointmentSubmitBtn) createAppointmentSubmitBtn.disabled = false;
+        }
+      });
     }
 
     function applyScheduledVisual(card, status) {
@@ -546,6 +1001,9 @@
       }
       buildDispatchBoard();
       initPendingToggle();
+      initJobDetailModal();
+      initClientsModal();
+      initAddAppointment();
       setupSortable();
       loadJobs();
     }
