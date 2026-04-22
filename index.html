@@ -1,324 +1,49 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FieldOps Scheduler | Field Service Scheduling Software</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              blue: "#1e3a8a",
-              slate: "#334155",
-              action: "#f97316"
-            }
-          },
-          fontFamily: {
-            sans: ["Plus Jakarta Sans", "ui-sans-serif", "system-ui", "sans-serif"]
-          },
-          boxShadow: {
-            panel: "0 24px 50px -30px rgba(15, 23, 42, 0.35)"
-          }
-        }
-      }
-    };
-  </script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
 </head>
-<body class="bg-slate-50 text-slate-900 antialiased">
-  <div class="relative overflow-hidden">
-    <div class="absolute inset-x-0 top-0 -z-10 h-[420px] bg-gradient-to-br from-brand-blue via-blue-800 to-slate-900"></div>
-    <div class="absolute -left-24 top-24 -z-10 h-64 w-64 rounded-full bg-orange-400/25 blur-3xl"></div>
-    <div class="absolute right-0 top-14 -z-10 h-72 w-72 rounded-full bg-sky-300/20 blur-3xl"></div>
-
-    <header class="mx-auto max-w-7xl px-6 py-6 lg:px-8">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3 text-white">
-          <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20">
-            <i class="fa-solid fa-calendar-check text-lg"></i>
-          </span>
-          <div>
-            <p class="text-sm font-semibold tracking-wide">FieldOps Scheduler</p>
-            <p class="text-xs text-blue-100">Built for service teams</p>
-          </div>
+<body>
+    <form id="login-form">
+        <div>
+            <label for="username">User ID:</label>
+            <input type="text" id="username" name="username" value="" required>
         </div>
-        <div class="hidden items-center gap-3 md:flex">
-          <a href="#login" class="rounded-lg border border-white/35 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">Login</a>
-          <a href="#lead-form" class="rounded-lg bg-brand-action px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/30 transition hover:bg-orange-500">Book a Demo</a>
+        <br>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" value="" required>
         </div>
-      </div>
-    </header>
-
-    <main>
-      <section class="mx-auto max-w-7xl px-6 pb-20 pt-8 lg:px-8 lg:pb-24 lg:pt-14">
-        <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
-          <div>
-            <p class="mb-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-blue-50 ring-1 ring-white/20">
-              Trusted by modern field teams
-            </p>
-            <h1 class="max-w-xl text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
-              Schedule more jobs with less chaos and more technician productivity.
-            </h1>
-            <p class="mt-6 max-w-xl text-lg leading-relaxed text-blue-100">
-              Eliminate paperwork, automate admin work, and keep every dispatch, invoice, and customer update in one unified workflow.
-            </p>
-            <div class="mt-8 flex flex-wrap items-center gap-4">
-              <a href="#lead-form" class="rounded-xl bg-brand-action px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-orange-600/30 transition hover:bg-orange-500">Book a Demo</a>
-              <a href="#pricing" class="rounded-xl border border-white/35 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10">See Pricing</a>
-            </div>
-          </div>
-
-          <div class="rounded-2xl bg-white p-6 shadow-panel sm:p-8">
-            <p class="text-sm font-semibold uppercase tracking-[0.1em] text-brand-blue">Operations Snapshot</p>
-            <div class="mt-6 grid grid-cols-2 gap-4">
-              <div class="rounded-xl bg-slate-100 p-4">
-                <p class="text-xs font-medium text-slate-500">Job Fill Rate</p>
-                <p class="mt-1 text-2xl font-extrabold text-brand-blue">98.3%</p>
-              </div>
-              <div class="rounded-xl bg-slate-100 p-4">
-                <p class="text-xs font-medium text-slate-500">No-Show Reduction</p>
-                <p class="mt-1 text-2xl font-extrabold text-brand-blue">-37%</p>
-              </div>
-              <div class="rounded-xl bg-slate-100 p-4">
-                <p class="text-xs font-medium text-slate-500">Average ETA Accuracy</p>
-                <p class="mt-1 text-2xl font-extrabold text-brand-blue">92%</p>
-              </div>
-              <div class="rounded-xl bg-slate-100 p-4">
-                <p class="text-xs font-medium text-slate-500">Invoices Paid Faster</p>
-                <p class="mt-1 text-2xl font-extrabold text-brand-blue">2.1x</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="mx-auto max-w-7xl px-6 pb-20 lg:px-8">
-        <div class="mx-auto mb-10 max-w-3xl text-center">
-          <h2 class="text-3xl font-bold text-brand-blue sm:text-4xl">Core Features Built for Field Service Excellence</h2>
-          <p class="mt-4 text-slate-600">Everything you need to run dispatch, customer updates, and billing from one source of truth.</p>
-        </div>
-        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-            <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-brand-blue">
-              <i class="fa-solid fa-route"></i>
-            </span>
-            <h3 class="mt-5 text-xl font-bold text-slate-900">Smart Dispatching</h3>
-            <p class="mt-3 text-slate-600">Use real-time routing to assign the right technician based on skill, location, and workload.</p>
-          </article>
-          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-            <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-brand-blue">
-              <i class="fa-solid fa-desktop"></i>
-            </span>
-            <h3 class="mt-5 text-xl font-bold text-slate-900">Client Portal</h3>
-            <p class="mt-3 text-slate-600">Let customers track arrivals in real time, review service history, and pay invoices online.</p>
-          </article>
-          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-            <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-brand-blue">
-              <i class="fa-solid fa-bell"></i>
-            </span>
-            <h3 class="mt-5 text-xl font-bold text-slate-900">Automated Notifications</h3>
-            <p class="mt-3 text-slate-600">Send automatic SMS and email reminders to reduce no-shows and inbound status calls.</p>
-          </article>
-          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-            <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-brand-blue">
-              <i class="fa-solid fa-tower-cell"></i>
-            </span>
-            <h3 class="mt-5 text-xl font-bold text-slate-900">Offline Access</h3>
-            <p class="mt-3 text-slate-600">Capture signatures, notes, and photos offline, then sync data when service returns.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="bg-white py-12">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
-          <p class="text-center text-xl font-semibold text-brand-blue sm:text-2xl">
-            Trusted by 500+ HVAC, Plumbing, and Electrical Businesses.
-          </p>
-        </div>
-      </section>
-
-      <section id="pricing" class="mx-auto max-w-7xl px-6 py-20 lg:px-8">
-        <div class="mx-auto mb-10 max-w-3xl text-center">
-          <h2 class="text-3xl font-bold text-brand-blue sm:text-4xl">Pricing Built to Scale with Your Team</h2>
-          <p class="mt-4 text-slate-600">Choose the right plan based on your growth stage and operational complexity.</p>
-        </div>
-        <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <table class="w-full min-w-[680px] text-left">
-            <thead class="bg-slate-100 text-slate-700">
-              <tr>
-                <th scope="col" class="px-6 py-4 text-sm font-semibold">Feature</th>
-                <th scope="col" class="px-6 py-4 text-sm font-semibold">Professional</th>
-                <th scope="col" class="px-6 py-4 text-sm font-semibold">Enterprise</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
-              <tr>
-                <td class="px-6 py-4 font-medium text-slate-900">Technicians Included</td>
-                <td class="px-6 py-4">Up to 25</td>
-                <td class="px-6 py-4">Unlimited</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 font-medium text-slate-900">Dispatch Automation</td>
-                <td class="px-6 py-4">Standard Rules</td>
-                <td class="px-6 py-4">AI Priority Routing</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 font-medium text-slate-900">Client Portal + Payments</td>
-                <td class="px-6 py-4">Included</td>
-                <td class="px-6 py-4">Included + Custom Branding</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 font-medium text-slate-900">Support</td>
-                <td class="px-6 py-4">Priority Email</td>
-                <td class="px-6 py-4">Dedicated Success Manager</td>
-              </tr>
-              <tr>
-                <td class="px-6 py-4 font-medium text-slate-900">Price</td>
-                <td class="px-6 py-4 text-brand-blue font-bold">$199/mo</td>
-                <td class="px-6 py-4 text-brand-blue font-bold">Custom</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section id="login" class="mx-auto max-w-7xl px-6 pb-20 lg:px-8">
-        <div class="mx-auto grid max-w-5xl gap-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm lg:grid-cols-2 lg:p-10">
-          <div>
-            <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-blue">Customer Access</p>
-            <h2 class="mt-3 text-3xl font-bold text-brand-blue sm:text-4xl">Login to Manage Your Jobs and Team</h2>
-            <p class="mt-4 text-slate-600">Securely access dispatch boards, technician schedules, and customer updates from one dashboard.</p>
-            <ul class="mt-6 space-y-3 text-slate-700">
-              <li class="flex items-start gap-3"><i class="fa-solid fa-shield-halved mt-1 text-brand-action"></i> Bank-grade encrypted sessions</li>
-              <li class="flex items-start gap-3"><i class="fa-solid fa-mobile-screen-button mt-1 text-brand-action"></i> Works across desktop and mobile devices</li>
-              <li class="flex items-start gap-3"><i class="fa-solid fa-clock-rotate-left mt-1 text-brand-action"></i> Real-time job updates in seconds</li>
-            </ul>
-          </div>
-
-          <div class="space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-            <form id="login-form" class="space-y-5">
-              <h3 class="text-lg font-bold text-brand-blue">Sign In</h3>
-              <div>
-                <label for="login-email" class="mb-2 block text-sm font-semibold text-slate-700">Business Email</label>
-                <input id="login-email" name="login-email" type="email" placeholder="you@company.com" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
-              </div>
-              <div>
-                <label for="login-password" class="mb-2 block text-sm font-semibold text-slate-700">Password</label>
-                <input id="login-password" name="login-password" type="password" placeholder="Enter your password" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
-              </div>
-              <button type="submit" class="w-full rounded-lg bg-brand-blue px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800">
-                Login
-              </button>
-              <p id="login-status" class="text-sm font-medium text-slate-600" aria-live="polite"></p>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      <section id="lead-form" class="bg-slate-900 py-20">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
-          <div class="grid gap-8 rounded-3xl bg-white p-8 shadow-panel lg:grid-cols-2 lg:p-12">
-            <div>
-              <h2 class="text-3xl font-bold text-brand-blue sm:text-4xl">Get Started with FieldOps Scheduler</h2>
-              <p class="mt-4 text-slate-600">Tell us about your business and we will show you how to cut scheduling overhead and increase daily job capacity.</p>
-              <ul class="mt-6 space-y-3 text-slate-700">
-                <li class="flex items-start gap-3"><i class="fa-solid fa-check mt-1 text-brand-action"></i> Fast onboarding for office teams and field technicians</li>
-                <li class="flex items-start gap-3"><i class="fa-solid fa-check mt-1 text-brand-action"></i> Migration support from spreadsheets and legacy software</li>
-                <li class="flex items-start gap-3"><i class="fa-solid fa-check mt-1 text-brand-action"></i> ROI review in your first 30 days</li>
-              </ul>
-            </div>
-
-            <form class="space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-              <div>
-                <label for="name" class="mb-2 block text-sm font-semibold text-slate-700">Name</label>
-                <input id="name" name="name" type="text" placeholder="Jane Smith" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
-              </div>
-              <div>
-                <label for="email" class="mb-2 block text-sm font-semibold text-slate-700">Business Email</label>
-                <input id="email" name="email" type="email" placeholder="jane@company.com" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
-              </div>
-              <div>
-                <label for="industry" class="mb-2 block text-sm font-semibold text-slate-700">Industry Type</label>
-                <select id="industry" name="industry" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none ring-brand-action transition focus:ring-2" required>
-                  <option value="">Select your industry</option>
-                  <option>HVAC</option>
-                  <option>Plumbing</option>
-                  <option>Electrical</option>
-                  <option>General Field Services</option>
-                </select>
-              </div>
-              <button type="submit" class="w-full rounded-lg bg-brand-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-500">
-                Get Started
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-  <script>
-    async function postJson(url, data) {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(payload.error || "Request failed.");
-      }
-      return payload;
-    }
-
-    const loginForm = document.getElementById("login-form");
-    const registerForm = document.getElementById("register-form");
-    const loginStatus = document.getElementById("login-status");
-    const registerStatus = document.getElementById("register-status");
-
-    loginForm?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      loginStatus.textContent = "Signing in...";
-      loginStatus.className = "text-sm font-medium text-slate-600";
-
-      const username = document.getElementById("login-email").value.trim();
-      const password = document.getElementById("login-password").value;
-
-      try {
-        const data = await postJson("/api/login", { username, password });
-        loginStatus.textContent = data.message || "Login successful.";
-        loginStatus.className = "text-sm font-medium text-emerald-600";
-        localStorage.setItem("fieldops_auth_user", username);
-        window.location.href = data.redirect || "/home.html";
-      } catch (error) {
-        loginStatus.textContent = error.message;
-        loginStatus.className = "text-sm font-medium text-red-600";
-      }
-    });
-
-    registerForm?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      registerStatus.textContent = "Creating account...";
-      registerStatus.className = "text-sm font-medium text-slate-600";
-
-      const username = document.getElementById("register-email").value.trim();
-      const password = document.getElementById("register-password").value;
-
-      try {
-        const data = await postJson("/api/register", { username, password });
-        registerStatus.textContent = data.message || "User created.";
-        registerStatus.className = "text-sm font-medium text-emerald-600";
-        registerForm.reset();
-      } catch (error) {
-        registerStatus.textContent = error.message;
-        registerStatus.className = "text-sm font-medium text-red-600";
-      }
-    });
-  </script>
+        <br>
+        <button type="submit">Login</button>
+        <p id="status"></p>
+    </form>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const status = document.getElementById('status');
+            status.textContent = 'Logging in...';
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    localStorage.setItem('fieldops_auth_user', username);
+                    window.location.href = data.redirect || '/home.html';
+                } else {
+                    status.textContent = data.error || 'Login failed';
+                }
+            } catch (error) {
+                status.textContent = 'Error: ' + error.message;
+            }
+        });
+    </script>
 </body>
 </html>
