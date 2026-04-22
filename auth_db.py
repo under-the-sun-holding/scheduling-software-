@@ -118,6 +118,22 @@ def revoke_admin(username: str) -> None:
         conn.commit()
 
 
+def change_password(username: str, new_password: str) -> None:
+    if len(new_password) < 8:
+        raise ValueError("Password must be at least 8 characters.")
+
+    password_hash = hash_password(new_password)
+
+    with get_connection() as conn:
+        result = conn.execute(
+            "UPDATE users SET password_hash = ? WHERE username = ?",
+            (password_hash, username),
+        )
+        if result.rowcount == 0:
+            raise ValueError(f"User '{username}' not found.")
+        conn.commit()
+
+
 def verify_user(username: str, password: str) -> bool:
     with get_connection() as conn:
         row = conn.execute(
