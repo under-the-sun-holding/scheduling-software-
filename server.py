@@ -14,7 +14,7 @@ import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from auth_db import create_user, grant_admin, init_db, verify_user
+from auth_db import create_user, grant_admin, revoke_admin, init_db, verify_user
 
 
 ROOT = Path(__file__).resolve().parent
@@ -141,6 +141,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         if self.path == "/api/users":
             self._handle_get_users()
             return
+        if self.path == "/api/users/role":
+            self._handle_update_user_role()
+            return
 
         self._send_json(404, {"error": "Not found"})
 
@@ -212,6 +215,31 @@ class AppHandler(SimpleHTTPRequestHandler):
                 for row in rows
             ]
             self._send_json(200, {"users": users})
+        except Exception as exc:
+            self._send_json(500, {"error": str(exc)})
+
+    def _handle_update_user_role(self) -> None:
+        # Update a user's role
+        payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
+        role = str(payload.get("role", "")).strip()
+
+        if not username:
+            self._send_json(400, {"error": "username is required"})
+            return
+        
+        if role not in ("Admin", "User"):
+            self._send_json(400, {"error": "role must be 'Admin' or 'User'"})
+            return
+
+        try:
+            if role == "Admin":
+                grant_admin(username)
+            else:
+                revoke_admin(username)
+            self._send_json(200, {"ok": True, "message": f"User role updated to {role}"})
+        except ValueError as exc:
+            self._send_json(404, {"error": str(exc)})
         except Exception as exc:
             self._send_json(500, {"error": str(exc)})
 

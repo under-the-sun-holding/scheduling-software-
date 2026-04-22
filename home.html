@@ -158,6 +158,7 @@
                 <th class="px-4 py-3 text-left font-semibold text-slate-700">Username</th>
                 <th class="px-4 py-3 text-left font-semibold text-slate-700">Role</th>
                 <th class="px-4 py-3 text-left font-semibold text-slate-700">Created</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
               </tr>
             </thead>
             <tbody id="users-table-body">
@@ -580,7 +581,7 @@
       try {
         const response = await fetch("/api/users", { method: "POST" });
         if (!response.ok) {
-          document.getElementById("users-table-body").innerHTML = '<tr><td colspan="3" class="px-4 py-3 text-center text-red-600">Failed to load users</td></tr>';
+          document.getElementById("users-table-body").innerHTML = '<tr><td colspan="4" class="px-4 py-3 text-center text-red-600">Failed to load users</td></tr>';
           return;
         }
 
@@ -589,27 +590,62 @@
         
         const tbody = document.getElementById("users-table-body");
         if (users.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-3 text-center text-slate-500">No users found</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-3 text-center text-slate-500">No users found</td></tr>';
           return;
         }
 
-        tbody.innerHTML = users.map(user => `
-          <tr class="border-b border-slate-200 transition hover:bg-slate-100">
-            <td class="px-4 py-3 font-medium text-slate-900">${user.username}</td>
-            <td class="px-4 py-3">
-              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                user.role === "Admin" 
-                  ? "bg-amber-100 text-amber-700" 
-                  : "bg-slate-100 text-slate-700"
-              }">
-                ${user.role}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-slate-600 text-xs">${new Date(user.created_at).toLocaleDateString()}</td>
-          </tr>
-        `).join("");
+        tbody.innerHTML = users.map(user => {
+          const isAdmin = user.role === "Admin";
+          const actionButton = `
+            <button class="change-role-btn rounded-lg ${isAdmin ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'} px-3 py-1.5 text-xs font-semibold transition" data-username="${user.username}" data-current-role="${user.role}">
+              Make ${isAdmin ? 'User' : 'Admin'}
+            </button>
+          `;
+          return `
+            <tr class="border-b border-slate-200 transition hover:bg-slate-100">
+              <td class="px-4 py-3 font-medium text-slate-900">${user.username}</td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                  isAdmin
+                    ? "bg-amber-100 text-amber-700" 
+                    : "bg-slate-100 text-slate-700"
+                }">
+                  ${user.role}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-slate-600 text-xs">${new Date(user.created_at).toLocaleDateString()}</td>
+              <td class="px-4 py-3">${actionButton}</td>
+            </tr>
+          `;
+        }).join("");
+        
+        // Add event listeners to role change buttons
+        document.querySelectorAll(".change-role-btn").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            const username = e.target.dataset.username;
+            const currentRole = e.target.dataset.currentRole;
+            const newRole = currentRole === "Admin" ? "User" : "Admin";
+            
+            try {
+              const response = await fetch("/api/users/role", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, role: newRole })
+              });
+              
+              if (response.ok) {
+                loadUsersTable(); // Reload the table
+              } else {
+                const error = await response.json();
+                alert(`Failed to update role: ${error.error}`);
+              }
+            } catch (err) {
+              alert(`Error: ${err.message}`);
+            }
+          });
+        });
       } catch (err) {
-        document.getElementById("users-table-body").innerHTML = '<tr><td colspan="3" class="px-4 py-3 text-center text-red-600">Error loading users</td></tr>';
+        document.getElementById("users-table-body").innerHTML = '<tr><td colspan="4" class="px-4 py-3 text-center text-red-600">Error loading users</td></tr>';
       }
     }
 

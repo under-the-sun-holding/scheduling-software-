@@ -106,6 +106,18 @@ def grant_admin(username: str) -> None:
         conn.commit()
 
 
+def revoke_admin(username: str) -> None:
+    """Revoke admin access from a user."""
+    with get_connection() as conn:
+        result = conn.execute(
+            "UPDATE users SET is_admin = 0 WHERE username = ?",
+            (username,)
+        )
+        if result.rowcount == 0:
+            raise ValueError(f"User '{username}' not found.")
+        conn.commit()
+
+
 def verify_user(username: str, password: str) -> bool:
     with get_connection() as conn:
         row = conn.execute(
