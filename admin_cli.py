@@ -45,26 +45,26 @@ def print_usage() -> None:
     print("Admin Account Manager")
     print("=" * 50)
     print("Usage:")
-    print("  python3 admin_cli.py create <email> [password]")
+    print("  python3 admin_cli.py create <username> [password]")
     print("  python3 admin_cli.py list")
-    print("  python3 admin_cli.py grant <email>")
-    print("  python3 admin_cli.py revoke <email>")
+    print("  python3 admin_cli.py grant <username>")
+    print("  python3 admin_cli.py revoke <username>")
     print("\nExamples:")
-    print("  python3 admin_cli.py create admin@example.com")
-    print("  python3 admin_cli.py grant user@example.com")
+    print("  python3 admin_cli.py create Admin987654321 Gigglewater88")
+    print("  python3 admin_cli.py grant user1")
     print("  python3 admin_cli.py list")
 
 
 def cmd_create() -> int:
     """Create a new admin account."""
     if len(sys.argv) < 3:
-        print("Usage: python3 admin_cli.py create <email> [password]")
+        print("Usage: python3 admin_cli.py create <username> [password]")
         return 1
     
-    email = sys.argv[2].strip().lower()
+    username = sys.argv[2].strip().lower()
     
-    if not email or "@" not in email:
-        print("ERROR: Invalid email address")
+    if not username:
+        print("ERROR: Invalid username")
         return 1
     
     # Get password
@@ -82,13 +82,13 @@ def cmd_create() -> int:
         return 1
     
     try:
-        user = find_user_by_username(email)
+        user = find_user_by_username(username)
         if user:
-            print(f"User '{email}' already exists. Use 'grant' to make them admin.")
+            print(f"User '{username}' already exists. Use 'grant' to make them admin.")
             return 1
         
-        create_user(email, password, role="Admin")
-        print(f"✓ Admin account created: {email}")
+        create_user(username, password, role="Admin")
+        print(f"✓ Admin account created: {username}")
         return 0
     except Exception as e:
         print(f"ERROR: {e}")
@@ -130,7 +130,7 @@ def cmd_list() -> int:
 def cmd_grant() -> int:
     """Grant admin role to a user."""
     if len(sys.argv) < 3:
-        print("Usage: python3 admin_cli.py grant <email>")
+        print("Usage: python3 admin_cli.py grant <username>")
         return 1
     
     email = sys.argv[2].strip().lower()
@@ -156,7 +156,7 @@ def cmd_grant() -> int:
 def cmd_revoke() -> int:
     """Revoke admin role from a user."""
     if len(sys.argv) < 3:
-        print("Usage: python3 admin_cli.py revoke <email>")
+        print("Usage: python3 admin_cli.py revoke <username>")
         return 1
     
     email = sys.argv[2].strip().lower()
