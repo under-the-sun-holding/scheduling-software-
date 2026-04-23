@@ -1,0 +1,11 @@
+Variable,Required on Render,Example Value,Description,Used For
+PORT,No (auto-set by Render),10000,Dynamic port provided by Render; app already reads this automatically,Server bind port
+APP_SECRET_KEY,Yes (recommended),replace_with_long_random_secret_32_plus_chars,Used to encrypt/decrypt stored OAuth tokens,Token security at rest
+GOOGLE_CLIENT_ID,Optional (required if using Google Calendar),your_google_client_id.apps.googleusercontent.com,Google OAuth client id,Google Calendar integration
+GOOGLE_CLIENT_SECRET,Optional (required if using Google Calendar),your_google_client_secret,Google OAuth client secret,Google Calendar integration
+GOOGLE_REDIRECT_URI,Optional (required if using Google Calendar),https://YOUR-RENDER-SERVICE.onrender.com/api/google-calendar/callback,OAuth callback URL configured in Google Cloud,Google Calendar integration
+QUICKBOOKS_CLIENT_ID,Optional (required if using QuickBooks),your_quickbooks_client_id,QuickBooks OAuth client id,QuickBooks integration
+QUICKBOOKS_CLIENT_SECRET,Optional (required if using QuickBooks),your_quickbooks_client_secret,QuickBooks OAuth client secret,QuickBooks integration
+QUICKBOOKS_REDIRECT_URI,Optional (required if using QuickBooks),https://YOUR-RENDER-SERVICE.onrender.com/api/quickbooks/callback,OAuth callback URL configured in Intuit app settings,QuickBooks integration
+QUICKBOOKS_VERIFIER_TOKEN,Optional (recommended if webhook enabled),replace_with_webhook_verifier_token,Used to validate QuickBooks webhook signatures,QuickBooks webhook security
+QUICKBOOKS_API_BASE_URL,Optional,https://quickbooks.api.intuit.com,Override QuickBooks API base URL (prod or sandbox),Advanced QuickBooks config

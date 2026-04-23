@@ -3138,7 +3138,8 @@ def load_env_file() -> None:
 
 def main(argv: list[str]) -> int:
     global LEGACY_DATA_OWNER
-    port = 8000
+    # Render and similar hosts provide a dynamic PORT env var.
+    port = int(os.environ.get("PORT", 10000))
     if len(argv) > 1:
         try:
             port = int(argv[1])
