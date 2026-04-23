@@ -18,7 +18,8 @@
     "state": "",
     "postal_code": "",
     "notes": "",
-    "client_id": null
+    "client_id": null,
+    "owner_username": ""
   },
   {
     "id": 102,
@@ -39,7 +40,8 @@
     "state": "",
     "postal_code": "",
     "notes": "",
-    "client_id": null
+    "client_id": null,
+    "owner_username": ""
   },
   {
     "id": 103,
@@ -60,7 +62,8 @@
     "state": "",
     "postal_code": "",
     "notes": "",
-    "client_id": null
+    "client_id": null,
+    "owner_username": ""
   },
   {
     "id": 104,
@@ -81,7 +84,8 @@
     "state": "",
     "postal_code": "",
     "notes": "",
-    "client_id": null
+    "client_id": null,
+    "owner_username": ""
   },
   {
     "id": 105,
@@ -102,7 +106,8 @@
     "state": "",
     "postal_code": "",
     "notes": "",
-    "client_id": null
+    "client_id": null,
+    "owner_username": ""
   },
   {
     "id": 106,
@@ -123,7 +128,8 @@
     "state": "",
     "postal_code": "",
     "notes": "",
-    "client_id": null
+    "client_id": null,
+    "owner_username": ""
   },
   {
     "id": 107,
@@ -144,7 +150,8 @@
     "state": "TN",
     "postal_code": "37201",
     "notes": "Gate code 1942",
-    "client_id": null
+    "client_id": null,
+    "owner_username": ""
   },
   {
     "id": 108,
@@ -165,7 +172,8 @@
     "state": "",
     "postal_code": "",
     "notes": "",
-    "client_id": null
+    "client_id": null,
+    "owner_username": ""
   },
   {
     "id": 109,
@@ -186,6 +194,29 @@
     "city": "Half Moon Bay",
     "state": "CA",
     "postal_code": "94213",
-    "notes": "Imported from QuickBooks customer ID 3"
+    "notes": "Imported from QuickBooks customer ID 3",
+    "owner_username": ""
+  },
+  {
+    "id": 110,
+    "customer_name": "Bill's Windsurf Shop",
+    "service_type": "testing",
+    "time": "08:00 AM",
+    "status": "Scheduled",
+    "duration_minutes": 60,
+    "assigned_tech": "sdghshhsdeh",
+    "client_id": 31,
+    "emergency": false,
+    "recurring": false,
+    "manual_block_minutes": null,
+    "phone": "(415) 444-6538",
+    "email": "Surf@Intuit.com",
+    "address_line1": "12 Ocean Dr.",
+    "address_line2": "",
+    "city": "Half Moon Bay",
+    "state": "CA",
+    "postal_code": "94213",
+    "notes": "Imported from QuickBooks customer ID 2",
+    "owner_username": "underthesunsolar24@gmail.com"
   }
 ]
