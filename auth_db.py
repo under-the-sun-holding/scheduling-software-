@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import hmac
 import os
@@ -45,6 +46,20 @@ def init_db() -> None:
         columns = {row[1] for row in cursor.fetchall()}
         if "is_admin" not in columns:
             conn.execute("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0")
+        if "integration_provider" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN integration_provider TEXT DEFAULT ''")
+        if "integration_connected" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN integration_connected INTEGER DEFAULT 0")
+        if "integration_connected_at" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN integration_connected_at DATETIME")
+        if "quickbooks_realm_id" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_realm_id TEXT DEFAULT ''")
+        if "quickbooks_access_token" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_access_token TEXT DEFAULT ''")
+        if "quickbooks_refresh_token" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_refresh_token TEXT DEFAULT ''")
+        if "quickbooks_token_expires_at" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_token_expires_at DATETIME")
         conn.commit()
 
 
@@ -69,7 +84,7 @@ def verify_password(password: str, stored_hash: str) -> bool:
         iterations = int(iter_str)
         salt = base64.b64decode(salt_b64.encode("ascii"))
         expected_digest = base64.b64decode(digest_b64.encode("ascii"))
-    except (ValueError, TypeError, base64.binascii.Error):
+    except (ValueError, TypeError, binascii.Error):
         return False
 
     computed_digest = hashlib.pbkdf2_hmac(
@@ -130,7 +145,7 @@ def verify_user(username: str, password: str) -> bool:
 
 
 def print_usage() -> None:
-    print(__doc__.strip())
+    print((__doc__ or "").strip())
 
 
 def main(argv: list[str]) -> int:

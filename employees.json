@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "name": "Dave",
+    "source": "manual",
+    "quickbooks_employee_id": "",
+    "title": "",
+    "phone": "",
+    "mobile": "",
+    "email": "",
+    "active": true,
+    "added_at": ""
+  },
+  {
+    "id": 2,
+    "name": "Sarah",
+    "source": "manual",
+    "quickbooks_employee_id": "",
+    "title": "",
+    "phone": "",
+    "mobile": "",
+    "email": "",
+    "active": true,
+    "added_at": ""
+  },
+  {
+    "id": 3,
+    "name": "Alex",
+    "source": "manual",
+    "quickbooks_employee_id": "",
+    "title": "",
+    "phone": "",
+    "mobile": "",
+    "email": "",
+    "active": true,
+    "added_at": ""
+  },
+  {
+    "id": 4,
+    "name": "Emily Platt",
+    "source": "quickbooks",
+    "quickbooks_employee_id": "55",
+    "title": "",
+    "phone": "",
+    "mobile": "",
+    "email": "",
+    "active": true,
+    "added_at": "2026-04-23T00:54:15.566568+00:00"
+  },
+  {
+    "id": 5,
+    "name": "John Johnson",
+    "source": "quickbooks",
+    "quickbooks_employee_id": "54",
+    "title": "",
+    "phone": "(540) 555-9645",
+    "mobile": "",
+    "email": "",
+    "active": true,
+    "added_at": "2026-04-23T00:54:15.566605+00:00"
+  }
+]

@@ -45,3 +45,21 @@ When `server.py` is running:
 
 - `POST /api/register` with JSON `{ "username": "email", "password": "secret" }`
 - `POST /api/login` with JSON `{ "username": "email", "password": "secret" }`
+
+## QuickBooks OAuth (Real Auth)
+
+To enable real QuickBooks connection, set these environment variables before running the server:
+
+```bash
+export QUICKBOOKS_CLIENT_ID="your_intuit_client_id"
+export QUICKBOOKS_CLIENT_SECRET="your_intuit_client_secret"
+export QUICKBOOKS_REDIRECT_URI="http://localhost:8000/api/quickbooks/callback"
+```
+
+In your Intuit app settings, add the same Redirect URI.
+
+When configured, users can click **Connect QuickBooks** in the app and complete OAuth with Intuit.
+
+Server OAuth routes:
+- `GET /api/quickbooks/connect?username=<logged_in_username>`
+- `GET /api/quickbooks/callback`

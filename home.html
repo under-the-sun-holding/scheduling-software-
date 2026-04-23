@@ -71,6 +71,7 @@
       </div>
       <div class="flex items-center gap-3">
         <p class="hidden text-sm text-blue-100 md:block">Dispatcher: <span id="user-name">User</span></p>
+        <span id="quickbooks-status-badge" class="hidden rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">QuickBooks: Not Connected</span>
         <button id="admin-btn" class="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-blue-600" style="display: none;">Admin</button>
         <button id="logout-btn" class="rounded-lg bg-brand-action px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-orange-500">Log Out</button>
       </div>
@@ -84,9 +85,15 @@
           <h2 class="text-xl font-bold tracking-tight text-brand-blue">Premium Dispatch Grid</h2>
           <p class="mt-1 text-sm text-slate-600">Operate your day like a high-performance control tower with fluid assignment and live time blocking.</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center justify-end gap-2">
           <button id="clients-btn" class="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-brand-blue transition hover:-translate-y-0.5 hover:bg-blue-50">
             <i class="fa-solid fa-address-book mr-1"></i>Clients
+          </button>
+          <button id="add-employee-btn" class="whitespace-nowrap rounded-lg border border-indigo-400 bg-indigo-100 px-3 py-2 text-xs font-semibold text-indigo-800 transition hover:-translate-y-0.5 hover:bg-indigo-200">
+            <i class="fa-solid fa-user-plus mr-1"></i>Employees
+          </button>
+          <button id="connect-client-btn" class="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-100">
+            <i class="fa-solid fa-link mr-1"></i>Connect QuickBooks
           </button>
           <button id="add-appointment-btn" class="rounded-lg bg-brand-action px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-orange-500">
             <i class="fa-solid fa-plus mr-1"></i>Add Appointment
@@ -246,6 +253,40 @@
     </div>
   </div>
 
+  <!-- Employees Modal -->
+  <div id="employees-modal" class="hidden fixed inset-0 z-[96] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-brand-blue">Employee Database</h2>
+          <p class="mt-1 text-sm text-slate-600">Add, deactivate, or remove employees used for dispatch assignments.</p>
+        </div>
+        <button id="close-employees-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+      </div>
+
+      <form id="employee-form" class="mb-5 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-[1fr_auto]">
+        <input id="employee-name" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Employee name">
+        <button id="save-employee-btn" type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">Add Employee</button>
+      </form>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Name</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Source</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Status</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="employees-table-body">
+            <tr><td colspan="4" class="px-3 py-3 text-center text-slate-500">No employees yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Appointment Modal -->
   <div id="appointment-modal" class="hidden fixed inset-0 z-[97] flex items-center justify-center bg-black/50 backdrop-blur-sm">
     <div class="max-h-[85vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
@@ -275,6 +316,43 @@
 
         <div class="sm:col-span-2">
           <button id="create-appointment-submit" type="submit" class="rounded-lg bg-brand-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500">Create Appointment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Connect Client Modal -->
+  <div id="connect-client-modal" class="hidden fixed inset-0 z-[98] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-brand-blue">Connect QuickBooks</h2>
+          <p class="mt-1 text-sm text-slate-600">Connect your business QuickBooks account to this scheduling software.</p>
+        </div>
+        <button id="close-connect-client-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+      </div>
+
+      <form id="connect-client-form" class="grid gap-3">
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Account</label>
+          <input id="connect-username" readonly class="w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-700">
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Integration</label>
+          <select id="connect-provider" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+            <option value="quickbooks">QuickBooks</option>
+          </select>
+        </div>
+
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Integration Status</p>
+          <p id="connect-client-preview" class="mt-1 whitespace-pre-line">Loading connection status...</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="connect-client-submit" type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">Connect</button>
+          <button id="disconnect-client-btn" type="button" class="rounded-lg border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">Disconnect</button>
         </div>
       </form>
     </div>
@@ -315,7 +393,8 @@
   </div>
 
   <script>
-    const TECHNICIANS = ["Dave", "Sarah", "Alex"];
+    const DEFAULT_TECHNICIANS = ["Dave", "Sarah", "Alex"];
+    let TECHNICIANS = [...DEFAULT_TECHNICIANS];
     const TIMES = [
       "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
       "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM"
@@ -326,6 +405,8 @@
     const manualIndicatorEl = document.getElementById("manual-block-indicator");
     const togglePendingBtn = document.getElementById("toggle-pending");
     const clientsBtn = document.getElementById("clients-btn");
+    const addEmployeeBtn = document.getElementById("add-employee-btn");
+    const connectClientBtn = document.getElementById("connect-client-btn");
     const addAppointmentBtn = document.getElementById("add-appointment-btn");
     const jobTemplate = document.getElementById("job-card-template");
     const jobDetailModal = document.getElementById("job-detail-modal");
@@ -335,6 +416,12 @@
     const clientsTableBody = document.getElementById("clients-table-body");
     const clientForm = document.getElementById("client-form");
     const saveClientBtn = document.getElementById("save-client-btn");
+    const employeesModal = document.getElementById("employees-modal");
+    const closeEmployeesModalBtn = document.getElementById("close-employees-modal");
+    const employeesTableBody = document.getElementById("employees-table-body");
+    const employeeForm = document.getElementById("employee-form");
+    const employeeNameEl = document.getElementById("employee-name");
+    const saveEmployeeBtn = document.getElementById("save-employee-btn");
     const appointmentModal = document.getElementById("appointment-modal");
     const closeAppointmentModalBtn = document.getElementById("close-appointment-modal");
     const appointmentForm = document.getElementById("appointment-form");
@@ -344,10 +431,22 @@
     const appointmentNotesEl = document.getElementById("appointment-notes");
     const appointmentClientPreviewEl = document.getElementById("appointment-client-preview");
     const createAppointmentSubmitBtn = document.getElementById("create-appointment-submit");
+    const connectClientModal = document.getElementById("connect-client-modal");
+    const closeConnectClientModalBtn = document.getElementById("close-connect-client-modal");
+    const connectClientForm = document.getElementById("connect-client-form");
+    const connectUsernameEl = document.getElementById("connect-username");
+    const connectProviderEl = document.getElementById("connect-provider");
+    const connectClientPreviewEl = document.getElementById("connect-client-preview");
+    const connectClientSubmitBtn = document.getElementById("connect-client-submit");
+    const disconnectClientBtn = document.getElementById("disconnect-client-btn");
+    const quickbooksStatusBadgeEl = document.getElementById("quickbooks-status-badge");
 
     let isCtrlPressed = false;
     let isDraggingJob = false;
     let clientsCache = [];
+    let employeesCache = [];
+    let authenticatedUser = "";
+    let userIntegration = null;
 
     function updateManualUI() {
       const active = isDraggingJob && isCtrlPressed;
@@ -632,6 +731,131 @@
       return response.json();
     }
 
+    async function fetchEmployees() {
+      const response = await fetch("/api/employees");
+      if (!response.ok) {
+        throw new Error("Failed to load employees.");
+      }
+      const payload = await response.json();
+      return Array.isArray(payload.employees) ? payload.employees : [];
+    }
+
+    async function createEmployee(payload) {
+      const response = await fetch("/api/employees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to add employee.");
+      }
+      return response.json();
+    }
+
+    async function setEmployeeStatus(employeeId, active) {
+      const response = await fetch("/api/employees/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employee_id: Number(employeeId), active })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to update employee status.");
+      }
+      return response.json();
+    }
+
+    async function deleteEmployee(employeeId) {
+      const response = await fetch("/api/employees/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employee_id: Number(employeeId) })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to delete employee.");
+      }
+      return response.json();
+    }
+
+    async function importQuickBooksEmployees(username) {
+      const response = await fetch("/api/quickbooks/employees/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to import QuickBooks employees.");
+      }
+
+      const payload = await response.json();
+      return Array.isArray(payload.employees) ? payload.employees : [];
+    }
+
+    async function fetchUserConnectStatus(username) {
+      const query = new URLSearchParams({ username: String(username || "").trim() });
+      const response = await fetch(`/api/users/connect-status?${query.toString()}`);
+
+      if (!response.ok) {
+        let message = "Failed to load integration status.";
+        const payload = await response.json().catch(() => null);
+        if (payload && typeof payload.error === "string" && payload.error.trim()) {
+          message = payload.error.trim();
+        } else {
+          const fallbackText = await response.text().catch(() => "");
+          if (fallbackText) {
+            message = fallbackText.slice(0, 200).trim() || message;
+          }
+        }
+        throw new Error(message);
+      }
+
+      const payload = await response.json();
+      return payload.user || null;
+    }
+
+    function startQuickBooksAuth(username) {
+      const query = new URLSearchParams({ username });
+      window.location.href = `/api/quickbooks/connect?${query.toString()}`;
+    }
+
+    async function disconnectUser(payload) {
+      const response = await fetch("/api/users/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to disconnect QuickBooks.");
+      }
+
+      return response.json();
+    }
+
+    function renderQuickBooksBadge() {
+      if (!quickbooksStatusBadgeEl) return;
+      quickbooksStatusBadgeEl.classList.remove("hidden");
+
+      const isConnected = Boolean(userIntegration?.integration_connected);
+      const provider = String(userIntegration?.integration_provider || "QuickBooks").trim();
+      if (isConnected) {
+        quickbooksStatusBadgeEl.textContent = `QuickBooks: Connected (${provider})`;
+        quickbooksStatusBadgeEl.className = "rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800";
+        return;
+      }
+
+      quickbooksStatusBadgeEl.textContent = "QuickBooks: Not Connected";
+      quickbooksStatusBadgeEl.className = "rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800";
+    }
+
     function clientAddressText(client) {
       const line1 = String(client.address_line1 || "").trim();
       const line2 = String(client.address_line2 || "").trim();
@@ -663,6 +887,95 @@
           `;
         })
         .join("");
+    }
+
+    function renderConnectClientPreview() {
+      if (!connectClientPreviewEl) return;
+      if (!userIntegration) {
+        connectClientPreviewEl.textContent = "Unable to load integration status.";
+        if (disconnectClientBtn) disconnectClientBtn.disabled = true;
+        return;
+      }
+
+      const provider = String(userIntegration.integration_provider || "").trim();
+      const isConnected = Boolean(userIntegration.integration_connected);
+      const connectedAt = String(userIntegration.integration_connected_at || "").trim();
+      const tokenExpiresAt = String(userIntegration.quickbooks_token_expires_at || "").trim();
+      const isConfigured = Boolean(userIntegration.quickbooks_configured);
+      const lines = [
+        `User: ${authenticatedUser || "Not signed in"}`,
+        `OAuth Configured: ${isConfigured ? "Yes" : "No"}`,
+        `Current Status: ${isConnected ? "Connected" : "Not connected"}`,
+        `Provider: ${provider || "None"}`,
+        `Connected At: ${connectedAt || "N/A"}`,
+        `Token Expires At: ${tokenExpiresAt || "N/A"}`
+      ];
+      connectClientPreviewEl.textContent = lines.join("\n");
+      if (connectClientSubmitBtn) {
+        connectClientSubmitBtn.textContent = isConnected ? "Reconnect" : "Connect";
+        connectClientSubmitBtn.disabled = !isConfigured;
+      }
+      if (disconnectClientBtn) {
+        disconnectClientBtn.disabled = !isConnected;
+      }
+    }
+
+    function showQuickBooksAuthResult() {
+      const hash = window.location.hash.startsWith("#")
+        ? window.location.hash.slice(1)
+        : window.location.hash;
+      if (!hash) return;
+
+      const params = new URLSearchParams(hash);
+      const qbStatus = String(params.get("qb") || "").trim();
+      if (!qbStatus) return;
+
+      const message = String(params.get("message") || "").trim();
+      if (qbStatus === "connected") {
+        alert("QuickBooks connected successfully.");
+      } else {
+        alert(`QuickBooks connection failed${message ? `: ${message}` : "."}`);
+      }
+
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    function resetConnectClientForm() {
+      connectClientForm?.reset();
+      if (connectProviderEl) {
+        connectProviderEl.value = "quickbooks";
+      }
+      if (connectUsernameEl) {
+        connectUsernameEl.value = authenticatedUser || "";
+      }
+      renderConnectClientPreview();
+    }
+
+    async function refreshUserIntegrationStatus() {
+      if (!authenticatedUser) {
+        userIntegration = null;
+        renderQuickBooksBadge();
+        return;
+      }
+      userIntegration = await fetchUserConnectStatus(authenticatedUser);
+      renderQuickBooksBadge();
+    }
+
+    async function openConnectClientModal() {
+      connectClientModal?.classList.remove("hidden");
+      await refreshUserIntegrationStatus();
+      if (connectProviderEl) {
+        connectProviderEl.value = "quickbooks";
+      }
+      if (connectUsernameEl) {
+        connectUsernameEl.value = authenticatedUser || "";
+      }
+      renderConnectClientPreview();
+    }
+
+    async function openClientsModal() {
+      clientsModal?.classList.remove("hidden");
+      await refreshClientsData();
     }
 
     function renderClientOptions(clients) {
@@ -706,6 +1019,135 @@
       renderAppointmentClientPreview();
     }
 
+    async function refreshEmployeesData({ importFromQuickBooks = false } = {}) {
+      employeesCache = await fetchEmployees();
+
+      if (importFromQuickBooks && authenticatedUser && userIntegration?.integration_connected) {
+        try {
+          employeesCache = await importQuickBooksEmployees(authenticatedUser);
+        } catch (error) {
+          console.warn("QuickBooks employee import skipped:", error);
+        }
+      }
+
+      const activeNames = employeesCache
+        .filter((employee) => employee && employee.active !== false)
+        .map((employee) => String(employee.name || "").trim())
+        .filter(Boolean);
+      TECHNICIANS = activeNames.length > 0 ? [...new Set(activeNames)] : [...DEFAULT_TECHNICIANS];
+
+      buildDispatchBoard();
+      setupSortable();
+      renderEmployeesTable(employeesCache);
+    }
+
+    function renderEmployeesTable(employees) {
+      if (!employeesTableBody) return;
+
+      if (!employees.length) {
+        employeesTableBody.innerHTML = '<tr><td colspan="4" class="px-3 py-3 text-center text-slate-500">No employees yet.</td></tr>';
+        return;
+      }
+
+      employeesTableBody.innerHTML = employees
+        .map((employee) => {
+          const employeeId = Number(employee.id || 0);
+          const isActive = employee.active !== false;
+          const statusPill = isActive
+            ? '<span class="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Active</span>'
+            : '<span class="inline-flex rounded-full bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-700">Inactive</span>';
+          const source = String(employee.source || "manual").trim().toLowerCase() === "quickbooks" ? "QuickBooks" : "Manual";
+          return `
+            <tr class="border-t border-slate-200">
+              <td class="px-3 py-2 font-medium text-slate-900">${employee.name || ""}</td>
+              <td class="px-3 py-2 text-slate-700">${source}</td>
+              <td class="px-3 py-2">${statusPill}</td>
+              <td class="px-3 py-2">
+                <div class="flex flex-wrap gap-2">
+                  <button data-employee-action="toggle" data-employee-id="${employeeId}" data-employee-active="${isActive ? "true" : "false"}" class="rounded-lg border px-3 py-1 text-xs font-semibold transition ${isActive ? "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100" : "border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}">${isActive ? "Deactivate" : "Activate"}</button>
+                  <button data-employee-action="delete" data-employee-id="${employeeId}" class="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100">Remove</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function initEmployees() {
+      addEmployeeBtn?.addEventListener("click", async () => {
+        employeesModal?.classList.remove("hidden");
+        try {
+          await refreshEmployeesData();
+        } catch (error) {
+          alert(error.message || "Unable to load employees.");
+        }
+      });
+
+      closeEmployeesModalBtn?.addEventListener("click", () => {
+        employeesModal?.classList.add("hidden");
+      });
+
+      employeesModal?.addEventListener("click", (event) => {
+        if (event.target === employeesModal) {
+          employeesModal.classList.add("hidden");
+        }
+      });
+
+      employeeForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const cleanName = String(employeeNameEl?.value || "").trim();
+        if (!cleanName) {
+          alert("Employee name is required.");
+          return;
+        }
+
+        if (saveEmployeeBtn) saveEmployeeBtn.disabled = true;
+        try {
+          await createEmployee({ name: cleanName });
+          employeeForm.reset();
+          await refreshEmployeesData();
+          await loadJobs();
+        } catch (error) {
+          alert(error.message || "Unable to add employee.");
+        } finally {
+          if (saveEmployeeBtn) saveEmployeeBtn.disabled = false;
+        }
+      });
+
+      employeesTableBody?.addEventListener("click", async (event) => {
+        const button = event.target instanceof HTMLElement
+          ? event.target.closest("button[data-employee-action]")
+          : null;
+        if (!button) return;
+
+        const action = String(button.dataset.employeeAction || "");
+        const employeeId = Number(button.dataset.employeeId || "0");
+        if (!employeeId) return;
+
+        button.disabled = true;
+        try {
+          if (action === "toggle") {
+            const currentlyActive = String(button.dataset.employeeActive || "true") === "true";
+            await setEmployeeStatus(employeeId, !currentlyActive);
+          } else if (action === "delete") {
+            if (!window.confirm("Remove this employee from the board?")) {
+              button.disabled = false;
+              return;
+            }
+            await deleteEmployee(employeeId);
+          }
+
+          await refreshEmployeesData();
+          await loadJobs();
+        } catch (error) {
+          alert(error.message || "Unable to update employee.");
+        } finally {
+          button.disabled = false;
+        }
+      });
+    }
+
     function resetClientForm() {
       clientForm?.reset();
     }
@@ -720,9 +1162,16 @@
 
     function initClientsModal() {
       clientsBtn?.addEventListener("click", async () => {
-        clientsModal?.classList.remove("hidden");
         try {
-          await refreshClientsData();
+          await openClientsModal();
+        } catch (error) {
+          alert(error.message || "Unable to load clients.");
+        }
+      });
+
+      connectClientBtn?.addEventListener("click", async () => {
+        try {
+          await openConnectClientModal();
         } catch (error) {
           alert(error.message || "Unable to load clients.");
         }
@@ -767,6 +1216,55 @@
           alert(error.message || "Unable to save client.");
         } finally {
           if (saveClientBtn) saveClientBtn.disabled = false;
+        }
+      });
+    }
+
+    function initConnectClientModal() {
+      closeConnectClientModalBtn?.addEventListener("click", () => {
+        connectClientModal?.classList.add("hidden");
+      });
+
+      connectClientModal?.addEventListener("click", (event) => {
+        if (event.target === connectClientModal) {
+          connectClientModal.classList.add("hidden");
+        }
+      });
+
+      connectClientForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const provider = String(connectProviderEl?.value || "quickbooks").trim().toLowerCase();
+        if (!authenticatedUser) {
+          alert("No logged-in user found.");
+          return;
+        }
+        if (provider !== "quickbooks") {
+          alert("Only QuickBooks is supported.");
+          return;
+        }
+
+        startQuickBooksAuth(authenticatedUser);
+      });
+
+      disconnectClientBtn?.addEventListener("click", async () => {
+        if (!authenticatedUser) {
+          alert("No logged-in user found.");
+          return;
+        }
+
+        if (disconnectClientBtn) disconnectClientBtn.disabled = true;
+        if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = true;
+        try {
+          await disconnectUser({ username: authenticatedUser });
+          await refreshUserIntegrationStatus();
+          renderConnectClientPreview();
+        } catch (error) {
+          alert(error.message || "Unable to disconnect QuickBooks.");
+        } finally {
+          if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = false;
+          if (disconnectClientBtn) {
+            disconnectClientBtn.disabled = !Boolean(userIntegration?.integration_connected);
+          }
         }
       });
     }
@@ -850,39 +1348,45 @@
     function setupSortable() {
       if (typeof Sortable === "undefined") return;
 
-      Sortable.create(pendingTrayEl, {
-        group: { name: "jobs", pull: true, put: ["jobs"] },
-        animation: 180,
-        ghostClass: "opacity-50",
-        onStart: (evt) => {
-          if (evt.item.classList.contains("job-card")) {
-            isDraggingJob = true;
-            updateManualUI();
+      if (pendingTrayEl.dataset.sortableBound !== "true") {
+        Sortable.create(pendingTrayEl, {
+          group: { name: "jobs", pull: true, put: ["jobs"] },
+          animation: 180,
+          ghostClass: "opacity-50",
+          onStart: (evt) => {
+            if (evt.item.classList.contains("job-card")) {
+              isDraggingJob = true;
+              updateManualUI();
+            }
+          },
+          onAdd: async (evt) => {
+            const card = evt.item;
+            card.dataset.assignedTech = "";
+            card.dataset.time = "Unscheduled";
+            card.dataset.status = "Pending";
+            card.dataset.manualBlockMinutes = "";
+            applyScheduledVisual(card, "Scheduled");
+            try {
+              await persistJobSchedule(card.dataset.jobId, "Pending", "Unscheduled", null, null);
+            } catch (error) {
+              alert(error.message);
+            }
+            renderUnavailableBlocks();
+          },
+          onEnd: (evt) => {
+            if (evt.item.classList.contains("job-card")) {
+              isDraggingJob = false;
+              updateManualUI();
+            }
           }
-        },
-        onAdd: async (evt) => {
-          const card = evt.item;
-          card.dataset.assignedTech = "";
-          card.dataset.time = "Unscheduled";
-          card.dataset.status = "Pending";
-          card.dataset.manualBlockMinutes = "";
-          applyScheduledVisual(card, "Scheduled");
-          try {
-            await persistJobSchedule(card.dataset.jobId, "Pending", "Unscheduled", null, null);
-          } catch (error) {
-            alert(error.message);
-          }
-          renderUnavailableBlocks();
-        },
-        onEnd: (evt) => {
-          if (evt.item.classList.contains("job-card")) {
-            isDraggingJob = false;
-            updateManualUI();
-          }
-        }
-      });
+        });
+        pendingTrayEl.dataset.sortableBound = "true";
+      }
 
       document.querySelectorAll(".dispatch-cell").forEach((cell) => {
+        if (cell.dataset.sortableBound === "true") {
+          return;
+        }
         Sortable.create(cell, {
           group: { name: "jobs", pull: true, put: ["jobs"] },
           animation: 180,
@@ -931,6 +1435,7 @@
             }
           }
         });
+        cell.dataset.sortableBound = "true";
       });
     }
 
@@ -995,17 +1500,32 @@
     if (!user) {
       window.location.href = "/index.html#login";
     } else {
+      authenticatedUser = user;
+      showQuickBooksAuthResult();
       const userNameEl = document.getElementById("user-name");
       if (userNameEl) {
         userNameEl.textContent = user;
       }
-      buildDispatchBoard();
+
       initPendingToggle();
       initJobDetailModal();
       initClientsModal();
+      initEmployees();
+      initConnectClientModal();
       initAddAppointment();
-      setupSortable();
-      loadJobs();
+
+      (async () => {
+        try {
+          await refreshUserIntegrationStatus();
+        } catch {
+          renderQuickBooksBadge();
+        }
+
+        await refreshEmployeesData({
+          importFromQuickBooks: Boolean(userIntegration?.integration_connected),
+        });
+        await loadJobs();
+      })();
     }
 
     document.getElementById("logout-btn")?.addEventListener("click", () => {
