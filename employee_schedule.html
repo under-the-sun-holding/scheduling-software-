@@ -368,6 +368,88 @@
       }
     }
 
+    // Calculate distance between two coordinates in miles (Haversine formula)
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 3959; // Earth's radius in miles
+      const dLat = ((lat2 - lat1) * Math.PI) / 180;
+      const dLon = ((lon2 - lon1) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    // Auto-track location every 15 minutes
+    async function autoTrackLocation() {
+      if (!("geolocation" in navigator)) return;
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const currentLat = position.coords.latitude;
+            const currentLng = position.coords.longitude;
+            const cacheKey = "fieldops_last_location";
+            const lastLocation = JSON.parse(localStorage.getItem(cacheKey) || "null");
+
+            // Check if moved more than 1 mile from last location
+            let shouldUpdate = true;
+            if (lastLocation && lastLocation.lat && lastLocation.lng) {
+              const distance = calculateDistance(
+                lastLocation.lat,
+                lastLocation.lng,
+                currentLat,
+                currentLng
+              );
+              shouldUpdate = distance > 1;
+            }
+
+            if (shouldUpdate) {
+              // Find an active job to update location for
+              const activeJobs = jobs.filter((job) => 
+                String(job.assigned_tech || "").trim() === selectedEmployeeName() &&
+                (String(job.status || "").toLowerCase() === "in progress" || 
+                 String(job.status || "").toLowerCase() === "scheduled")
+              );
+
+              if (activeJobs.length > 0) {
+                const job = activeJobs[0];
+                const response = await fetch("/api/tech-location/update", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    username: authenticatedUser,
+                    user_id: authenticatedUserId,
+                    job_id: Number(job.id),
+                    lat: currentLat,
+                    lng: currentLng,
+                    status: "En route",
+                  }),
+                });
+
+                if (response.ok) {
+                  // cache the location
+                  localStorage.setItem(cacheKey, JSON.stringify({
+                    lat: currentLat,
+                    lng: currentLng,
+                    timestamp: new Date().toISOString(),
+                  }));
+                  console.log(`Auto-updated location (moved ${calculateDistance(lastLocation?.lat || 0, lastLocation?.lng || 0, currentLat, currentLng).toFixed(2)} miles)`);
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Auto-track error:", error.message);
+          }
+        },
+        (error) => {
+          console.error("Geolocation error:", error.message);
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 5000 }
+      );
+    }
+
     async function loadEmployees() {
       const response = await fetch(`/api/employees?${ownerParams().toString()}`);
       if (!response.ok) {
@@ -462,6 +544,11 @@
       }
 
       window.setInterval(refreshAll, 60000);
+      
+      // Auto-track location every 15 minutes (900,000 ms)
+      window.setInterval(autoTrackLocation, 900000);
+      // Run initial check after 30 seconds
+      window.setTimeout(autoTrackLocation, 30000);
     })();
   </script>
 </body>
