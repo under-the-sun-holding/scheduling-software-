@@ -13,6 +13,7 @@ import hmac
 import json
 import base64
 import os
+import requests
 import secrets
 import sqlite3
 import sys
@@ -40,6 +41,10 @@ QUICKBOOKS_TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/beare
 QUICKBOOKS_SCOPES = "com.intuit.quickbooks.accounting"
 QUICKBOOKS_API_BASE_URL = "https://quickbooks.api.intuit.com"
 QUICKBOOKS_SANDBOX_API_BASE_URL = "https://sandbox-quickbooks.api.intuit.com"
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_SCOPES = "https://www.googleapis.com/auth/calendar.readonly"
+GOOGLE_CALENDAR_API_BASE_URL = "https://www.googleapis.com/calendar/v3"
 OAUTH_STATE_TTL_SECONDS = 600
 OAUTH_STATES: dict[str, dict[str, object]] = {}
 ENCRYPTED_TOKEN_PREFIX = "enc::"
@@ -334,6 +339,45 @@ def decrypt_quickbooks_token(value: str) -> str:
         return ""
 
 
+def encrypt_google_calendar_token(value: str) -> str:
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    if token.startswith(ENCRYPTED_TOKEN_PREFIX):
+        return token
+    key = _token_encryption_key()
+    if key is None:
+        return token
+    try:
+        from cryptography.fernet import Fernet  # type: ignore
+    except Exception:
+        return token
+    cipher = Fernet(key)
+    encrypted = cipher.encrypt(token.encode("utf-8")).decode("utf-8")
+    return f"{ENCRYPTED_TOKEN_PREFIX}{encrypted}"
+
+
+def decrypt_google_calendar_token(value: str) -> str:
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    if not token.startswith(ENCRYPTED_TOKEN_PREFIX):
+        return token
+    key = _token_encryption_key()
+    if key is None:
+        return ""
+    payload = token[len(ENCRYPTED_TOKEN_PREFIX) :]
+    try:
+        from cryptography.fernet import Fernet, InvalidToken  # type: ignore
+    except Exception:
+        return ""
+    try:
+        cipher = Fernet(key)
+        return cipher.decrypt(payload.encode("utf-8")).decode("utf-8").strip()
+    except InvalidToken:
+        return ""
+
+
 def mark_quickbooks_sync(username: str, synced_at_iso: str | None = None) -> None:
     from auth_db import get_connection
 
@@ -401,6 +445,23 @@ def quickbooks_settings() -> dict[str, str]:
 
 def quickbooks_is_configured() -> bool:
     settings = quickbooks_settings()
+    return bool(
+        settings["client_id"]
+        and settings["client_secret"]
+        and settings["redirect_uri"]
+    )
+
+
+def google_calendar_settings() -> dict[str, str]:
+    return {
+        "client_id": os.environ.get("GOOGLE_CLIENT_ID", "").strip(),
+        "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET", "").strip(),
+        "redirect_uri": os.environ.get("GOOGLE_REDIRECT_URI", "").strip(),
+    }
+
+
+def google_calendar_is_configured() -> bool:
+    settings = google_calendar_settings()
     return bool(
         settings["client_id"]
         and settings["client_secret"]
@@ -489,6 +550,67 @@ def refresh_quickbooks_tokens(refresh_token: str) -> dict:
         raise ValueError(f"QuickBooks refresh failed: {body}") from exc
     except urllib.error.URLError as exc:
         raise ValueError(f"Unable to reach QuickBooks: {exc.reason}") from exc
+
+
+def exchange_google_calendar_code(code: str) -> dict:
+    settings = google_calendar_settings()
+    try:
+        response = requests.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": settings["redirect_uri"],
+                "client_id": settings["client_id"],
+                "client_secret": settings["client_secret"],
+            },
+            headers={"Accept": "application/json"},
+            timeout=20,
+        )
+    except requests.RequestException as exc:
+        raise ValueError(f"Unable to reach Google: {exc}") from exc
+
+    if response.status_code >= 400:
+        raise ValueError(
+            f"Google Calendar token exchange failed: {response.text}"
+        )
+
+    try:
+        return response.json()
+    except ValueError as exc:
+        raise ValueError("Google Calendar token exchange returned invalid JSON") from exc
+
+
+def refresh_google_calendar_tokens(refresh_token: str) -> dict:
+    settings = google_calendar_settings()
+    payload = urllib.parse.urlencode(
+        {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "client_id": settings["client_id"],
+            "client_secret": settings["client_secret"],
+        }
+    ).encode("utf-8")
+
+    request = urllib.request.Request(
+        GOOGLE_TOKEN_URL,
+        data=payload,
+        headers={
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            body = response.read().decode("utf-8")
+            return json.loads(body)
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise ValueError(f"Google Calendar refresh failed: {body}") from exc
+    except urllib.error.URLError as exc:
+        raise ValueError(f"Unable to reach Google: {exc.reason}") from exc
 
 
 def parse_iso_datetime(value: str) -> datetime | None:
@@ -774,6 +896,140 @@ def ensure_valid_quickbooks_access_token(username: str, connection: dict[str, st
     }
 
 
+def _resolve_user_identity(
+    username: str = "", user_id_raw: object = None
+) -> dict[str, int | str]:
+    from auth_db import find_user_by_id, find_user_by_username
+
+    user_id: int | None = None
+    if isinstance(user_id_raw, (int, float)):
+        user_id = int(user_id_raw)
+    elif isinstance(user_id_raw, str) and user_id_raw.strip():
+        try:
+            user_id = int(user_id_raw.strip())
+        except ValueError as exc:
+            raise ValueError("user_id must be an integer") from exc
+
+    if user_id is not None:
+        user = find_user_by_id(user_id)
+        if user is None:
+            raise ValueError("user not found")
+        return {
+            "id": int(user.get("id", 0)),
+            "username": str(user.get("username", "")).strip(),
+        }
+
+    normalized_username = str(username or "").strip()
+    if not normalized_username:
+        raise ValueError("username is required")
+
+    user = find_user_by_username(normalized_username)
+    if user is None:
+        raise ValueError("user not found")
+    return {
+        "id": int(user.get("id", 0)),
+        "username": str(user.get("username", "")).strip(),
+    }
+
+
+def _resolve_owner_username(username: str = "", user_id_raw: object = None) -> str:
+    user = _resolve_user_identity(username=username, user_id_raw=user_id_raw)
+    return str(user["username"]).strip()
+
+
+def get_google_calendar_user_connection(
+    username: str = "", user_id_raw: object = None
+) -> dict[str, str | int]:
+    user = _resolve_user_identity(username=username, user_id_raw=user_id_raw)
+    user_id = int(user["id"])
+
+    from auth_db import get_connection
+
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            SELECT integration_connected,
+                   google_calendar_access_token,
+                   google_calendar_refresh_token,
+                   google_calendar_token_expires_at
+            FROM users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+    if row is None:
+        raise ValueError("user not found")
+
+    integration_connected = bool(row[0])
+    access_token = decrypt_google_calendar_token(str(row[1] or "").strip())
+    refresh_token = decrypt_google_calendar_token(str(row[2] or "").strip())
+    expires_at_iso = str(row[3] or "").strip()
+
+    if not integration_connected or not access_token or not refresh_token:
+        raise ValueError("user is not connected to Google Calendar")
+
+    return {
+        "user_id": user_id,
+        "username": str(user["username"]),
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_at": expires_at_iso,
+    }
+
+
+def ensure_valid_google_calendar_access_token(
+    user_id: int, connection: dict[str, str | int]
+) -> dict[str, str | int]:
+    expires_at = parse_iso_datetime(str(connection.get("expires_at", "")))
+    now = datetime.now(timezone.utc)
+
+    if expires_at is not None and (expires_at - now).total_seconds() > 120:
+        return connection
+
+    refreshed = refresh_google_calendar_tokens(str(connection["refresh_token"]))
+    access_token = str(refreshed.get("access_token", "")).strip()
+    expires_in = int(refreshed.get("expires_in", 3600) or 3600)
+    new_expiry = datetime.fromtimestamp(
+        now.timestamp() + max(expires_in, 60),
+        tz=timezone.utc,
+    ).isoformat()
+
+    if not access_token:
+        raise ValueError("invalid Google Calendar refresh response")
+
+    encrypted_access_token = encrypt_google_calendar_token(access_token)
+    tokens_encrypted = int(encrypted_access_token.startswith(ENCRYPTED_TOKEN_PREFIX))
+
+    from auth_db import get_connection
+
+    with get_connection() as conn:
+        conn.execute(
+            """
+            UPDATE users
+            SET google_calendar_access_token = ?,
+                google_calendar_token_expires_at = ?,
+                google_calendar_tokens_encrypted = ?
+            WHERE id = ?
+            """,
+            (
+                encrypted_access_token,
+                new_expiry,
+                tokens_encrypted,
+                int(user_id),
+            ),
+        )
+        conn.commit()
+
+    return {
+        "user_id": int(user_id),
+        "username": str(connection.get("username", "")).strip(),
+        "access_token": access_token,
+        "refresh_token": str(connection["refresh_token"]),
+        "expires_at": new_expiry,
+    }
+
+
 class AppHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -783,24 +1039,31 @@ class AppHandler(SimpleHTTPRequestHandler):
         path = parsed.path
         query = urllib.parse.parse_qs(parsed.query)
         username = str((query.get("username") or [""])[0]).strip()
+        user_id_raw = str((query.get("user_id") or [""])[0]).strip()
 
         if path == "/api/jobs":
-            if not username:
-                self._send_json(400, {"error": "username is required"})
+            try:
+                owner_username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+            except ValueError as exc:
+                self._send_json(400, {"error": str(exc)})
                 return
-            self._send_json(200, filter_owned_records(JOBS, username))
+            self._send_json(200, filter_owned_records(JOBS, owner_username))
             return
         if path == "/api/clients":
-            if not username:
-                self._send_json(400, {"error": "username is required"})
+            try:
+                owner_username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+            except ValueError as exc:
+                self._send_json(400, {"error": str(exc)})
                 return
-            self._send_json(200, {"clients": filter_owned_records(CLIENTS, username)})
+            self._send_json(200, {"clients": filter_owned_records(CLIENTS, owner_username)})
             return
         if path == "/api/employees":
-            if not username:
-                self._send_json(400, {"error": "username is required"})
+            try:
+                owner_username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+            except ValueError as exc:
+                self._send_json(400, {"error": str(exc)})
                 return
-            self._send_json(200, {"employees": filter_owned_records(EMPLOYEES, username)})
+            self._send_json(200, {"employees": filter_owned_records(EMPLOYEES, owner_username)})
             return
         if path == "/api/quickbooks/connect":
             self._handle_quickbooks_connect(parsed)
@@ -814,8 +1077,17 @@ class AppHandler(SimpleHTTPRequestHandler):
         if path == "/api/quickbooks/employees":
             self._handle_quickbooks_employees(parsed)
             return
+        if path == "/api/google-calendar/connect":
+            self._handle_google_calendar_connect(parsed)
+            return
+        if path == "/api/google-calendar/callback":
+            self._handle_google_calendar_callback(parsed)
+            return
+        if path == "/api/google-calendar/calendars":
+            self._handle_google_calendar_calendars(parsed)
+            return
         if path == "/api/users/connect-status":
-            self._handle_user_connect_status(username)
+            self._handle_user_connect_status(username, user_id_raw)
             return
         super().do_GET()
 
@@ -930,7 +1202,10 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _handle_quickbooks_connect(self, parsed: urllib.parse.ParseResult) -> None:
         query = urllib.parse.parse_qs(parsed.query)
         username = str((query.get("username") or [""])[0]).strip()
-        if not username:
+        user_id_raw = str((query.get("user_id") or [""])[0]).strip()
+        try:
+            owner_username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+        except ValueError:
             self._redirect_qb_error("missing-user")
             return
 
@@ -940,7 +1215,7 @@ class AppHandler(SimpleHTTPRequestHandler):
 
         prune_oauth_states()
         state = secrets.token_urlsafe(24)
-        OAUTH_STATES[state] = {"username": username, "created_at": time.time()}
+        OAUTH_STATES[state] = {"username": owner_username, "created_at": time.time()}
 
         settings = quickbooks_settings()
         auth_query = urllib.parse.urlencode(
@@ -956,7 +1231,9 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def _quickbooks_username_from_query(self, parsed: urllib.parse.ParseResult) -> str:
         query = urllib.parse.parse_qs(parsed.query)
-        return str((query.get("username") or [""])[0]).strip()
+        username = str((query.get("username") or [""])[0]).strip()
+        user_id_raw = str((query.get("user_id") or [""])[0]).strip()
+        return _resolve_owner_username(username=username, user_id_raw=user_id_raw)
 
     def _fetch_quickbooks_customers(self, username: str) -> list[dict]:
         connection = get_quickbooks_user_connection(username)
@@ -999,9 +1276,10 @@ class AppHandler(SimpleHTTPRequestHandler):
         ]
 
     def _handle_quickbooks_customers(self, parsed: urllib.parse.ParseResult) -> None:
-        username = self._quickbooks_username_from_query(parsed)
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        try:
+            username = self._quickbooks_username_from_query(parsed)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
 
         try:
@@ -1016,9 +1294,10 @@ class AppHandler(SimpleHTTPRequestHandler):
         self._send_json(200, {"ok": True, "customers": customers})
 
     def _handle_quickbooks_employees(self, parsed: urllib.parse.ParseResult) -> None:
-        username = self._quickbooks_username_from_query(parsed)
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        try:
+            username = self._quickbooks_username_from_query(parsed)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
 
         try:
@@ -1035,8 +1314,11 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _handle_quickbooks_clients_import(self) -> None:
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        user_id_raw = payload.get("user_id")
+        try:
+            username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
 
         try:
@@ -1110,8 +1392,11 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _handle_quickbooks_employees_import(self) -> None:
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        user_id_raw = payload.get("user_id")
+        try:
+            username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
 
         try:
@@ -1254,6 +1539,232 @@ class AppHandler(SimpleHTTPRequestHandler):
 
         self._redirect("/home.html#qb=connected")
 
+    def _handle_google_calendar_connect(self, parsed: urllib.parse.ParseResult) -> None:
+        query = urllib.parse.parse_qs(parsed.query)
+        username = str((query.get("username") or [""])[0]).strip()
+        user_id_raw = str((query.get("user_id") or [""])[0]).strip()
+
+        try:
+            user = _resolve_user_identity(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._redirect(
+                f"/home.html#gc=error&message=missing-user&detail={urllib.parse.quote(str(exc)[:300])}"
+            )
+            return
+
+        if not google_calendar_is_configured():
+            self._redirect("/home.html#gc=error&message=google-not-configured")
+            return
+
+        prune_oauth_states()
+        state = secrets.token_urlsafe(24)
+        OAUTH_STATES[state] = {
+            "username": str(user["username"]),
+            "user_id": int(user["id"]),
+            "created_at": time.time(),
+            "provider": "google",
+        }
+
+        settings = google_calendar_settings()
+        auth_query = urllib.parse.urlencode(
+            {
+                "client_id": settings["client_id"],
+                "response_type": "code",
+                "scope": GOOGLE_SCOPES,
+                "redirect_uri": settings["redirect_uri"],
+                "state": state,
+                "access_type": "offline",
+                "prompt": "consent",
+            }
+        )
+        self._redirect(f"{GOOGLE_AUTH_URL}?{auth_query}")
+
+    def _handle_google_calendar_callback(self, parsed: urllib.parse.ParseResult) -> None:
+        query = urllib.parse.parse_qs(parsed.query)
+        state = str((query.get("state") or [""])[0]).strip()
+        code = str((query.get("code") or [""])[0]).strip()
+        error = str((query.get("error") or [""])[0]).strip()
+
+        if error:
+            detail = str((query.get("error_description") or [""])[0]).strip()
+            self._redirect(
+                f"/home.html#gc=error&message=oauth-denied&detail={urllib.parse.quote(detail[:300] or error)}"
+            )
+            return
+
+        if not state or not code:
+            self._redirect("/home.html#gc=error&message=missing-oauth-params")
+            return
+
+        prune_oauth_states()
+        state_entry = OAUTH_STATES.pop(state, None)
+        if not state_entry:
+            self._redirect("/home.html#gc=error&message=invalid-oauth-state")
+            return
+        provider = str(state_entry.get("provider", "")).strip().lower()
+        if provider and provider != "google":
+            self._redirect("/home.html#gc=error&message=invalid-oauth-state")
+            return
+
+        username = str(state_entry.get("username", "")).strip()
+        user_id_raw = state_entry.get("user_id")
+        try:
+            user = _resolve_user_identity(username=username, user_id_raw=user_id_raw)
+        except ValueError:
+            self._redirect("/home.html#gc=error&message=missing-state-user")
+            return
+        user_id = int(user["id"])
+
+        try:
+            token_payload = exchange_google_calendar_code(code)
+        except ValueError as exc:
+            detail = str(exc).replace("Google Calendar ", "")[:300]
+            self._redirect(
+                f"/home.html#gc=error&message=token-exchange-failed&detail={urllib.parse.quote(detail)}"
+            )
+            return
+
+        access_token = str(token_payload.get("access_token", "")).strip()
+        refresh_token = str(token_payload.get("refresh_token", "")).strip()
+        expires_in = int(token_payload.get("expires_in", 3600) or 3600)
+        connected_at = datetime.now(timezone.utc)
+        expires_at = connected_at.timestamp() + max(expires_in, 60)
+        expires_at_iso = datetime.fromtimestamp(expires_at, tz=timezone.utc).isoformat()
+
+        if not access_token:
+            self._redirect("/home.html#gc=error&message=missing-access-token")
+            return
+
+        # refresh_token might be empty on subsequent auth attempts
+        if not refresh_token:
+            from auth_db import get_connection
+
+            with get_connection() as conn:
+                row = conn.execute(
+                    "SELECT google_calendar_refresh_token FROM users WHERE id = ?",
+                    (user_id,),
+                ).fetchone()
+                if row:
+                    refresh_token = decrypt_google_calendar_token(str(row[0] or "").strip())
+
+        encrypted_access_token = encrypt_google_calendar_token(access_token)
+        encrypted_refresh_token = (
+            encrypt_google_calendar_token(refresh_token) if refresh_token else ""
+        )
+        tokens_encrypted = int(
+            encrypted_access_token.startswith(ENCRYPTED_TOKEN_PREFIX)
+            and (
+                not encrypted_refresh_token
+                or encrypted_refresh_token.startswith(ENCRYPTED_TOKEN_PREFIX)
+            )
+        )
+
+        try:
+            from auth_db import get_connection
+
+            with get_connection() as conn:
+                result = conn.execute(
+                    """
+                    UPDATE users
+                    SET integration_provider = ?,
+                        integration_connected = 1,
+                        integration_connected_at = ?,
+                        google_calendar_access_token = ?,
+                        google_calendar_refresh_token = ?,
+                        google_calendar_token_expires_at = ?,
+                        google_calendar_tokens_encrypted = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        "google_calendar",
+                        connected_at.isoformat(),
+                        encrypted_access_token,
+                        encrypted_refresh_token,
+                        expires_at_iso,
+                        tokens_encrypted,
+                        user_id,
+                    ),
+                )
+                if result.rowcount == 0:
+                    self._redirect("/home.html#gc=error&message=user-not-found")
+                    return
+                conn.commit()
+        except Exception as exc:
+            self._redirect(
+                f"/home.html#gc=error&message=save-connection-failed&detail={urllib.parse.quote(str(exc)[:300])}"
+            )
+            return
+
+        self._redirect("/home.html#gc=connected")
+
+    def _handle_google_calendar_calendars(self, parsed: urllib.parse.ParseResult) -> None:
+        query = urllib.parse.parse_qs(parsed.query)
+        username = str((query.get("username") or [""])[0]).strip()
+        user_id_raw = str((query.get("user_id") or [""])[0]).strip()
+
+        if not username and not user_id_raw:
+            self._send_json(400, {"error": "username or user_id is required"})
+            return
+
+        try:
+            connection = get_google_calendar_user_connection(
+                username=username,
+                user_id_raw=user_id_raw,
+            )
+            connection = ensure_valid_google_calendar_access_token(
+                int(connection["user_id"]), connection
+            )
+            calendars = self._fetch_google_calendars(str(connection["access_token"]))
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
+        except Exception as exc:
+            self._send_json(500, {"error": str(exc)})
+            return
+
+        self._send_json(
+            200,
+            {
+                "ok": True,
+                "user_id": int(connection["user_id"]),
+                "username": str(connection.get("username", "")).strip(),
+                "calendars": calendars,
+            },
+        )
+
+    def _fetch_google_calendars(self, access_token: str) -> list[dict]:
+        url = f"{GOOGLE_CALENDAR_API_BASE_URL}/users/me/calendarList"
+        request = urllib.request.Request(
+            url,
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {access_token}",
+            },
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            calendars_raw = payload.get("items", [])
+            if not isinstance(calendars_raw, list):
+                return []
+            return [
+                {
+                    "id": str(item.get("id", "")).strip(),
+                    "summary": str(item.get("summary", "")).strip(),
+                    "description": str(item.get("description", "")).strip(),
+                    "primary": bool(item.get("primary", False)),
+                    "timezone": str(item.get("timeZone", "")).strip(),
+                }
+                for item in calendars_raw
+                if isinstance(item, dict)
+            ]
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="replace")
+            raise ValueError(f"Google Calendar API failed: {body}") from exc
+        except urllib.error.URLError as exc:
+            raise ValueError(f"Unable to reach Google Calendar: {exc.reason}") from exc
+
     def _handle_register(self) -> None:
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
@@ -1284,12 +1795,16 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         if verify_user(username, password):
+            from auth_db import find_user_by_username
+            user = find_user_by_username(username)
+            user_id = user["id"] if user else None
             self._send_json(
                 200,
                 {
                     "ok": True,
                     "message": "login successful",
                     "redirect": "/home.html",
+                    "user_id": user_id,
                 },
             )
             return
@@ -1345,9 +1860,12 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _handle_schedule_job(self) -> None:
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
+        user_id_raw = payload.get("user_id")
 
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        try:
+            username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
 
         try:
@@ -1390,9 +1908,12 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _handle_create_job(self) -> None:
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
+        user_id_raw = payload.get("user_id")
 
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        try:
+            username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
 
         selected_client = None
@@ -1478,9 +1999,12 @@ class AppHandler(SimpleHTTPRequestHandler):
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
         name = str(payload.get("name", "")).strip()
+        user_id_raw = payload.get("user_id")
 
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        try:
+            username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
         if not name:
             self._send_json(400, {"error": "name is required"})
@@ -1512,9 +2036,12 @@ class AppHandler(SimpleHTTPRequestHandler):
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
         name = str(payload.get("name", "")).strip()
+        user_id_raw = payload.get("user_id")
 
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        try:
+            username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
         if not name:
             self._send_json(400, {"error": "name is required"})
@@ -1556,9 +2083,12 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _handle_set_employee_status(self) -> None:
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
+        user_id_raw = payload.get("user_id")
 
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        try:
+            username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
 
         try:
@@ -1586,9 +2116,12 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _handle_delete_employee(self) -> None:
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
+        user_id_raw = payload.get("user_id")
 
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        try:
+            username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
 
         try:
@@ -1643,14 +2176,23 @@ class AppHandler(SimpleHTTPRequestHandler):
         save_clients()
         self._send_json(200, {"ok": True, "client": client})
 
-    def _handle_user_connect_status(self, username: str = "") -> None:
+    def _handle_user_connect_status(
+        self, username: str = "", user_id_raw: object = None
+    ) -> None:
         username = str(username or "").strip()
-        if not username:
+        if not username and user_id_raw is None:
             payload = self._read_json_body()
             username = str(payload.get("username", "")).strip()
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+            user_id_raw = payload.get("user_id")
+
+        try:
+            user = _resolve_user_identity(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
+
+        user_id = int(user["id"])
+        username = str(user["username"])
 
         try:
             from auth_db import get_connection
@@ -1668,9 +2210,9 @@ class AppHandler(SimpleHTTPRequestHandler):
                            quickbooks_last_sync_at,
                            quickbooks_tokens_encrypted
                     FROM users
-                    WHERE username = ?
+                    WHERE id = ?
                     """,
-                    (username,),
+                    (user_id,),
                 ).fetchone()
         except Exception as exc:
             self._send_json(500, {"error": str(exc)})
@@ -1697,6 +2239,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             {
                 "ok": True,
                 "user": {
+                    "id": user_id,
                     "username": row[0],
                     "integration_provider": str(row[1] or "").strip(),
                     "integration_connected": bool(row[2]),
@@ -1707,6 +2250,7 @@ class AppHandler(SimpleHTTPRequestHandler):
                     "quickbooks_last_sync_at": str(row[7] or "").strip(),
                     "quickbooks_tokens_encrypted": bool(row[8]),
                     "quickbooks_configured": quickbooks_is_configured(),
+                    "google_calendar_configured": google_calendar_is_configured(),
                 },
             },
         )
@@ -1714,10 +2258,16 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _handle_disconnect_user(self) -> None:
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
+        user_id_raw = payload.get("user_id")
 
-        if not username:
-            self._send_json(400, {"error": "username is required"})
+        try:
+            user = _resolve_user_identity(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
             return
+
+        user_id = int(user["id"])
+        username = str(user["username"])
 
         try:
             from auth_db import get_connection
@@ -1735,10 +2285,14 @@ class AppHandler(SimpleHTTPRequestHandler):
                         quickbooks_token_expires_at = NULL,
                         quickbooks_company_name = '',
                         quickbooks_last_sync_at = NULL,
-                        quickbooks_tokens_encrypted = 0
-                    WHERE username = ?
+                        quickbooks_tokens_encrypted = 0,
+                        google_calendar_access_token = '',
+                        google_calendar_refresh_token = '',
+                        google_calendar_token_expires_at = NULL,
+                        google_calendar_tokens_encrypted = 0
+                    WHERE id = ?
                     """,
-                    (username,),
+                    (user_id,),
                 )
                 if result.rowcount == 0:
                     self._send_json(404, {"error": "user not found"})
@@ -1753,6 +2307,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             {
                 "ok": True,
                 "user": {
+                    "id": user_id,
                     "username": username,
                     "integration_provider": "",
                     "integration_connected": False,

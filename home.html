@@ -104,6 +104,7 @@
           <span id="user-name" class="font-bold text-white">User</span>
         </div>
         <span id="quickbooks-status-badge" class="hidden rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-300">QB: Not Connected</span>
+        <span id="google-calendar-status-badge" class="hidden rounded-full border border-blue-500/40 bg-blue-500/15 px-3 py-1 text-xs font-semibold text-blue-300">GC: Not Connected</span>
         <button id="admin-btn" class="rounded-lg border border-blue-500/40 bg-blue-500/15 px-4 py-2 text-xs font-bold text-blue-300 transition hover:bg-blue-500/25" style="display: none;"><i class="fa-solid fa-shield-halved mr-1"></i>Admin</button>
         <button id="logout-btn" class="rounded-lg bg-brand-action px-4 py-2 text-xs font-bold text-white transition hover:bg-orange-500"><i class="fa-solid fa-right-from-bracket mr-1"></i>Log Out</button>
       </div>
@@ -130,6 +131,9 @@
           </button>
           <button id="connect-client-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
             <i class="fa-solid fa-link"></i>Connect QB
+          </button>
+          <button id="google-calendar-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20">
+            <i class="fa-brands fa-google"></i>Google Calendar
           </button>
           <button id="add-appointment-btn" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-action px-4 py-2 text-xs font-bold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-500">
             <i class="fa-solid fa-plus"></i>Add Appointment
@@ -218,7 +222,7 @@
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-black text-white">Appointment Details</h2>
-          <p id="job-detail-subtitle" class="mt-1 text-sm text-slate-600"></p>
+          <p id="job-detail-subtitle" class="mt-1 text-sm text-slate-300"></p>
         </div>
         <button id="close-job-detail-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
@@ -274,38 +278,38 @@
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-black text-white">Client Database</h2>
-          <p class="mt-1 text-sm text-slate-600">Save client details once, then reuse them for appointments.</p>
+          <p class="mt-1 text-sm text-slate-300">Save client details once, then reuse them for appointments.</p>
         </div>
         <button id="close-clients-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
 
       <form id="client-form" class="mb-5 grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-2">
-        <input id="client-name" required class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Client name">
-        <input id="client-phone" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Phone number">
-        <input id="client-email" type="email" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Email address">
-        <input id="client-address-line1" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Address line 1">
-        <input id="client-address-line2" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Address line 2">
-        <input id="client-city" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="City">
-        <input id="client-state" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="State">
-        <input id="client-postal-code" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Postal code">
-        <textarea id="client-notes" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500 sm:col-span-2" rows="2" placeholder="Client notes"></textarea>
+        <input id="client-name" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Client name">
+        <input id="client-phone" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Phone number">
+        <input id="client-email" type="email" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Email address">
+        <input id="client-address-line1" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Address line 1">
+        <input id="client-address-line2" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Address line 2">
+        <input id="client-city" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="City">
+        <input id="client-state" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="State">
+        <input id="client-postal-code" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Postal code">
+        <textarea id="client-notes" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500 sm:col-span-2" rows="2" placeholder="Client notes"></textarea>
         <div class="sm:col-span-2">
           <button id="save-client-btn" type="submit" class="rounded-lg rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">Save Client</button>
         </div>
       </form>
 
-      <div class="overflow-x-auto rounded-xl border border-slate-200">
+      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table class="w-full text-sm">
-          <thead class="border-b border-white/10 bg-white/5">
+          <thead class="border-b border-slate-200 bg-slate-100">
             <tr>
-              <th class="px-3 py-2 text-left font-semibold text-slate-300">Name</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-300">Phone</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-300">Email</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-300">Address</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Name</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Phone</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Email</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Address</th>
             </tr>
           </thead>
           <tbody id="clients-table-body">
-            <tr><td colspan="4" class="px-3 py-3 text-center text-slate-500">No clients yet.</td></tr>
+            <tr><td colspan="4" class="px-3 py-3 text-center text-slate-700">No clients yet.</td></tr>
           </tbody>
         </table>
       </div>
@@ -318,28 +322,28 @@
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-black text-white">Employee Database</h2>
-          <p class="mt-1 text-sm text-slate-600">Add, deactivate, or remove employees used for dispatch assignments.</p>
+          <p class="mt-1 text-sm text-slate-300">Add, deactivate, or remove employees used for dispatch assignments.</p>
         </div>
         <button id="close-employees-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
 
       <form id="employee-form" class="mb-5 grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-[1fr_auto]">
-        <input id="employee-name" required class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Employee name">
+        <input id="employee-name" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Employee name">
         <button id="save-employee-btn" type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">Add Employee</button>
       </form>
 
-      <div class="overflow-x-auto rounded-xl border border-slate-200">
+      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table class="w-full text-sm">
-          <thead class="border-b border-white/10 bg-white/5">
+          <thead class="border-b border-slate-200 bg-slate-100">
             <tr>
-              <th class="px-3 py-2 text-left font-semibold text-slate-300">Name</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-300">Source</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-300">Status</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-300">Actions</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Name</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Source</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Status</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Actions</th>
             </tr>
           </thead>
           <tbody id="employees-table-body">
-            <tr><td colspan="4" class="px-3 py-3 text-center text-slate-500">No employees yet.</td></tr>
+            <tr><td colspan="4" class="px-3 py-3 text-center text-slate-700">No employees yet.</td></tr>
           </tbody>
         </table>
       </div>
@@ -352,7 +356,7 @@
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-black text-white">Create Appointment</h2>
-          <p class="mt-1 text-sm text-slate-600">Choose a saved client and create a new appointment.</p>
+          <p class="mt-1 text-sm text-slate-300">Choose a saved client and create a new appointment.</p>
         </div>
         <button id="close-appointment-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
@@ -360,13 +364,13 @@
       <form id="appointment-form" class="grid gap-3 sm:grid-cols-2">
         <div class="sm:col-span-2">
           <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Client</label>
-          <select id="appointment-client-id" required class="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white">
+          <select id="appointment-client-id" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black">
             <option value="">Select a client</option>
           </select>
         </div>
         <input id="appointment-service" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:col-span-2" placeholder="Service type">
-        <input id="appointment-duration" required type="number" min="1" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Duration minutes" value="60">
-        <textarea id="appointment-notes" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500 sm:col-span-2" rows="2" placeholder="Appointment notes (optional)"></textarea>
+        <input id="appointment-duration" required type="number" min="1" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Duration minutes" value="60">
+        <textarea id="appointment-notes" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500 sm:col-span-2" rows="2" placeholder="Appointment notes (optional)"></textarea>
 
         <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-slate-300 sm:col-span-2">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Client Preview</p>
@@ -385,32 +389,34 @@
     <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-black text-white">Connect QuickBooks</h2>
-          <p class="mt-1 text-sm text-slate-600">Connect your business QuickBooks account to this scheduling software.</p>
+          <h2 class="text-2xl font-black text-white">Connect Integrations</h2>
+          <p class="mt-1 text-sm text-slate-300">Connect QuickBooks or Google Calendar to your scheduling workspace.</p>
         </div>
         <button id="close-connect-client-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
 
       <form id="connect-client-form" class="grid gap-3">
         <div>
-          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Account</label>
-          <input id="connect-username" class="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="App username">
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">Account</label>
+          <input id="connect-username" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="App username">
         </div>
 
         <div>
-          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Integration</label>
-          <select id="connect-provider" required class="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white">
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">Integration</label>
+          <select id="connect-provider" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black">
             <option value="quickbooks">QuickBooks</option>
+          <option value="google_calendar">Google Calendar</option>
           </select>
         </div>
 
         <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Integration Status</p>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-300">Integration Status</p>
           <p id="connect-client-preview" class="mt-1 whitespace-pre-line">Loading connection status...</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
           <button id="connect-client-submit" type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">Connect</button>
+          <button id="connect-google-calendar-btn" type="button" class="rounded-lg border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100">Connect Google Calendar</button>
           <button id="sync-quickbooks-btn" type="button" class="rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">Sync Now</button>
           <button id="disconnect-client-btn" type="button" class="rounded-lg border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">Disconnect</button>
         </div>
@@ -424,26 +430,26 @@
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-black text-white">System Administration</h2>
-          <p class="mt-1 text-sm text-slate-600">Manage users and their roles</p>
+          <p class="mt-1 text-sm text-slate-300">Manage users and their roles</p>
         </div>
         <button id="close-admin-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
       
-      <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-        <h3 class="mb-4 text-lg font-bold text-white">User Management</h3>
+      <div class="rounded-xl border border-slate-200 bg-white p-4">
+        <h3 class="mb-4 text-lg font-bold text-slate-900">User Management</h3>
         <div id="users-table-container" class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead>
+            <thead class="bg-slate-100">
               <tr class="border-b border-slate-300">
-                <th class="px-4 py-3 text-left font-semibold text-slate-300">Username</th>
-                <th class="px-4 py-3 text-left font-semibold text-slate-300">Role</th>
-                <th class="px-4 py-3 text-left font-semibold text-slate-300">Created</th>
-                <th class="px-4 py-3 text-left font-semibold text-slate-300">Actions</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-800">Username</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-800">Role</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-800">Created</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-800">Actions</th>
               </tr>
             </thead>
             <tbody id="users-table-body">
               <tr>
-                <td colspan="3" class="px-4 py-3 text-center text-slate-500">Loading users...</td>
+                <td colspan="3" class="px-4 py-3 text-center text-slate-700">Loading users...</td>
               </tr>
             </tbody>
           </table>
@@ -467,6 +473,7 @@
     const clientsBtn = document.getElementById("clients-btn");
     const addEmployeeBtn = document.getElementById("add-employee-btn");
     const connectClientBtn = document.getElementById("connect-client-btn");
+    const googleCalendarBtn = document.getElementById("google-calendar-btn");
     const addAppointmentBtn = document.getElementById("add-appointment-btn");
     const jobTemplate = document.getElementById("job-card-template");
     const jobDetailModal = document.getElementById("job-detail-modal");
@@ -498,6 +505,7 @@
     const connectProviderEl = document.getElementById("connect-provider");
     const connectClientPreviewEl = document.getElementById("connect-client-preview");
     const connectClientSubmitBtn = document.getElementById("connect-client-submit");
+    const connectGoogleCalendarBtn = document.getElementById("connect-google-calendar-btn");
     const syncQuickBooksBtn = document.getElementById("sync-quickbooks-btn");
     const disconnectClientBtn = document.getElementById("disconnect-client-btn");
     const quickbooksStatusBadgeEl = document.getElementById("quickbooks-status-badge");
@@ -507,6 +515,7 @@
     let clientsCache = [];
     let employeesCache = [];
     let authenticatedUser = "";
+    let authenticatedUserId = null;
     let userIntegration = null;
     let connectUsernameMissing = false;
 
@@ -594,7 +603,7 @@
       customer.textContent = job.customer_name;
       customer.className = `job-customer truncate text-sm font-bold ${style.text}`;
       type.textContent = job.service_type;
-      type.className = "job-type mt-1 text-xs text-slate-600";
+      type.className = "job-type mt-1 text-xs text-slate-300";
 
       if (job.emergency) {
       icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500/20 text-red-400" title="Emergency"><i class="fa-solid fa-bolt"></i></span>';
@@ -738,11 +747,13 @@
 
     async function persistJobSchedule(jobId, status, time, assignedTech, manualBlockMinutes) {
       const username = String(authenticatedUser || "").trim();
+      const user_id = authenticatedUserId || null;
       const response = await fetch("/api/jobs/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username,
+          user_id,
           id: Number(jobId),
           status,
           time,
@@ -760,10 +771,11 @@
 
     async function createAppointment(payload) {
       const username = String(authenticatedUser || "").trim();
+      const user_id = authenticatedUserId || null;
       const response = await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, username })
+        body: JSON.stringify({ ...payload, username, user_id })
       });
 
       if (!response.ok) {
@@ -774,7 +786,12 @@
     }
 
     async function fetchClients() {
-      const query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+      let query;
+      if (authenticatedUserId) {
+        query = new URLSearchParams({ user_id: authenticatedUserId });
+      } else {
+        query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+      }
       const response = await fetch(`/api/clients?${query.toString()}`);
       if (!response.ok) {
         throw new Error("Failed to load clients.");
@@ -785,10 +802,11 @@
 
     async function createClient(payload) {
       const username = String(authenticatedUser || "").trim();
+      const user_id = authenticatedUserId || null;
       const response = await fetch("/api/clients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, username })
+        body: JSON.stringify({ ...payload, username, user_id })
       });
 
       if (!response.ok) {
@@ -799,7 +817,12 @@
     }
 
     async function fetchEmployees() {
-      const query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+      let query;
+      if (authenticatedUserId) {
+        query = new URLSearchParams({ user_id: authenticatedUserId });
+      } else {
+        query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+      }
       const response = await fetch(`/api/employees?${query.toString()}`);
       if (!response.ok) {
         throw new Error("Failed to load employees.");
@@ -809,11 +832,12 @@
     }
 
     async function createEmployee(payload) {
+        const user_id = authenticatedUserId || null;
       const username = String(authenticatedUser || "").trim();
       const response = await fetch("/api/employees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, username })
+        body: JSON.stringify({ ...payload, username, user_id })
       });
 
       if (!response.ok) {
@@ -824,11 +848,12 @@
     }
 
     async function setEmployeeStatus(employeeId, active) {
+        const user_id = authenticatedUserId || null;
       const username = String(authenticatedUser || "").trim();
       const response = await fetch("/api/employees/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, employee_id: Number(employeeId), active })
+        body: JSON.stringify({ username, user_id, employee_id: Number(employeeId), active })
       });
 
       if (!response.ok) {
@@ -839,11 +864,12 @@
     }
 
     async function deleteEmployee(employeeId) {
+        const user_id = authenticatedUserId || null;
       const username = String(authenticatedUser || "").trim();
       const response = await fetch("/api/employees/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, employee_id: Number(employeeId) })
+        body: JSON.stringify({ username, user_id, employee_id: Number(employeeId) })
       });
 
       if (!response.ok) {
@@ -853,11 +879,11 @@
       return response.json();
     }
 
-    async function importQuickBooksEmployees(username) {
+    async function importQuickBooksEmployees(username, user_id) {
       const response = await fetch("/api/quickbooks/employees/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ username, user_id })
       });
 
       if (!response.ok) {
@@ -869,11 +895,11 @@
       return Array.isArray(payload.employees) ? payload.employees : [];
     }
 
-    async function importQuickBooksClients(username) {
+    async function importQuickBooksClients(username, user_id) {
       const response = await fetch("/api/quickbooks/clients/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ username, user_id })
       });
 
       if (!response.ok) {
@@ -885,7 +911,13 @@
     }
 
     async function fetchUserConnectStatus(username) {
-      const query = new URLSearchParams({ username: String(username || "").trim() });
+      // Use user_id if available, otherwise use username
+      let query;
+      if (authenticatedUserId && username === authenticatedUser) {
+        query = new URLSearchParams({ user_id: authenticatedUserId });
+      } else {
+        query = new URLSearchParams({ username: String(username || "").trim() });
+      }
       const response = await fetch(`/api/users/connect-status?${query.toString()}`);
 
       if (!response.ok) {
@@ -923,8 +955,25 @@
     }
 
     function startQuickBooksAuth(username) {
-      const query = new URLSearchParams({ username });
-      window.location.href = `/api/quickbooks/connect?${query.toString()}`;
+      // Use user_id if available, otherwise fallback to username
+      if (authenticatedUserId) {
+        const query = new URLSearchParams({ user_id: authenticatedUserId });
+        window.location.href = `/api/quickbooks/connect?${query.toString()}`;
+      } else {
+        const query = new URLSearchParams({ username });
+        window.location.href = `/api/quickbooks/connect?${query.toString()}`;
+      }
+    }
+
+    function startGoogleCalendarAuth(username) {
+      // Use user_id if available, otherwise fallback to username
+      if (authenticatedUserId) {
+        const query = new URLSearchParams({ user_id: authenticatedUserId });
+        window.location.href = `/api/google-calendar/connect?${query.toString()}`;
+      } else {
+        const query = new URLSearchParams({ username });
+        window.location.href = `/api/google-calendar/connect?${query.toString()}`;
+      }
     }
 
     function selectedConnectUsername() {
@@ -962,6 +1011,43 @@
 
       quickbooksStatusBadgeEl.textContent = "QuickBooks: Not Connected";
       quickbooksStatusBadgeEl.className = "rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800";
+    }
+
+    function renderGoogleCalendarBadge() {
+      const googleCalendarStatusBadgeEl = document.getElementById("google-calendar-status-badge");
+      if (!googleCalendarStatusBadgeEl) return;
+
+      const isConnected = Boolean(
+        userIntegration?.integration_connected
+        && userIntegration?.integration_provider === "google_calendar"
+      );
+      if (isConnected) {
+        googleCalendarStatusBadgeEl.textContent = "GC: Connected";
+        googleCalendarStatusBadgeEl.classList.remove(
+          "hidden",
+          "border-blue-500/40",
+          "bg-blue-500/15",
+          "text-blue-300"
+        );
+        googleCalendarStatusBadgeEl.classList.add(
+          "border-emerald-500/40",
+          "bg-emerald-500/15",
+          "text-emerald-300"
+        );
+      } else {
+        googleCalendarStatusBadgeEl.textContent = "GC: Not Connected";
+        googleCalendarStatusBadgeEl.classList.remove(
+          "border-emerald-500/40",
+          "bg-emerald-500/15",
+          "text-emerald-300"
+        );
+        googleCalendarStatusBadgeEl.classList.add(
+          "hidden",
+          "border-blue-500/40",
+          "bg-blue-500/15",
+          "text-blue-300"
+        );
+      }
     }
 
     function clientAddressText(client) {
@@ -1074,6 +1160,35 @@
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
+    function showGoogleCalendarAuthResult() {
+      const hash = window.location.hash.startsWith("#")
+        ? window.location.hash.slice(1)
+        : window.location.hash;
+      if (!hash) return;
+
+      const params = new URLSearchParams(hash);
+      const gcStatus = String(params.get("gc") || "").trim();
+      if (!gcStatus) return;
+
+      const message = String(params.get("message") || "").trim();
+      const detail = String(params.get("detail") || "").trim();
+      if (gcStatus === "connected") {
+        alert("Google Calendar connected successfully.");
+      } else {
+        const pretty = message
+          .replace(/[-_]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        const title = pretty
+          ? pretty.charAt(0).toUpperCase() + pretty.slice(1)
+          : "Google Calendar connection failed";
+        const suffix = detail ? `\n\nDetails: ${detail}` : "";
+        alert(`${title}.${suffix}`);
+      }
+
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     function resetConnectClientForm() {
       connectClientForm?.reset();
       if (connectProviderEl) {
@@ -1089,9 +1204,11 @@
       if (!authenticatedUser) {
         userIntegration = null;
         renderQuickBooksBadge();
+          renderGoogleCalendarBadge();
         return;
       }
       userIntegration = await fetchUserConnectStatus(authenticatedUser);
+        renderGoogleCalendarBadge();
       renderQuickBooksBadge();
     }
 
@@ -1111,6 +1228,7 @@
       const targetUsername = selectedConnectUsername();
       if (!targetUsername) {
         connectUsernameMissing = false;
+          renderGoogleCalendarBadge();
         userIntegration = null;
         renderQuickBooksBadge();
         renderConnectClientPreview();
@@ -1129,6 +1247,7 @@
 
       userIntegration = await fetchUserConnectStatus(targetUsername);
       if (targetUsername === authenticatedUser) {
+          renderGoogleCalendarBadge();
         renderQuickBooksBadge();
       }
       renderConnectClientPreview();
@@ -1185,7 +1304,7 @@
 
       if (importFromQuickBooks && authenticatedUser && userIntegration?.integration_connected) {
         try {
-          employeesCache = await importQuickBooksEmployees(authenticatedUser);
+          employeesCache = await importQuickBooksEmployees(authenticatedUser, authenticatedUserId);
         } catch (error) {
           console.warn("QuickBooks employee import skipped:", error);
         }
@@ -1338,6 +1457,19 @@
         }
       });
 
+      googleCalendarBtn?.addEventListener("click", async () => {
+        try {
+          const targetUsername = String(authenticatedUser || "").trim();
+          if (!targetUsername) {
+            alert("Please log in first.");
+            return;
+          }
+          startGoogleCalendarAuth(targetUsername);
+        } catch (error) {
+          alert(error.message || "Unable to start Google Calendar connection.");
+        }
+      });
+
       closeClientsModalBtn?.addEventListener("click", () => {
         clientsModal?.classList.add("hidden");
       });
@@ -1400,8 +1532,8 @@
           alert("Username is required.");
           return;
         }
-        if (provider !== "quickbooks") {
-          alert("Only QuickBooks is supported.");
+        if (provider !== "quickbooks" && provider !== "google_calendar") {
+          alert("Only QuickBooks and Google Calendar are supported.");
           return;
         }
 
@@ -1409,11 +1541,16 @@
         if (!exists) {
           connectUsernameMissing = true;
           renderConnectClientPreview();
-          alert("That username does not exist in this app yet. Create the user first, then connect QuickBooks.");
+          const providerName = provider === "google_calendar" ? "Google Calendar" : "QuickBooks";
+          alert(`That username does not exist in this app yet. Create the user first, then connect ${providerName}.`);
           return;
         }
 
-        startQuickBooksAuth(targetUsername);
+        if (provider === "google_calendar") {
+          startGoogleCalendarAuth(targetUsername);
+        } else {
+          startQuickBooksAuth(targetUsername);
+        }
       });
 
       connectUsernameEl?.addEventListener("change", async () => {
@@ -1422,6 +1559,24 @@
         } catch (error) {
           alert(error.message || "Unable to load integration status.");
         }
+      });
+
+      connectGoogleCalendarBtn?.addEventListener("click", async () => {
+        const targetUsername = selectedConnectUsername();
+        if (!targetUsername) {
+          alert("Username is required.");
+          return;
+        }
+
+        const exists = await appUsernameExists(targetUsername);
+        if (!exists) {
+          connectUsernameMissing = true;
+          renderConnectClientPreview();
+          alert("That username does not exist in this app yet. Create the user first, then connect Google Calendar.");
+          return;
+        }
+
+        startGoogleCalendarAuth(targetUsername);
       });
 
       disconnectClientBtn?.addEventListener("click", async () => {
@@ -1434,7 +1589,8 @@
         if (disconnectClientBtn) disconnectClientBtn.disabled = true;
         if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = true;
         try {
-          await disconnectUser({ username: targetUsername });
+          const user_id = targetUsername === authenticatedUser ? authenticatedUserId : null;
+          await disconnectUser({ username: targetUsername, user_id });
           await refreshConnectModalStatus();
           renderConnectClientPreview();
         } catch (error) {
@@ -1460,7 +1616,8 @@
 
         if (syncQuickBooksBtn) syncQuickBooksBtn.disabled = true;
         try {
-          await importQuickBooksClients(targetUsername);
+          const user_id = targetUsername === authenticatedUser ? authenticatedUserId : null;
+          await importQuickBooksClients(targetUsername, user_id);
           await refreshEmployeesData({ importFromQuickBooks: targetUsername === authenticatedUser });
           await refreshConnectModalStatus();
           renderConnectClientPreview();
@@ -1684,7 +1841,12 @@
 
     async function loadJobs() {
       try {
-        const query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+        let query;
+        if (authenticatedUserId) {
+          query = new URLSearchParams({ user_id: authenticatedUserId });
+        } else {
+          query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+        }
         const response = await fetch(`/api/jobs?${query.toString()}`);
         if (!response.ok) {
           throw new Error("Unable to load jobs.");
@@ -1710,7 +1872,12 @@
       window.location.href = "/index.html#login";
     } else {
       authenticatedUser = user;
+      const userId = localStorage.getItem("fieldops_auth_user_id");
+      if (userId) {
+        authenticatedUserId = Number(userId);
+      }
       showQuickBooksAuthResult();
+        showGoogleCalendarAuthResult();
       const userNameEl = document.getElementById("user-name");
       if (userNameEl) {
         userNameEl.textContent = user;
@@ -1727,6 +1894,7 @@
         try {
           await refreshUserIntegrationStatus();
         } catch {
+                    renderGoogleCalendarBadge();
           renderQuickBooksBadge();
         }
 

@@ -66,6 +66,14 @@ def init_db() -> None:
             conn.execute("ALTER TABLE users ADD COLUMN quickbooks_last_sync_at DATETIME")
         if "quickbooks_tokens_encrypted" not in columns:
             conn.execute("ALTER TABLE users ADD COLUMN quickbooks_tokens_encrypted INTEGER DEFAULT 0")
+        if "google_calendar_access_token" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN google_calendar_access_token TEXT DEFAULT ''")
+        if "google_calendar_refresh_token" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN google_calendar_refresh_token TEXT DEFAULT ''")
+        if "google_calendar_token_expires_at" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN google_calendar_token_expires_at DATETIME")
+        if "google_calendar_tokens_encrypted" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN google_calendar_tokens_encrypted INTEGER DEFAULT 0")
         conn.commit()
 
 
@@ -148,6 +156,31 @@ def verify_user(username: str, password: str) -> bool:
     if row is None:
         return False
     return verify_password(password, row[0])
+
+
+def find_user_by_username(username: str) -> dict | None:
+    normalized = str(username or "").strip()
+    if not normalized:
+        return None
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT id, username FROM users WHERE username = ?",
+            (normalized,),
+        ).fetchone()
+    if row is None:
+        return None
+    return {"id": int(row[0]), "username": str(row[1] or "").strip()}
+
+
+def find_user_by_id(user_id: int) -> dict | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT id, username FROM users WHERE id = ?",
+            (int(user_id),),
+        ).fetchone()
+    if row is None:
+        return None
+    return {"id": int(row[0]), "username": str(row[1] or "").strip()}
 
 
 def print_usage() -> None:

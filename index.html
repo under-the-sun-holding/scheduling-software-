@@ -462,6 +462,9 @@
         loginStatus.textContent = data.message || "Login successful.";
         loginStatus.className = "text-sm font-medium text-emerald-600";
         localStorage.setItem("fieldops_auth_user", username);
+        if (data.user_id) {
+          localStorage.setItem("fieldops_auth_user_id", data.user_id);
+        }
         window.location.href = data.redirect || "/home.html";
       } catch (error) {
         loginStatus.textContent = error.message;
