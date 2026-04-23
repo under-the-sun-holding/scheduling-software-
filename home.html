@@ -82,6 +82,37 @@
     <div class="absolute bottom-0 left-1/3 h-[300px] w-[600px] rounded-full bg-cyan-900/15 blur-[80px]"></div>
   </div>
 
+    @media (max-width: 768px) {
+      button, input, select, textarea {
+        min-height: 44px;
+        font-size: 16px;
+      }
+
+      .glass-card {
+        padding: 1rem;
+      }
+
+      main {
+        padding-top: 5.5rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 0.75rem 1rem !important;
+      }
+
+      .text-2xl {
+        font-size: 1.25rem;
+      }
+    }
+
+    @supports (padding: max(0px)) {
+      body {
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+      }
+    }
   <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10" style="background: rgba(10,15,30,0.85); backdrop-filter: blur(24px);">
     <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-3.5 lg:px-6">
       <div class="flex items-center gap-3">
@@ -128,16 +159,16 @@
             <input id="board-date" type="date" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-black">
             <button id="board-date-today" type="button" class="rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/20">Today</button>
           </div>
-          <button id="clients-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-300 transition hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-blue-300">
+          <button id="clients-btn" class="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-300 transition hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-blue-300">
             <i class="fa-solid fa-address-book"></i>Clients
           </button>
-          <button id="add-employee-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-2 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/20">
+          <button id="add-employee-btn" class="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-2 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/20">
             <i class="fa-solid fa-user-plus"></i>Employees
           </button>
-          <button id="connections-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
+          <button id="connections-btn" class="hidden lg:inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
             <i class="fa-solid fa-plug-circle-bolt"></i>Connections
           </button>
-          <a href="/employee_schedule.html" class="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20">
+          <a href="/employee_schedule.html" class="hidden lg:inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20">
             <i class="fa-solid fa-calendar-days"></i>Employee View
           </a>
           <button id="add-appointment-btn" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-action px-4 py-2 text-xs font-bold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-500">
@@ -163,7 +194,7 @@
           </span>
           <div>
             <p class="text-xs font-semibold uppercase tracking-wide text-blue-400">On-Time Arrival</p>
-            <p class="mt-0.5 text-2xl font-black text-white">96.4<span class="text-sm font-bold text-blue-300">%</span></p>
+            <p class="mt-0.5 text-lg sm:text-2xl font-black text-white">96.4<span class="text-xs sm:text-sm font-bold text-blue-300">%</span></p>
           </div>
         </article>
         <article class="stat-glow-green flex items-center gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4">
@@ -230,7 +261,7 @@
 
   <!-- Job Details Modal -->
   <div id="job-detail-modal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
+    <div class="max-h-[85vh] w-[95vw] md:w-full max-w-xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-4 md:p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-black text-white">Appointment Details</h2>
@@ -286,7 +317,7 @@
 
   <!-- Clients Modal -->
   <div id="clients-modal" class="hidden fixed inset-0 z-[96] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
+    <div class="max-h-[85vh] w-[95vw] md:w-full max-w-4xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-4 md:p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-black text-white">Client Database</h2>
@@ -330,7 +361,7 @@
 
   <!-- Employees Modal -->
   <div id="employees-modal" class="hidden fixed inset-0 z-[96] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
+    <div class="max-h-[85vh] w-[95vw] md:w-full max-w-4xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-4 md:p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-black text-white">Employee Database</h2>

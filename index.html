@@ -60,6 +60,37 @@
       inset: 0;
       background: linear-gradient(120deg, rgba(34, 211, 238, 0.22), transparent 42%, rgba(245, 158, 11, 0.16));
       pointer-events: none;
+
+        @media (max-width: 768px) {
+          button, input, select, textarea {
+            min-height: 44px;
+            font-size: 16px;
+          }
+
+          .panel {
+            padding: 1.75rem;
+          }
+        }
+
+        @media (max-width: 640px) {
+          main {
+            min-height: auto;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+
+          h1 {
+            font-size: 1.875rem;
+          }
+        }
+
+        @supports (padding: max(0px)) {
+          body {
+            padding-left: max(12px, env(safe-area-inset-left));
+            padding-right: max(12px, env(safe-area-inset-right));
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+          }
+        }
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">

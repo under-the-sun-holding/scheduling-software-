@@ -20,6 +20,25 @@
       background: rgba(8, 25, 44, 0.74);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(148, 163, 184, 0.22);
+
+        @media (max-width: 640px) {
+          button, input, select, textarea {
+            min-height: 44px;
+            font-size: 16px;
+          }
+
+          main {
+            padding: 1rem 0 2rem 0;
+          }
+        }
+
+        @supports (padding: max(0px)) {
+          body {
+            padding-left: max(12px, env(safe-area-inset-left));
+            padding-right: max(12px, env(safe-area-inset-right));
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+          }
+        }
     }
   </style>
 </head>
@@ -30,9 +49,9 @@
         <div>
           <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">FieldOps Client Portal</p>
           <h1 class="mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl">Track Your Technician Live</h1>
-          <p class="mt-2 text-sm text-slate-300">See your appointment status, latest technician location, and message the team.</p>
+          <p class="mt-2 text-xs sm:text-sm text-slate-300">Status, location & messaging</p>
         </div>
-        <button id="logout-btn" type="button" class="rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white transition hover:bg-orange-400">Log Out</button>
+        <button id="logout-btn" type="button" class="rounded-lg bg-orange-500 px-3 py-2.5 sm:px-4 sm:py-2 text-xs font-bold text-white transition hover:bg-orange-400 active:bg-orange-600 whitespace-nowrap touch-none">Log Out</button>
       </div>
 
       <div class="mt-4 grid gap-3 sm:grid-cols-3">
@@ -74,7 +93,7 @@
           class="h-[280px] w-full"
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
-          src="https://www.openstreetmap.org/export/embed.html?bbox=-122.52%2C37.70%2C-122.36%2C37.82&layer=mapnik&marker=37.76%2C-122.44"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=-122.52%2C37.70%2C-122.36%2C37.82&layer=mapnik&marker=37.76%2C-122.44" style="min-height: 300px; height: auto;"
         ></iframe>
       </div>
     </section>
