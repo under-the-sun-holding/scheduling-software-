@@ -137,6 +137,9 @@
           <button id="connections-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
             <i class="fa-solid fa-plug-circle-bolt"></i>Connections
           </button>
+          <a href="/employee_schedule.html" class="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20">
+            <i class="fa-solid fa-calendar-days"></i>Employee View
+          </a>
           <button id="add-appointment-btn" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-action px-4 py-2 text-xs font-bold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-500">
             <i class="fa-solid fa-plus"></i>Add Appointment
           </button>
@@ -535,6 +538,7 @@
     let employeesCache = [];
     let authenticatedUser = "";
     let authenticatedUserId = null;
+    let authenticatedRole = "Employee";
     let userIntegration = null;
     let connectUsernameMissing = false;
     let activeBoardDate = "";
@@ -2069,6 +2073,12 @@
     } else {
       setBoardDate(todayIsoDate());
       authenticatedUser = user;
+      authenticatedRole = String(localStorage.getItem("fieldops_auth_role") || "Employee").trim() || "Employee";
+      if (authenticatedRole === "Client") {
+        window.location.href = "/client_portal.html";
+      } else if (authenticatedRole === "Employee") {
+        window.location.href = "/employee_schedule.html";
+      }
       const userId = localStorage.getItem("fieldops_auth_user_id");
       if (userId) {
         authenticatedUserId = Number(userId);
@@ -2113,6 +2123,8 @@
 
     document.getElementById("logout-btn")?.addEventListener("click", () => {
       localStorage.removeItem("fieldops_auth_user");
+      localStorage.removeItem("fieldops_auth_user_id");
+      localStorage.removeItem("fieldops_auth_role");
       window.location.href = "/index.html#login";
     });
 
@@ -2124,7 +2136,14 @@
     // Check if user is admin by fetching users list
     async function checkAdminStatus() {
       try {
-        const response = await fetch("/api/users", { method: "POST" });
+        const response = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: String(authenticatedUser || "").trim(),
+            user_id: authenticatedUserId,
+          }),
+        });
         if (!response.ok) return false;
         
         const data = await response.json();
@@ -2140,7 +2159,14 @@
 
     async function loadUsersTable() {
       try {
-        const response = await fetch("/api/users", { method: "POST" });
+        const response = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: String(authenticatedUser || "").trim(),
+            user_id: authenticatedUserId,
+          }),
+        });
         if (!response.ok) {
           document.getElementById("users-table-body").innerHTML = '<tr><td colspan="4" class="px-4 py-3 text-center text-red-600">Failed to load users</td></tr>';
           return;
@@ -2158,9 +2184,11 @@
         tbody.innerHTML = users.map(user => {
           const isAdmin = user.role === "Admin";
           const actionButton = `
-            <button class="change-role-btn rounded-lg ${isAdmin ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'} px-3 py-1.5 text-xs font-semibold transition" data-username="${user.username}" data-current-role="${user.role}">
-              Make ${isAdmin ? 'User' : 'Admin'}
-            </button>
+            <select class="change-role-select rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800" data-username="${user.username}" data-current-role="${user.role}">
+              <option value="Admin" ${user.role === "Admin" ? "selected" : ""}>Admin</option>
+              <option value="Employee" ${user.role === "Employee" ? "selected" : ""}>Employee</option>
+              <option value="Client" ${user.role === "Client" ? "selected" : ""}>Client</option>
+            </select>
           `;
           return `
             <tr class="border-b border-white/10 transition hover:bg-white/5">
@@ -2180,18 +2208,22 @@
           `;
         }).join("");
         
-        // Add event listeners to role change buttons
-        document.querySelectorAll(".change-role-btn").forEach(btn => {
-          btn.addEventListener("click", async (e) => {
+        // Add event listeners to role select controls
+        document.querySelectorAll(".change-role-select").forEach(select => {
+          select.addEventListener("change", async (e) => {
             const username = e.target.dataset.username;
-            const currentRole = e.target.dataset.currentRole;
-            const newRole = currentRole === "Admin" ? "User" : "Admin";
+            const newRole = e.target.value;
             
             try {
               const response = await fetch("/api/users/role", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, role: newRole })
+                body: JSON.stringify({
+                  actor_username: String(authenticatedUser || "").trim(),
+                  actor_user_id: authenticatedUserId,
+                  username,
+                  role: newRole,
+                })
               });
               
               if (response.ok) {

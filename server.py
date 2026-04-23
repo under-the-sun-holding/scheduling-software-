@@ -25,17 +25,26 @@ from datetime import datetime, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from auth_db import create_user, grant_admin, revoke_admin, init_db, verify_user
+from auth_db import (
+    create_user,
+    init_db,
+    set_user_role,
+    verify_user,
+)
 
 
 ROOT = Path(__file__).resolve().parent
 JOBS_PATH = ROOT / "jobs.json"
 CLIENTS_PATH = ROOT / "clients.json"
 EMPLOYEES_PATH = ROOT / "employees.json"
+TECH_LOCATIONS_PATH = ROOT / "tech_locations.json"
+MESSAGES_PATH = ROOT / "messages.json"
 DEFAULT_JOBS = []
 JOBS: list[dict] = []
 CLIENTS: list[dict] = []
 EMPLOYEES: list[dict] = []
+TECH_LOCATIONS: list[dict] = []
+MESSAGES: list[dict] = []
 QUICKBOOKS_AUTH_URL = "https://appcenter.intuit.com/connect/oauth2"
 QUICKBOOKS_TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
 QUICKBOOKS_SCOPES = "com.intuit.quickbooks.accounting"
@@ -50,6 +59,108 @@ OAUTH_STATES: dict[str, dict[str, object]] = {}
 ENCRYPTED_TOKEN_PREFIX = "enc::"
 LEGACY_DATA_OWNER = ""
 DATE_ONLY_FORMAT = "%Y-%m-%d"
+ALLOWED_USER_ROLES = {"Admin", "Employee", "Client"}
+
+
+def normalize_user_role(raw: object) -> str:
+    role = str(raw or "").strip().lower()
+    if role == "admin":
+        return "Admin"
+    if role == "employee":
+        return "Employee"
+    if role == "client":
+        return "Client"
+    return "Employee"
+
+
+def normalize_location_update(raw: dict) -> dict:
+    lat_raw = raw.get("lat")
+    lng_raw = raw.get("lng")
+    try:
+        lat = float(lat_raw) if isinstance(lat_raw, (int, float, str)) and str(lat_raw).strip() else 0.0
+    except (TypeError, ValueError):
+        lat = 0.0
+    try:
+        lng = float(lng_raw) if isinstance(lng_raw, (int, float, str)) and str(lng_raw).strip() else 0.0
+    except (TypeError, ValueError):
+        lng = 0.0
+    return {
+        "id": int(raw.get("id", 0)),
+        "job_id": int(raw.get("job_id", 0)),
+        "owner_username": str(raw.get("owner_username", "")).strip(),
+        "tech_name": str(raw.get("tech_name", "")).strip(),
+        "lat": lat,
+        "lng": lng,
+        "status": str(raw.get("status", "")).strip(),
+        "note": str(raw.get("note", "")).strip(),
+        "updated_by": str(raw.get("updated_by", "")).strip(),
+        "updated_at": str(raw.get("updated_at", "")).strip(),
+    }
+
+
+def load_tech_locations() -> None:
+    global TECH_LOCATIONS
+    if TECH_LOCATIONS_PATH.exists():
+        try:
+            data = json.loads(TECH_LOCATIONS_PATH.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                TECH_LOCATIONS = [normalize_location_update(item) for item in data if isinstance(item, dict)]
+                return
+        except json.JSONDecodeError:
+            pass
+    TECH_LOCATIONS = []
+    save_tech_locations()
+
+
+def save_tech_locations() -> None:
+    TECH_LOCATIONS_PATH.write_text(json.dumps(TECH_LOCATIONS, indent=2), encoding="utf-8")
+
+
+def normalize_message(raw: dict) -> dict:
+    return {
+        "id": int(raw.get("id", 0)),
+        "job_id": int(raw.get("job_id", 0)),
+        "owner_username": str(raw.get("owner_username", "")).strip(),
+        "sender_username": str(raw.get("sender_username", "")).strip(),
+        "sender_role": normalize_user_role(raw.get("sender_role", "Employee")),
+        "body": str(raw.get("body", "")).strip(),
+        "created_at": str(raw.get("created_at", "")).strip(),
+    }
+
+
+def load_messages() -> None:
+    global MESSAGES
+    if MESSAGES_PATH.exists():
+        try:
+            data = json.loads(MESSAGES_PATH.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                MESSAGES = [normalize_message(item) for item in data if isinstance(item, dict)]
+                return
+        except json.JSONDecodeError:
+            pass
+    MESSAGES = []
+    save_messages()
+
+
+def save_messages() -> None:
+    MESSAGES_PATH.write_text(json.dumps(MESSAGES, indent=2), encoding="utf-8")
+
+
+def next_message_id() -> int:
+    return max((int(message.get("id", 0)) for message in MESSAGES), default=0) + 1
+
+
+def next_location_update_id() -> int:
+    return max((int(item.get("id", 0)) for item in TECH_LOCATIONS), default=0) + 1
+
+
+def client_has_access_to_job(job: dict, client_username: str) -> bool:
+    username = str(client_username or "").strip().lower()
+    if not username:
+        return False
+    email = str(job.get("email", "")).strip().lower()
+    customer_name = str(job.get("customer_name", "")).strip().lower()
+    return username == email or username == customer_name
 
 
 def normalize_client(raw: dict) -> dict:
@@ -1105,6 +1216,7 @@ def _resolve_user_identity(
         return {
             "id": int(user.get("id", 0)),
             "username": str(user.get("username", "")).strip(),
+            "role": normalize_user_role(user.get("role", "Employee")),
         }
 
     normalized_username = str(username or "").strip()
@@ -1117,6 +1229,7 @@ def _resolve_user_identity(
     return {
         "id": int(user.get("id", 0)),
         "username": str(user.get("username", "")).strip(),
+        "role": normalize_user_role(user.get("role", "Employee")),
     }
 
 
@@ -1292,6 +1405,15 @@ class AppHandler(SimpleHTTPRequestHandler):
         if path == "/api/users/connect-status":
             self._handle_user_connect_status(username, user_id_raw)
             return
+        if path == "/api/client/jobs":
+            self._handle_client_jobs(username, user_id_raw, scheduled_date_raw)
+            return
+        if path == "/api/messages":
+            self._handle_get_messages(parsed)
+            return
+        if path == "/api/tech-location/latest":
+            self._handle_get_latest_location(parsed)
+            return
         super().do_GET()
 
     def do_POST(self) -> None:
@@ -1342,6 +1464,12 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
         if self.path == "/api/users/role":
             self._handle_update_user_role()
+            return
+        if self.path == "/api/messages":
+            self._handle_send_message()
+            return
+        if self.path == "/api/tech-location/update":
+            self._handle_update_tech_location()
             return
 
         self._send_json(404, {"error": "Not found"})
@@ -1972,13 +2100,18 @@ class AppHandler(SimpleHTTPRequestHandler):
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
         password = str(payload.get("password", ""))
+        role_raw = str(payload.get("role", "Employee")).strip() or "Employee"
+        if role_raw not in ALLOWED_USER_ROLES:
+            self._send_json(400, {"error": "role must be Admin, Employee, or Client"})
+            return
+        role = role_raw
 
         if not username or not password:
             self._send_json(400, {"error": "username and password are required"})
             return
 
         try:
-            create_user(username, password)
+            create_user(username, password, role=role)
         except sqlite3.IntegrityError:
             self._send_json(409, {"error": "user already exists"})
             return
@@ -1986,7 +2119,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._send_json(400, {"error": str(exc)})
             return
 
-        self._send_json(201, {"ok": True, "message": "user created"})
+        self._send_json(201, {"ok": True, "message": "user created", "role": role})
 
     def _handle_login(self) -> None:
         payload = self._read_json_body()
@@ -2001,13 +2134,20 @@ class AppHandler(SimpleHTTPRequestHandler):
             from auth_db import find_user_by_username
             user = find_user_by_username(username)
             user_id = user["id"] if user else None
+            role = normalize_user_role((user or {}).get("role", "Employee"))
+            redirect = {
+                "Admin": "/home.html",
+                "Employee": "/employee_schedule.html",
+                "Client": "/client_portal.html",
+            }.get(role, "/employee_schedule.html")
             self._send_json(
                 200,
                 {
                     "ok": True,
                     "message": "login successful",
-                    "redirect": "/home.html",
+                    "redirect": redirect,
                     "user_id": user_id,
+                    "role": role,
                 },
             )
             return
@@ -2015,19 +2155,36 @@ class AppHandler(SimpleHTTPRequestHandler):
         self._send_json(401, {"ok": False, "error": "invalid credentials"})
 
     def _handle_get_users(self) -> None:
-        # Fetch all users with their admin status
+        # Fetch all users with their roles (admin-only endpoint)
+        payload = self._read_json_body()
+        actor_username = str(payload.get("username", "")).strip()
+        actor_user_id = payload.get("user_id")
+
+        try:
+            actor = self._resolve_authenticated_user(
+                username=actor_username,
+                user_id_raw=actor_user_id,
+            )
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
+
+        if str(actor.get("role", "")) != "Admin":
+            self._send_json(403, {"error": "admin credentials required"})
+            return
+
         try:
             from auth_db import get_connection
             with get_connection() as conn:
                 rows = conn.execute(
-                    "SELECT username, is_admin, created_at FROM users ORDER BY username"
+                    "SELECT username, role, is_admin, created_at FROM users ORDER BY username"
                 ).fetchall()
             
             users = [
                 {
                     "username": row[0],
-                    "role": "Admin" if row[1] else "User",
-                    "created_at": row[2]
+                    "role": normalize_user_role((row[1] or ("Admin" if row[2] else "Employee"))),
+                    "created_at": row[3]
                 }
                 for row in rows
             ]
@@ -2038,27 +2195,272 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _handle_update_user_role(self) -> None:
         # Update a user's role
         payload = self._read_json_body()
+        actor_username = str(payload.get("actor_username", payload.get("username", ""))).strip()
+        actor_user_id = payload.get("actor_user_id", payload.get("user_id"))
         username = str(payload.get("username", "")).strip()
-        role = str(payload.get("role", "")).strip()
+        role_raw = str(payload.get("role", "")).strip()
+        if role_raw not in ALLOWED_USER_ROLES:
+            self._send_json(400, {"error": "role must be Admin, Employee, or Client"})
+            return
+        role = role_raw
 
         if not username:
             self._send_json(400, {"error": "username is required"})
             return
-        
-        if role not in ("Admin", "User"):
-            self._send_json(400, {"error": "role must be 'Admin' or 'User'"})
-            return
 
         try:
-            if role == "Admin":
-                grant_admin(username)
-            else:
-                revoke_admin(username)
+            actor = self._resolve_authenticated_user(
+                username=actor_username,
+                user_id_raw=actor_user_id,
+            )
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
+
+        if str(actor.get("role", "")) != "Admin":
+            self._send_json(403, {"error": "admin credentials required"})
+            return
+        
+        try:
+            set_user_role(username, role)
             self._send_json(200, {"ok": True, "message": f"User role updated to {role}"})
         except ValueError as exc:
             self._send_json(404, {"error": str(exc)})
         except Exception as exc:
             self._send_json(500, {"error": str(exc)})
+
+    def _resolve_authenticated_user(
+        self, username: str = "", user_id_raw: object = None
+    ) -> dict[str, int | str]:
+        return _resolve_user_identity(username=username, user_id_raw=user_id_raw)
+
+    def _job_visible_to_user(self, job: dict, user: dict[str, int | str]) -> bool:
+        role = str(user.get("role", "Employee"))
+        username = str(user.get("username", "")).strip()
+        if role in {"Admin", "Employee"}:
+            return record_visible_to_owner(job, username)
+        if role == "Client":
+            return client_has_access_to_job(job, username)
+        return False
+
+    def _find_accessible_job(
+        self, job_id: int, user: dict[str, int | str]
+    ) -> dict | None:
+        for job in JOBS:
+            if int(job.get("id", 0)) != int(job_id):
+                continue
+            if self._job_visible_to_user(job, user):
+                return job
+        return None
+
+    def _handle_client_jobs(
+        self, username: str, user_id_raw: object, scheduled_date_raw: str
+    ) -> None:
+        try:
+            user = self._resolve_authenticated_user(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
+
+        if str(user.get("role", "")) != "Client":
+            self._send_json(403, {"error": "client credentials required"})
+            return
+
+        try:
+            selected_date = parse_requested_scheduled_date(
+                scheduled_date_raw,
+                default_to_today=True,
+            )
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
+
+        filtered = [
+            job
+            for job in JOBS
+            if client_has_access_to_job(job, str(user.get("username", "")))
+            and normalize_scheduled_date(job.get("scheduled_date", "")) == selected_date
+        ]
+        self._send_json(200, {"jobs": filtered})
+
+    def _handle_get_messages(self, parsed: urllib.parse.ParseResult) -> None:
+        query = urllib.parse.parse_qs(parsed.query)
+        username = str((query.get("username") or [""])[0]).strip()
+        user_id_raw = str((query.get("user_id") or [""])[0]).strip()
+        raw_job_id = str((query.get("job_id") or [""])[0]).strip()
+
+        if not raw_job_id:
+            self._send_json(400, {"error": "job_id is required"})
+            return
+
+        try:
+            job_id = int(raw_job_id)
+        except ValueError:
+            self._send_json(400, {"error": "job_id must be an integer"})
+            return
+
+        try:
+            user = self._resolve_authenticated_user(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
+
+        job = self._find_accessible_job(job_id, user)
+        if job is None:
+            self._send_json(404, {"error": "job not found"})
+            return
+
+        owner = str(job.get("owner_username", "")).strip()
+        messages = [
+            message
+            for message in MESSAGES
+            if int(message.get("job_id", 0)) == int(job_id)
+            and str(message.get("owner_username", "")).strip() == owner
+        ]
+        self._send_json(200, {"messages": messages})
+
+    def _handle_send_message(self) -> None:
+        payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
+        user_id_raw = payload.get("user_id")
+        body = str(payload.get("body", "")).strip()
+
+        if not body:
+            self._send_json(400, {"error": "message body is required"})
+            return
+
+        try:
+            raw_job_id = payload.get("job_id")
+            if not isinstance(raw_job_id, (int, float, str)):
+                raise TypeError("job_id must be an integer")
+            job_id = int(raw_job_id)
+        except (TypeError, ValueError):
+            self._send_json(400, {"error": "job_id must be an integer"})
+            return
+
+        try:
+            user = self._resolve_authenticated_user(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
+
+        job = self._find_accessible_job(job_id, user)
+        if job is None:
+            self._send_json(404, {"error": "job not found"})
+            return
+
+        message = normalize_message(
+            {
+                "id": next_message_id(),
+                "job_id": job_id,
+                "owner_username": str(job.get("owner_username", "")).strip(),
+                "sender_username": str(user.get("username", "")).strip(),
+                "sender_role": str(user.get("role", "Employee")),
+                "body": body,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+        MESSAGES.append(message)
+        save_messages()
+        self._send_json(201, {"ok": True, "message": message})
+
+    def _handle_update_tech_location(self) -> None:
+        payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
+        user_id_raw = payload.get("user_id")
+
+        try:
+            user = self._resolve_authenticated_user(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
+
+        if str(user.get("role", "")) not in {"Admin", "Employee"}:
+            self._send_json(403, {"error": "employee or admin credentials required"})
+            return
+
+        try:
+            raw_job_id = payload.get("job_id")
+            if not isinstance(raw_job_id, (int, float, str)):
+                raise TypeError("job_id must be an integer")
+            job_id = int(raw_job_id)
+        except (TypeError, ValueError):
+            self._send_json(400, {"error": "job_id must be an integer"})
+            return
+
+        job = self._find_accessible_job(job_id, user)
+        if job is None:
+            self._send_json(404, {"error": "job not found"})
+            return
+
+        lat_raw = payload.get("lat")
+        lng_raw = payload.get("lng")
+        if not isinstance(lat_raw, (int, float, str)) or not isinstance(
+            lng_raw, (int, float, str)
+        ):
+            self._send_json(400, {"error": "lat and lng must be numbers"})
+            return
+        try:
+            lat = float(str(lat_raw).strip())
+            lng = float(str(lng_raw).strip())
+        except ValueError:
+            self._send_json(400, {"error": "lat and lng must be numbers"})
+            return
+
+        update = normalize_location_update(
+            {
+                "id": next_location_update_id(),
+                "job_id": job_id,
+                "owner_username": str(job.get("owner_username", "")).strip(),
+                "tech_name": str(job.get("assigned_tech", "")).strip(),
+                "lat": lat,
+                "lng": lng,
+                "status": str(payload.get("status", "On the way")).strip(),
+                "note": str(payload.get("note", "")).strip(),
+                "updated_by": str(user.get("username", "")).strip(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+        TECH_LOCATIONS.append(update)
+        save_tech_locations()
+        self._send_json(201, {"ok": True, "location": update})
+
+    def _handle_get_latest_location(self, parsed: urllib.parse.ParseResult) -> None:
+        query = urllib.parse.parse_qs(parsed.query)
+        username = str((query.get("username") or [""])[0]).strip()
+        user_id_raw = str((query.get("user_id") or [""])[0]).strip()
+        raw_job_id = str((query.get("job_id") or [""])[0]).strip()
+
+        if not raw_job_id:
+            self._send_json(400, {"error": "job_id is required"})
+            return
+
+        try:
+            job_id = int(raw_job_id)
+        except ValueError:
+            self._send_json(400, {"error": "job_id must be an integer"})
+            return
+
+        try:
+            user = self._resolve_authenticated_user(username=username, user_id_raw=user_id_raw)
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
+
+        job = self._find_accessible_job(job_id, user)
+        if job is None:
+            self._send_json(404, {"error": "job not found"})
+            return
+
+        owner = str(job.get("owner_username", "")).strip()
+        relevant = [
+            entry
+            for entry in TECH_LOCATIONS
+            if int(entry.get("job_id", 0)) == int(job_id)
+            and str(entry.get("owner_username", "")).strip() == owner
+        ]
+        latest = relevant[-1] if relevant else None
+        self._send_json(200, {"location": latest})
 
     def _handle_schedule_job(self) -> None:
         payload = self._read_json_body()
@@ -2669,6 +3071,8 @@ def main(argv: list[str]) -> int:
     load_clients()
     load_employees()
     load_jobs()
+    load_tech_locations()
+    load_messages()
     server = ThreadingHTTPServer(("0.0.0.0", port), AppHandler)
     print(f"Serving app at http://0.0.0.0:{port}")
     try:

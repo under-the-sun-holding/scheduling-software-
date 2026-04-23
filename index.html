@@ -371,6 +371,14 @@
                     <label for="register-password" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Password</label>
                     <input id="register-password" name="register-password" type="password" minlength="8" placeholder="At least 8 characters" class="w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none ring-blue-500/50 transition focus:border-blue-500/50 focus:ring-2" required>
                   </div>
+                  <div>
+                    <label for="register-role" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Account Type</label>
+                    <select id="register-role" name="register-role" class="w-full rounded-xl border border-white/15 bg-[#1e293b] px-4 py-3 text-sm text-white outline-none ring-blue-500/50 transition focus:border-blue-500/50 focus:ring-2" required>
+                      <option value="Employee">Employee</option>
+                      <option value="Client">Client</option>
+                      <option value="Admin">Admin</option>
+                    </select>
+                  </div>
                   <button type="submit" class="glow-btn w-full rounded-xl bg-brand-action px-5 py-3.5 text-sm font-bold text-white">
                     Create Account
                   </button>
@@ -465,6 +473,9 @@
         if (data.user_id) {
           localStorage.setItem("fieldops_auth_user_id", data.user_id);
         }
+        if (data.role) {
+          localStorage.setItem("fieldops_auth_role", data.role);
+        }
         window.location.href = data.redirect || "/home.html";
       } catch (error) {
         loginStatus.textContent = error.message;
@@ -479,10 +490,12 @@
 
       const username = document.getElementById("register-email").value.trim();
       const password = document.getElementById("register-password").value;
+      const role = document.getElementById("register-role").value;
 
       try {
-        const data = await postJson("/api/register", { username, password });
-        registerStatus.textContent = data.message || "User created.";
+        const data = await postJson("/api/register", { username, password, role });
+        const createdRole = data.role || role;
+        registerStatus.textContent = `${data.message || "User created."} (${createdRole})`;
         registerStatus.className = "text-sm font-medium text-emerald-600";
         registerForm.reset();
       } catch (error) {
