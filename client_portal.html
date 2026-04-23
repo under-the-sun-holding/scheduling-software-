@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FieldOps | Client Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background:
+        radial-gradient(1000px 500px at 10% -20%, rgba(20, 184, 166, 0.2), transparent 60%),
+        radial-gradient(900px 400px at 95% 0%, rgba(56, 189, 248, 0.16), transparent 62%),
+        linear-gradient(145deg, #07131f 0%, #0b1f34 50%, #0d2740 100%);
+    }
+
+    .frost {
+      background: rgba(8, 25, 44, 0.74);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 pb-8 pt-8 sm:px-6 lg:px-8">
+    <header class="frost rounded-2xl p-4 sm:p-5">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">FieldOps Client Portal</p>
+          <h1 class="mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl">Track Your Technician Live</h1>
+          <p class="mt-2 text-sm text-slate-300">See your appointment status, latest technician location, and message the team.</p>
+        </div>
+        <button id="logout-btn" type="button" class="rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white transition hover:bg-orange-400">Log Out</button>
+      </div>
+
+      <div class="mt-4 grid gap-3 sm:grid-cols-3">
+        <label class="space-y-1.5 sm:col-span-2">
+          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Your Appointment</span>
+          <select id="job-select" class="w-full rounded-lg border border-slate-600 bg-slate-900/60 px-3 py-2 text-sm text-white"></select>
+        </label>
+        <label class="space-y-1.5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Date</span>
+          <input id="job-date" type="date" class="w-full rounded-lg border border-slate-600 bg-slate-900/60 px-3 py-2 text-sm text-white">
+        </label>
+      </div>
+    </header>
+
+    <section class="mt-4 grid gap-3 sm:grid-cols-3">
+      <article class="frost rounded-xl p-4 sm:col-span-2">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Latest Technician Location</p>
+        <p id="location-status" class="mt-2 text-sm text-slate-300">Waiting for update...</p>
+        <p id="location-coords" class="mt-1 text-lg font-bold text-cyan-200">No coordinates yet</p>
+        <p class="mt-1 text-xs text-slate-400">Map updates automatically when your technician shares location.</p>
+      </article>
+      <article class="frost rounded-xl p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Appointment Status</p>
+        <p id="job-status" class="mt-2 text-lg font-bold text-white">Unknown</p>
+        <p id="job-time" class="mt-1 text-sm text-slate-300">Time: N/A</p>
+        <p id="job-tech" class="mt-1 text-sm text-slate-300">Technician: N/A</p>
+      </article>
+    </section>
+
+    <section class="mt-4 frost rounded-2xl p-4">
+      <div class="mb-2 flex items-center justify-between gap-2">
+        <h2 class="text-sm font-bold uppercase tracking-wide text-slate-300">Live Map</h2>
+        <a id="open-map-link" href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer" class="rounded-md border border-cyan-400/40 bg-cyan-500/20 px-2.5 py-1 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-500/30">Open Full Map</a>
+      </div>
+      <div class="overflow-hidden rounded-xl border border-slate-600/60">
+        <iframe
+          id="tech-map"
+          title="Technician location map"
+          class="h-[280px] w-full"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=-122.52%2C37.70%2C-122.36%2C37.82&layer=mapnik&marker=37.76%2C-122.44"
+        ></iframe>
+      </div>
+    </section>
+
+    <main class="mt-4 grid gap-4 lg:grid-cols-[1fr_360px]">
+      <section class="frost rounded-2xl p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-white">Message Thread</h2>
+          <button id="refresh-messages" type="button" class="rounded-md border border-cyan-400/40 bg-cyan-500/20 px-2.5 py-1 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-500/30">Refresh</button>
+        </div>
+        <div id="messages-list" class="max-h-[420px] space-y-2 overflow-auto rounded-lg border border-slate-600/60 bg-slate-900/35 p-3">
+          <p class="text-sm text-slate-300">No messages yet.</p>
+        </div>
+        <form id="message-form" class="mt-3 flex gap-2">
+          <input id="message-input" type="text" maxlength="500" placeholder="Type a message to dispatch or your technician..." class="flex-1 rounded-lg border border-slate-600 bg-slate-900/60 px-3 py-2 text-sm text-white" required>
+          <button type="submit" class="rounded-lg bg-cyan-500 px-3 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-400">Send</button>
+        </form>
+      </section>
+
+      <aside class="frost rounded-2xl p-4">
+        <h2 class="text-sm font-bold uppercase tracking-wide text-slate-300">Appointment Details</h2>
+        <div id="job-details" class="mt-3 space-y-2 text-sm text-slate-300">
+          <p>Select an appointment to view details.</p>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    let authenticatedUser = "";
+    let authenticatedUserId = null;
+    let authenticatedRole = "Client";
+    let jobs = [];
+
+    const jobSelectEl = document.getElementById("job-select");
+    const jobDateEl = document.getElementById("job-date");
+    const messagesListEl = document.getElementById("messages-list");
+
+    function todayIsoDate() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function authParams(extra = {}) {
+      const params = new URLSearchParams();
+      if (authenticatedUserId) {
+        params.set("user_id", String(authenticatedUserId));
+      } else {
+        params.set("username", authenticatedUser);
+      }
+      Object.entries(extra).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && String(value).trim() !== "") {
+          params.set(key, String(value));
+        }
+      });
+      return params;
+    }
+
+    function selectedJobId() {
+      const value = String(jobSelectEl.value || "").trim();
+      return value ? Number(value) : null;
+    }
+
+    function selectedJob() {
+      const jobId = selectedJobId();
+      if (!jobId) return null;
+      return jobs.find((job) => Number(job.id) === Number(jobId)) || null;
+    }
+
+    function renderDetails() {
+      const job = selectedJob();
+      const detailsEl = document.getElementById("job-details");
+      const statusEl = document.getElementById("job-status");
+      const timeEl = document.getElementById("job-time");
+      const techEl = document.getElementById("job-tech");
+
+      if (!job) {
+        detailsEl.innerHTML = "<p>Select an appointment to view details.</p>";
+        statusEl.textContent = "Unknown";
+        timeEl.textContent = "Time: N/A";
+        techEl.textContent = "Technician: N/A";
+        return;
+      }
+
+      statusEl.textContent = String(job.status || "Unknown");
+      timeEl.textContent = `Time: ${job.time || "N/A"}`;
+      techEl.textContent = `Technician: ${job.assigned_tech || "Unassigned"}`;
+
+      const addressParts = [
+        job.address_line1,
+        job.address_line2,
+        [job.city, job.state, job.postal_code].filter(Boolean).join(" "),
+      ]
+        .map((part) => String(part || "").trim())
+        .filter(Boolean);
+
+      detailsEl.innerHTML = `
+        <p><span class="font-semibold text-slate-100">Client:</span> ${job.customer_name || "N/A"}</p>
+        <p><span class="font-semibold text-slate-100">Service:</span> ${job.service_type || "N/A"}</p>
+        <p><span class="font-semibold text-slate-100">Address:</span> ${addressParts.join(", ") || "N/A"}</p>
+        <p><span class="font-semibold text-slate-100">Phone:</span> ${job.phone || "N/A"}</p>
+        <p><span class="font-semibold text-slate-100">Notes:</span> ${job.notes || "N/A"}</p>
+      `;
+    }
+
+    async function loadJobs() {
+      const response = await fetch(`/api/client/jobs?${authParams({ scheduled_date: jobDateEl.value }).toString()}`);
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Unable to load appointments.");
+      }
+      const payload = await response.json();
+      jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
+
+      if (!jobs.length) {
+        jobSelectEl.innerHTML = '<option value="">No appointments today</option>';
+        renderDetails();
+        await loadLocation();
+        await loadMessages();
+        return;
+      }
+
+      jobSelectEl.innerHTML = jobs
+        .map((job) => `<option value="${job.id}">${job.time || "Unscheduled"} - ${job.service_type || "Service"}</option>`)
+        .join("");
+      renderDetails();
+    }
+
+    async function loadLocation() {
+      const jobId = selectedJobId();
+      const statusEl = document.getElementById("location-status");
+      const coordsEl = document.getElementById("location-coords");
+      const mapFrameEl = document.getElementById("tech-map");
+      const openMapLinkEl = document.getElementById("open-map-link");
+
+      if (!jobId) {
+        statusEl.textContent = "No active appointment selected.";
+        coordsEl.textContent = "No coordinates yet";
+        return;
+      }
+
+      const response = await fetch(`/api/tech-location/latest?${authParams({ job_id: jobId }).toString()}`);
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Unable to load location.");
+      }
+      const payload = await response.json();
+      const location = payload.location;
+
+      if (!location) {
+        statusEl.textContent = "No location update yet from your technician.";
+        coordsEl.textContent = "No coordinates yet";
+        if (mapFrameEl) {
+          mapFrameEl.src = "https://www.openstreetmap.org/export/embed.html?bbox=-122.52%2C37.70%2C-122.36%2C37.82&layer=mapnik&marker=37.76%2C-122.44";
+        }
+        if (openMapLinkEl) {
+          openMapLinkEl.href = "https://www.openstreetmap.org";
+        }
+        return;
+      }
+
+      statusEl.textContent = `${location.tech_name || "Technician"}: ${location.status || "Updated"} (${new Date(location.updated_at).toLocaleTimeString()})`;
+      const lat = Number(location.lat);
+      const lng = Number(location.lng);
+      coordsEl.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const delta = 0.015;
+        const left = (lng - delta).toFixed(6);
+        const right = (lng + delta).toFixed(6);
+        const bottom = (lat - delta).toFixed(6);
+        const top = (lat + delta).toFixed(6);
+        const embedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik&marker=${lat.toFixed(6)}%2C${lng.toFixed(6)}`;
+        if (mapFrameEl) {
+          mapFrameEl.src = embedUrl;
+        }
+        if (openMapLinkEl) {
+          openMapLinkEl.href = `https://www.openstreetmap.org/?mlat=${lat.toFixed(6)}&mlon=${lng.toFixed(6)}#map=14/${lat.toFixed(6)}/${lng.toFixed(6)}`;
+        }
+      }
+    }
+
+    async function loadMessages() {
+      const jobId = selectedJobId();
+      if (!jobId) {
+        messagesListEl.innerHTML = '<p class="text-sm text-slate-300">No messages yet.</p>';
+        return;
+      }
+
+      const response = await fetch(`/api/messages?${authParams({ job_id: jobId }).toString()}`);
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Unable to load messages.");
+      }
+      const payload = await response.json();
+      const messages = Array.isArray(payload.messages) ? payload.messages : [];
+
+      if (!messages.length) {
+        messagesListEl.innerHTML = '<p class="text-sm text-slate-300">No messages yet.</p>';
+        return;
+      }
+
+      messagesListEl.innerHTML = messages
+        .map((message) => {
+          const mine = String(message.sender_username || "").toLowerCase() === authenticatedUser.toLowerCase();
+          const bubbleClass = mine
+            ? "border-cyan-500/40 bg-cyan-500/20 text-cyan-50"
+            : "border-slate-500/50 bg-slate-800/60 text-slate-100";
+          return `
+            <article class="rounded-lg border ${bubbleClass} p-2.5 text-sm">
+              <p class="text-xs font-semibold uppercase tracking-wide opacity-80">${message.sender_role} - ${message.sender_username}</p>
+              <p class="mt-1">${message.body}</p>
+              <p class="mt-1 text-[11px] opacity-70">${new Date(message.created_at).toLocaleString()}</p>
+            </article>
+          `;
+        })
+        .join("");
+      messagesListEl.scrollTop = messagesListEl.scrollHeight;
+    }
+
+    async function sendMessage(event) {
+      event.preventDefault();
+      const jobId = selectedJobId();
+      if (!jobId) {
+        return;
+      }
+
+      const input = document.getElementById("message-input");
+      const body = String(input.value || "").trim();
+      if (!body) {
+        return;
+      }
+
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: authenticatedUser,
+          user_id: authenticatedUserId,
+          job_id: jobId,
+          body,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to send message.");
+      }
+      input.value = "";
+      await loadMessages();
+    }
+
+    async function refreshAll() {
+      await loadJobs();
+      await loadLocation();
+      await loadMessages();
+    }
+
+    function initAuth() {
+      const user = localStorage.getItem("fieldops_auth_user");
+      if (!user) {
+        window.location.href = "/index.html#login";
+        return false;
+      }
+      authenticatedUser = user;
+      authenticatedRole = String(localStorage.getItem("fieldops_auth_role") || "Client").trim() || "Client";
+      const userId = localStorage.getItem("fieldops_auth_user_id");
+      if (userId) authenticatedUserId = Number(userId);
+      return true;
+    }
+
+    function initEvents() {
+      document.getElementById("logout-btn")?.addEventListener("click", () => {
+        localStorage.removeItem("fieldops_auth_user");
+        localStorage.removeItem("fieldops_auth_user_id");
+        localStorage.removeItem("fieldops_auth_role");
+        window.location.href = "/index.html#login";
+      });
+      document.getElementById("refresh-messages")?.addEventListener("click", loadMessages);
+      document.getElementById("message-form")?.addEventListener("submit", async (event) => {
+        try {
+          await sendMessage(event);
+        } catch (error) {
+          alert(error.message || "Unable to send message.");
+        }
+      });
+      jobSelectEl?.addEventListener("change", async () => {
+        renderDetails();
+        await loadLocation();
+        await loadMessages();
+      });
+      jobDateEl?.addEventListener("change", refreshAll);
+    }
+
+    (async () => {
+      if (!initAuth()) return;
+      jobDateEl.value = todayIsoDate();
+      initEvents();
+      try {
+        await refreshAll();
+      } catch (error) {
+        alert(error.message || "Unable to load client data.");
+      }
+      window.setInterval(async () => {
+        try {
+          await loadLocation();
+          await loadMessages();
+        } catch {
+          // Keep polling resilient without interrupting the user.
+        }
+      }, 30000);
+    })();
+  </script>
+</body>
+</html>

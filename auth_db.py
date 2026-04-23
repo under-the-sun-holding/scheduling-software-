@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import hmac
 import os
@@ -21,6 +22,7 @@ from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parent / "users.db"
 PBKDF2_ITERATIONS = 200_000
+ALLOWED_ROLES = {"Admin", "Employee", "Client"}
 
 
 def get_connection() -> sqlite3.Connection:
@@ -45,7 +47,68 @@ def init_db() -> None:
         columns = {row[1] for row in cursor.fetchall()}
         if "is_admin" not in columns:
             conn.execute("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0")
+        if "role" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'Employee'")
+            conn.execute(
+                """
+                UPDATE users
+                SET role = CASE
+                    WHEN is_admin = 1 THEN 'Admin'
+                    ELSE 'Employee'
+                END
+                """
+            )
+        else:
+            conn.execute(
+                """
+                UPDATE users
+                SET role = CASE
+                    WHEN is_admin = 1 THEN 'Admin'
+                    WHEN role IS NULL OR TRIM(role) = '' THEN 'Employee'
+                    ELSE role
+                END
+                """
+            )
+        if "integration_provider" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN integration_provider TEXT DEFAULT ''")
+        if "integration_connected" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN integration_connected INTEGER DEFAULT 0")
+        if "integration_connected_at" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN integration_connected_at DATETIME")
+        if "quickbooks_realm_id" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_realm_id TEXT DEFAULT ''")
+        if "quickbooks_access_token" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_access_token TEXT DEFAULT ''")
+        if "quickbooks_refresh_token" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_refresh_token TEXT DEFAULT ''")
+        if "quickbooks_token_expires_at" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_token_expires_at DATETIME")
+        if "quickbooks_company_name" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_company_name TEXT DEFAULT ''")
+        if "quickbooks_last_sync_at" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_last_sync_at DATETIME")
+        if "quickbooks_tokens_encrypted" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_tokens_encrypted INTEGER DEFAULT 0")
+        if "google_calendar_access_token" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN google_calendar_access_token TEXT DEFAULT ''")
+        if "google_calendar_refresh_token" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN google_calendar_refresh_token TEXT DEFAULT ''")
+        if "google_calendar_token_expires_at" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN google_calendar_token_expires_at DATETIME")
+        if "google_calendar_tokens_encrypted" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN google_calendar_tokens_encrypted INTEGER DEFAULT 0")
         conn.commit()
+
+
+def normalize_role(role: str) -> str:
+    value = str(role or "").strip().lower()
+    if value == "admin":
+        return "Admin"
+    if value == "employee":
+        return "Employee"
+    if value == "client":
+        return "Client"
+    raise ValueError("role must be one of: Admin, Employee, Client")
 
 
 def hash_password(password: str, salt: bytes | None = None) -> str:
@@ -69,7 +132,7 @@ def verify_password(password: str, stored_hash: str) -> bool:
         iterations = int(iter_str)
         salt = base64.b64decode(salt_b64.encode("ascii"))
         expected_digest = base64.b64decode(digest_b64.encode("ascii"))
-    except (ValueError, TypeError, base64.binascii.Error):
+    except (ValueError, TypeError, binascii.Error):
         return False
 
     computed_digest = hashlib.pbkdf2_hmac(
@@ -78,7 +141,7 @@ def verify_password(password: str, stored_hash: str) -> bool:
     return hmac.compare_digest(expected_digest, computed_digest)
 
 
-def create_user(username: str, password: str) -> None:
+def create_user(username: str, password: str, role: str = "Employee") -> None:
     if not username.strip():
         raise ValueError("Username cannot be empty.")
     if len(password) < 8:
@@ -86,10 +149,12 @@ def create_user(username: str, password: str) -> None:
 
     password_hash = hash_password(password)
 
+    normalized_role = normalize_role(role)
+
     with get_connection() as conn:
         conn.execute(
-            "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-            (username, password_hash),
+            "INSERT INTO users (username, password_hash, is_admin, role) VALUES (?, ?, ?, ?)",
+            (username, password_hash, 1 if normalized_role == "Admin" else 0, normalized_role),
         )
         conn.commit()
 
@@ -98,7 +163,7 @@ def grant_admin(username: str) -> None:
     """Grant admin access to a user."""
     with get_connection() as conn:
         result = conn.execute(
-            "UPDATE users SET is_admin = 1 WHERE username = ?",
+            "UPDATE users SET is_admin = 1, role = 'Admin' WHERE username = ?",
             (username,)
         )
         if result.rowcount == 0:
@@ -110,7 +175,7 @@ def revoke_admin(username: str) -> None:
     """Revoke admin access from a user."""
     with get_connection() as conn:
         result = conn.execute(
-            "UPDATE users SET is_admin = 0 WHERE username = ?",
+            "UPDATE users SET is_admin = 0, role = 'Employee' WHERE username = ?",
             (username,)
         )
         if result.rowcount == 0:
@@ -145,8 +210,62 @@ def verify_user(username: str, password: str) -> bool:
     return verify_password(password, row[0])
 
 
+def find_user_by_username(username: str) -> dict | None:
+    normalized = str(username or "").strip()
+    if not normalized:
+        return None
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT id, username, role, is_admin FROM users WHERE username = ?",
+            (normalized,),
+        ).fetchone()
+    if row is None:
+        return None
+    role = str(row[2] or "").strip() or ("Admin" if int(row[3] or 0) else "Employee")
+    return {
+        "id": int(row[0]),
+        "username": str(row[1] or "").strip(),
+        "role": role,
+    }
+
+
+def find_user_by_id(user_id: int) -> dict | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT id, username, role, is_admin FROM users WHERE id = ?",
+            (int(user_id),),
+        ).fetchone()
+    if row is None:
+        return None
+    role = str(row[2] or "").strip() or ("Admin" if int(row[3] or 0) else "Employee")
+    return {
+        "id": int(row[0]),
+        "username": str(row[1] or "").strip(),
+        "role": role,
+    }
+
+
+def get_user_role(username: str) -> str:
+    user = find_user_by_username(username)
+    if user is None:
+        raise ValueError("user not found")
+    return str(user.get("role", "Employee"))
+
+
+def set_user_role(username: str, role: str) -> None:
+    normalized_role = normalize_role(role)
+    with get_connection() as conn:
+        result = conn.execute(
+            "UPDATE users SET role = ?, is_admin = ? WHERE username = ?",
+            (normalized_role, 1 if normalized_role == "Admin" else 0, username),
+        )
+        if result.rowcount == 0:
+            raise ValueError(f"User '{username}' not found.")
+        conn.commit()
+
+
 def print_usage() -> None:
-    print(__doc__.strip())
+    print((__doc__ or "").strip())
 
 
 def main(argv: list[str]) -> int:

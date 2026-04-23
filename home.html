@@ -34,8 +34,8 @@
 
     .lux-grid {
       background-image:
-        linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+        linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
       background-size: 36px 36px;
     }
 
@@ -45,78 +45,168 @@
 
     .soft-glow {
       box-shadow:
-        0 10px 30px -15px rgba(30, 58, 138, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        0 10px 30px -15px rgba(59, 130, 246, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-dark {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.09);
+    }
+
+    .stat-glow-blue  { box-shadow: 0 0 20px rgba(59,130,246,0.25); }
+    .stat-glow-green { box-shadow: 0 0 20px rgba(16,185,129,0.25); }
+    .stat-glow-amber { box-shadow: 0 0 20px rgba(245,158,11,0.25); }
+
+    .pulse-dot {
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%,100% { opacity: 0.6; transform: scale(1); }
+      50%      { opacity: 1;   transform: scale(1.2); }
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
-<body class="min-h-screen bg-slate-100 font-sans text-slate-900">
+<body class="min-h-screen font-sans text-slate-100" style="background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #0d1a2e 100%)">
   <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-    <div class="absolute -left-24 top-24 h-80 w-80 rounded-full bg-blue-300/25 blur-3xl"></div>
-    <div class="absolute right-0 top-0 h-96 w-96 rounded-full bg-indigo-300/25 blur-3xl"></div>
-    <div class="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-cyan-200/30 blur-3xl"></div>
+    <div class="absolute -left-40 top-10 h-[500px] w-[500px] rounded-full bg-blue-900/30 blur-[120px]"></div>
+    <div class="absolute right-0 top-0 h-[400px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]"></div>
+    <div class="absolute bottom-0 left-1/3 h-[300px] w-[600px] rounded-full bg-cyan-900/15 blur-[80px]"></div>
   </div>
 
-  <header class="fixed inset-x-0 top-0 z-50 border-b border-white/20 bg-gradient-to-r from-brand-blue/95 via-blue-800/95 to-slate-900/95 text-white shadow-2xl backdrop-blur-md">
-    <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-4 lg:px-6">
+  <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10" style="background: rgba(10,15,30,0.85); backdrop-filter: blur(24px);">
+    <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-3.5 lg:px-6">
       <div class="flex items-center gap-3">
-        <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 ring-1 ring-white/40 soft-glow">
-          <i class="fa-solid fa-calendar-check text-base"></i>
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 soft-glow">
+          <i class="fa-solid fa-calendar-check text-sm text-white"></i>
         </span>
         <div>
-          <p class="text-xs uppercase tracking-[0.14em] text-blue-100">Daily Dispatch</p>
-          <h1 class="text-lg font-bold tracking-tight">FieldOps Scheduler Board</h1>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-blue-400">FieldOps</p>
+          <h1 class="text-base font-black tracking-tight text-white">Dispatch Board</h1>
         </div>
       </div>
+      <div class="hidden items-center gap-1 md:flex text-xs text-slate-400">
+        <i class="fa-regular fa-clock"></i>
+        <span id="live-clock"></span>
+      </div>
       <div class="flex items-center gap-3">
-        <p class="hidden text-sm text-blue-100 md:block">Dispatcher: <span id="user-name">User</span></p>
-        <button id="admin-btn" class="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-blue-600" style="display: none;">Admin</button>
-        <button id="logout-btn" class="rounded-lg bg-brand-action px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-orange-500">Log Out</button>
+        <div class="hidden items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs md:flex">
+          <div class="pulse-dot h-2 w-2 rounded-full bg-emerald-400"></div>
+          <span class="font-semibold text-slate-300">Dispatcher:</span>
+          <span id="user-name" class="font-bold text-white">User</span>
+        </div>
+        <span id="quickbooks-status-badge" class="hidden rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-300">QB: Not Connected</span>
+        <span id="google-calendar-status-badge" class="hidden rounded-full border border-blue-500/40 bg-blue-500/15 px-3 py-1 text-xs font-semibold text-blue-300">GC: Not Connected</span>
+        <button id="admin-btn" class="rounded-lg border border-blue-500/40 bg-blue-500/15 px-4 py-2 text-xs font-bold text-blue-300 transition hover:bg-blue-500/25" style="display: none;"><i class="fa-solid fa-shield-halved mr-1"></i>Admin</button>
+        <button id="logout-btn" class="rounded-lg bg-brand-action px-4 py-2 text-xs font-bold text-white transition hover:bg-orange-500"><i class="fa-solid fa-right-from-bracket mr-1"></i>Log Out</button>
       </div>
     </div>
   </header>
 
   <main class="mx-auto max-w-[1500px] px-4 pb-8 pt-24 lg:px-6 lg:pt-28">
-    <section class="mb-5 rounded-2xl border border-white/60 bg-white/85 p-4 elevated backdrop-blur sm:p-5">
-      <div class="flex flex-wrap items-center justify-between gap-3">
+    <!-- Toolbar Card -->
+    <section class="mb-5 glass-card rounded-2xl p-5">
+      <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 class="text-xl font-bold tracking-tight text-brand-blue">Premium Dispatch Grid</h2>
-          <p class="mt-1 text-sm text-slate-600">Operate your day like a high-performance control tower with fluid assignment and live time blocking.</p>
+          <div class="flex items-center gap-2">
+            <h2 class="text-xl font-black tracking-tight text-white">Dispatch Command Center</h2>
+            <span class="rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-bold text-blue-300 ring-1 ring-blue-500/30">Live</span>
+          </div>
+          <p class="mt-1 text-sm text-slate-400">Fluid assignment and live time blocking for every tech on the board.</p>
         </div>
-        <div id="manual-block-indicator" class="hidden rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-lg">
-          Manual Block Mode (Ctrl)
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <div class="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5">
+            <label for="board-date" class="text-xs font-semibold text-slate-300">Date</label>
+            <input id="board-date" type="date" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-black">
+            <button id="board-date-today" type="button" class="rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/20">Today</button>
+          </div>
+          <button id="clients-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-300 transition hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-blue-300">
+            <i class="fa-solid fa-address-book"></i>Clients
+          </button>
+          <button id="add-employee-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-2 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/20">
+            <i class="fa-solid fa-user-plus"></i>Employees
+          </button>
+          <button id="connections-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
+            <i class="fa-solid fa-plug-circle-bolt"></i>Connections
+          </button>
+          <a href="/employee_schedule.html" class="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20">
+            <i class="fa-solid fa-calendar-days"></i>Employee View
+          </a>
+          <button id="add-appointment-btn" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-action px-4 py-2 text-xs font-bold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-500">
+            <i class="fa-solid fa-plus"></i>Add Appointment
+          </button>
+          <div id="manual-block-indicator" class="hidden rounded-lg bg-violet-600/80 border border-violet-400/30 px-3 py-2 text-xs font-semibold text-white">
+            <i class="fa-solid fa-hand-pointer mr-1"></i>Manual Block Mode (Ctrl)
+          </div>
         </div>
       </div>
-      <div class="mt-4 grid gap-3 sm:grid-cols-3">
-        <article class="rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3">
-          <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">On-Time Arrival</p>
-          <p class="mt-1 text-2xl font-extrabold text-blue-900">96.4%</p>
+      <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
+        <div class="mb-2 flex items-center justify-between gap-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">5 Day Assignment Calendar</p>
+          <p id="active-board-date-label" class="text-xs font-semibold text-blue-300">Today</p>
+        </div>
+        <div id="five-day-calendar" class="grid grid-cols-1 gap-2 sm:grid-cols-5"></div>
+      </div>
+      <!-- KPI Stats -->
+      <div class="mt-5 grid gap-3 sm:grid-cols-3">
+        <article class="stat-glow-blue flex items-center gap-4 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-5 py-4">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400">
+            <i class="fa-solid fa-clock"></i>
+          </span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-blue-400">On-Time Arrival</p>
+            <p class="mt-0.5 text-2xl font-black text-white">96.4<span class="text-sm font-bold text-blue-300">%</span></p>
+          </div>
         </article>
-        <article class="rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
-          <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">In Progress Jobs</p>
-          <p class="mt-1 text-2xl font-extrabold text-emerald-900">12</p>
+        <article class="stat-glow-green flex items-center gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+          </span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-400">In Progress</p>
+            <p class="mt-0.5 text-2xl font-black text-white" id="stat-in-progress">—</p>
+          </div>
         </article>
-        <article class="rounded-xl border border-amber-100 bg-amber-50/70 px-4 py-3">
-          <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Unassigned</p>
-          <p class="mt-1 text-2xl font-extrabold text-amber-900">5</p>
+        <article class="stat-glow-amber flex items-center gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-5 py-4">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">Unassigned</p>
+            <p class="mt-0.5 text-2xl font-black text-white" id="stat-unassigned">—</p>
+          </div>
         </article>
       </div>
     </section>
 
     <section class="grid gap-5 lg:grid-cols-[320px_1fr]">
-      <aside class="rounded-2xl border border-white/70 bg-white/90 p-4 elevated backdrop-blur">
+      <!-- Pending Tray -->
+      <aside class="glass-card rounded-2xl p-4">
         <div class="mb-3 flex items-center justify-between gap-2">
-          <h3 class="text-base font-bold text-brand-blue">Pending Tray</h3>
-          <button id="toggle-pending" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">Collapse</button>
+          <div class="flex items-center gap-2">
+            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400 text-xs">
+              <i class="fa-solid fa-inbox"></i>
+            </span>
+            <h3 class="text-sm font-bold text-white">Pending Tray</h3>
+          </div>
+          <button id="toggle-pending" class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:text-white">Collapse</button>
         </div>
-        <p class="mb-3 text-xs text-slate-500">Unassigned jobs waiting for dispatch.</p>
-        <div id="pending-tray" class="lux-grid space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-3">
+        <p class="mb-3 text-xs text-slate-500">Unassigned jobs awaiting dispatch.</p>
+        <div id="pending-tray" class="lux-grid space-y-3 rounded-xl border border-dashed border-white/10 bg-white/5 p-3">
           <p class="text-sm text-slate-500">Loading pending jobs...</p>
         </div>
       </aside>
 
-      <section class="rounded-2xl border border-white/70 bg-white/90 p-4 elevated backdrop-blur">
+      <!-- Dispatch Board -->
+      <section class="glass-card rounded-2xl p-4">
         <div class="overflow-x-auto">
           <div id="dispatch-board" class="min-w-[980px]"></div>
         </div>
@@ -125,62 +215,258 @@
   </main>
 
   <template id="job-card-template">
-    <article class="job-card cursor-grab rounded-xl border p-3 shadow-sm transition active:cursor-grabbing" draggable="false">
+    <article class="job-card cursor-grab rounded-xl border border-white/10 bg-white/8 p-3 shadow-sm transition hover:border-blue-500/30 hover:shadow-blue-500/10 active:cursor-grabbing" draggable="false" style="background: rgba(255,255,255,0.07);">
       <div class="flex items-start justify-between gap-2">
-        <p class="job-customer truncate text-sm font-bold"></p>
+        <p class="job-customer truncate text-sm font-bold text-white"></p>
         <div class="job-icons flex items-center gap-1 text-xs"></div>
       </div>
-      <p class="job-type mt-1 text-xs"></p>
+      <p class="job-type mt-1 text-xs text-slate-400"></p>
       <div class="mt-2 flex items-center justify-between">
         <span class="job-status inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold"></span>
-        <button type="button" class="job-detail-btn rounded-md bg-slate-800 px-2 py-1 text-[11px] font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-900">Details</button>
+        <button type="button" class="job-detail-btn rounded-md bg-white/10 border border-white/15 px-2 py-1 text-[11px] font-semibold text-slate-300 transition hover:bg-white/20 hover:text-white">Details</button>
       </div>
     </article>
   </template>
 
-  <!-- Admin Modal -->
-  <div id="admin-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+  <!-- Job Details Modal -->
+  <div id="job-detail-modal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-brand-blue">System Administration</h2>
-          <p class="mt-1 text-sm text-slate-600">Manage users and their roles</p>
+          <h2 class="text-2xl font-black text-white">Appointment Details</h2>
+          <p id="job-detail-subtitle" class="mt-1 text-sm text-slate-300"></p>
         </div>
-        <button id="close-admin-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+        <button id="close-job-detail-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Client Name</p>
+          <p id="job-detail-client" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Phone</p>
+          <p id="job-detail-phone" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</p>
+          <p id="job-detail-email" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Service</p>
+          <p id="job-detail-service" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3 sm:col-span-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Address</p>
+          <p id="job-detail-address" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
+          <p id="job-detail-status" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Scheduled Time</p>
+          <p id="job-detail-time" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Assigned Tech</p>
+          <p id="job-detail-tech" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Duration</p>
+          <p id="job-detail-duration" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3 sm:col-span-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Notes</p>
+          <p id="job-detail-notes" class="mt-1 text-sm font-semibold text-white"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clients Modal -->
+  <div id="clients-modal" class="hidden fixed inset-0 z-[96] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-black text-white">Client Database</h2>
+          <p class="mt-1 text-sm text-slate-300">Save client details once, then reuse them for appointments.</p>
+        </div>
+        <button id="close-clients-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
+      </div>
+
+      <form id="client-form" class="mb-5 grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-2">
+        <input id="client-name" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Client name">
+        <input id="client-phone" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Phone number">
+        <input id="client-email" type="email" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Email address">
+        <input id="client-address-line1" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Address line 1">
+        <input id="client-address-line2" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Address line 2">
+        <input id="client-city" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="City">
+        <input id="client-state" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="State">
+        <input id="client-postal-code" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Postal code">
+        <textarea id="client-notes" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500 sm:col-span-2" rows="2" placeholder="Client notes"></textarea>
+        <div class="sm:col-span-2">
+          <button id="save-client-btn" type="submit" class="rounded-lg rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">Save Client</button>
+        </div>
+      </form>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table class="w-full text-sm">
+          <thead class="border-b border-slate-200 bg-slate-100">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Name</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Phone</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Email</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Address</th>
+            </tr>
+          </thead>
+          <tbody id="clients-table-body">
+            <tr><td colspan="4" class="px-3 py-3 text-center text-slate-700">No clients yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employees Modal -->
+  <div id="employees-modal" class="hidden fixed inset-0 z-[96] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-black text-white">Employee Database</h2>
+          <p class="mt-1 text-sm text-slate-300">Add, deactivate, or remove employees used for dispatch assignments.</p>
+        </div>
+        <button id="close-employees-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
+      </div>
+
+      <form id="employee-form" class="mb-5 grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-[1fr_auto]">
+        <input id="employee-name" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Employee name">
+        <button id="save-employee-btn" type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">Add Employee</button>
+      </form>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table class="w-full text-sm">
+          <thead class="border-b border-slate-200 bg-slate-100">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Name</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Source</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Status</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-800">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="employees-table-body">
+            <tr><td colspan="4" class="px-3 py-3 text-center text-slate-700">No employees yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Appointment Modal -->
+  <div id="appointment-modal" class="hidden fixed inset-0 z-[97] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-black text-white">Create Appointment</h2>
+          <p class="mt-1 text-sm text-slate-300">Choose a saved client and create a new appointment.</p>
+        </div>
+        <button id="close-appointment-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
+      </div>
+
+      <form id="appointment-form" class="grid gap-3 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Client</label>
+          <select id="appointment-client-id" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black">
+            <option value="">Select a client</option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">Appointment Date</label>
+          <input id="appointment-date" type="date" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black">
+        </div>
+        <input id="appointment-service" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:col-span-2" placeholder="Service type">
+        <input id="appointment-duration" required type="number" min="1" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Duration minutes" value="60">
+        <textarea id="appointment-notes" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500 sm:col-span-2" rows="2" placeholder="Appointment notes (optional)"></textarea>
+
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-slate-300 sm:col-span-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Client Preview</p>
+          <p id="appointment-client-preview" class="mt-1 whitespace-pre-line">Select a client to preview phone, email, and address.</p>
+        </div>
+
+        <div class="sm:col-span-2">
+          <button id="create-appointment-submit" type="submit" class="rounded-lg bg-brand-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500">Create Appointment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Connect Client Modal -->
+  <div id="connect-client-modal" class="hidden fixed inset-0 z-[98] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-black text-white">Connect Integrations</h2>
+          <p class="mt-1 text-sm text-slate-300">Connect QuickBooks or Google Calendar to your scheduling workspace.</p>
+        </div>
+        <button id="close-connect-client-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
+      </div>
+
+      <form id="connect-client-form" class="grid gap-3">
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">Account</label>
+          <input id="connect-username" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="App username">
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">Integration</label>
+          <select id="connect-provider" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black">
+            <option value="quickbooks">QuickBooks</option>
+          <option value="google_calendar">Google Calendar</option>
+          </select>
+        </div>
+
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-300">Integration Status</p>
+          <p id="connect-client-preview" class="mt-1 whitespace-pre-line">Loading connection status...</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="connect-client-submit" type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">Connect</button>
+          <button id="connect-google-calendar-btn" type="button" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-60">Connect Google Calendar</button>
+          <button id="sync-quickbooks-btn" type="button" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60">Sync Now</button>
+          <button id="disconnect-client-btn" type="button" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60">Disconnect QuickBooks</button>
+          <button id="disconnect-google-calendar-btn" type="button" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-60">Disconnect Google Calendar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Modal -->
+  <div id="admin-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-black text-white">System Administration</h2>
+          <p class="mt-1 text-sm text-slate-300">Manage users and their roles</p>
+        </div>
+        <button id="close-admin-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
       
-      <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-        <h3 class="mb-4 text-lg font-bold text-brand-blue">User Management</h3>
-        <div class="mb-4 rounded-lg border border-slate-200 bg-white p-4">
-          <h4 class="mb-2 text-sm font-semibold text-slate-700">Create New User</h4>
-          <form id="create-user-form" class="space-y-3">
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label for="new-username" class="block text-xs font-medium text-slate-600">Username</label>
-                <input id="new-username" name="new-username" type="email" placeholder="user@company.com" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" required>
-              </div>
-              <div>
-                <label for="new-password" class="block text-xs font-medium text-slate-600">Password</label>
-                <input id="new-password" name="new-password" type="password" minlength="8" placeholder="At least 8 chars" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" required>
-              </div>
-            </div>
-            <button type="submit" class="rounded bg-brand-action px-4 py-2 text-sm font-semibold text-white hover:bg-orange-500">Create User</button>
-            <p id="create-user-status" class="text-xs text-slate-600"></p>
-          </form>
-        </div>
+      <div class="rounded-xl border border-slate-200 bg-white p-4">
+        <h3 class="mb-4 text-lg font-bold text-slate-900">User Management</h3>
         <div id="users-table-container" class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead>
+            <thead class="bg-slate-100">
               <tr class="border-b border-slate-300">
-                <th class="px-4 py-3 text-left font-semibold text-slate-700">Username</th>
-                <th class="px-4 py-3 text-left font-semibold text-slate-700">Role</th>
-                <th class="px-4 py-3 text-left font-semibold text-slate-700">Created</th>
-                <th class="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-800">Username</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-800">Role</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-800">Created</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-800">Actions</th>
               </tr>
             </thead>
             <tbody id="users-table-body">
               <tr>
-                <td colspan="3" class="px-4 py-3 text-center text-slate-500">Loading users...</td>
+                <td colspan="3" class="px-4 py-3 text-center text-slate-700">Loading users...</td>
               </tr>
             </tbody>
           </table>
@@ -190,20 +476,164 @@
   </div>
 
   <script>
-    const TECHNICIANS = ["Dave", "Sarah", "Alex"];
+    const DEFAULT_TECHNICIANS = ["Dave", "Sarah", "Alex"];
+    let TECHNICIANS = [...DEFAULT_TECHNICIANS];
     const TIMES = [
       "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
       "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM"
     ];
 
     const boardEl = document.getElementById("dispatch-board");
+    const boardDateEl = document.getElementById("board-date");
+    const boardDateTodayBtn = document.getElementById("board-date-today");
+    const fiveDayCalendarEl = document.getElementById("five-day-calendar");
+    const activeBoardDateLabelEl = document.getElementById("active-board-date-label");
     const pendingTrayEl = document.getElementById("pending-tray");
     const manualIndicatorEl = document.getElementById("manual-block-indicator");
     const togglePendingBtn = document.getElementById("toggle-pending");
+    const clientsBtn = document.getElementById("clients-btn");
+    const addEmployeeBtn = document.getElementById("add-employee-btn");
+    const connectionsBtn = document.getElementById("connections-btn");
+    const addAppointmentBtn = document.getElementById("add-appointment-btn");
     const jobTemplate = document.getElementById("job-card-template");
+    const jobDetailModal = document.getElementById("job-detail-modal");
+    const closeJobDetailModalBtn = document.getElementById("close-job-detail-modal");
+    const clientsModal = document.getElementById("clients-modal");
+    const closeClientsModalBtn = document.getElementById("close-clients-modal");
+    const clientsTableBody = document.getElementById("clients-table-body");
+    const clientForm = document.getElementById("client-form");
+    const saveClientBtn = document.getElementById("save-client-btn");
+    const employeesModal = document.getElementById("employees-modal");
+    const closeEmployeesModalBtn = document.getElementById("close-employees-modal");
+    const employeesTableBody = document.getElementById("employees-table-body");
+    const employeeForm = document.getElementById("employee-form");
+    const employeeNameEl = document.getElementById("employee-name");
+    const saveEmployeeBtn = document.getElementById("save-employee-btn");
+    const appointmentModal = document.getElementById("appointment-modal");
+    const closeAppointmentModalBtn = document.getElementById("close-appointment-modal");
+    const appointmentForm = document.getElementById("appointment-form");
+    const appointmentClientIdEl = document.getElementById("appointment-client-id");
+    const appointmentServiceEl = document.getElementById("appointment-service");
+    const appointmentDateEl = document.getElementById("appointment-date");
+    const appointmentDurationEl = document.getElementById("appointment-duration");
+    const appointmentNotesEl = document.getElementById("appointment-notes");
+    const appointmentClientPreviewEl = document.getElementById("appointment-client-preview");
+    const createAppointmentSubmitBtn = document.getElementById("create-appointment-submit");
+    const connectClientModal = document.getElementById("connect-client-modal");
+    const closeConnectClientModalBtn = document.getElementById("close-connect-client-modal");
+    const connectClientForm = document.getElementById("connect-client-form");
+    const connectUsernameEl = document.getElementById("connect-username");
+    const connectProviderEl = document.getElementById("connect-provider");
+    const connectClientPreviewEl = document.getElementById("connect-client-preview");
+    const connectClientSubmitBtn = document.getElementById("connect-client-submit");
+    const connectGoogleCalendarBtn = document.getElementById("connect-google-calendar-btn");
+    const syncQuickBooksBtn = document.getElementById("sync-quickbooks-btn");
+    const disconnectClientBtn = document.getElementById("disconnect-client-btn");
+    const disconnectGoogleCalendarBtn = document.getElementById("disconnect-google-calendar-btn");
+    const quickbooksStatusBadgeEl = document.getElementById("quickbooks-status-badge");
 
     let isCtrlPressed = false;
     let isDraggingJob = false;
+    let clientsCache = [];
+    let employeesCache = [];
+    let authenticatedUser = "";
+    let authenticatedUserId = null;
+    let authenticatedRole = "Employee";
+    let userIntegration = null;
+    let connectUsernameMissing = false;
+    let activeBoardDate = "";
+
+    function todayIsoDate() {
+      const now = new Date();
+      const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 10);
+    }
+
+    function selectedBoardDate() {
+      return String(boardDateEl?.value || activeBoardDate || todayIsoDate()).trim();
+    }
+
+    function isoDateToLocalDate(isoDate) {
+      const value = String(isoDate || "").trim();
+      if (!value) return null;
+      const parts = value.split("-").map((part) => Number(part));
+      if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) {
+        return null;
+      }
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function formatBoardDateLabel(isoDate) {
+      const dateObj = isoDateToLocalDate(isoDate);
+      if (!dateObj) return "Today";
+      return dateObj.toLocaleDateString([], {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+    }
+
+    function buildFiveDayCalendar() {
+      if (!fiveDayCalendarEl) return;
+
+      const start = isoDateToLocalDate(todayIsoDate());
+      if (!start) return;
+
+      const selected = selectedBoardDate();
+      const cards = [];
+
+      for (let i = 0; i < 5; i += 1) {
+        const day = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+        const iso = [
+          day.getFullYear(),
+          String(day.getMonth() + 1).padStart(2, "0"),
+          String(day.getDate()).padStart(2, "0")
+        ].join("-");
+        const isSelected = iso === selected;
+        const isToday = i === 0;
+        const weekday = day.toLocaleDateString([], { weekday: "short" });
+        const monthDay = day.toLocaleDateString([], { month: "short", day: "numeric" });
+
+        cards.push(`
+          <button
+            type="button"
+            data-board-day="${iso}"
+            class="rounded-lg border px-3 py-2 text-left transition ${isSelected
+              ? "border-blue-400/60 bg-blue-500/20 text-blue-200"
+              : "border-white/15 bg-white/5 text-slate-300 hover:border-blue-500/40 hover:bg-blue-500/10"}"
+          >
+            <p class="text-[11px] font-semibold uppercase tracking-wide ${isSelected ? "text-blue-300" : "text-slate-400"}">${weekday}${isToday ? " · Today" : ""}</p>
+            <p class="mt-0.5 text-sm font-bold">${monthDay}</p>
+          </button>
+        `);
+      }
+
+      fiveDayCalendarEl.innerHTML = cards.join("");
+      if (activeBoardDateLabelEl) {
+        activeBoardDateLabelEl.textContent = formatBoardDateLabel(selected);
+      }
+
+      fiveDayCalendarEl.querySelectorAll("button[data-board-day]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const nextDate = String(button.getAttribute("data-board-day") || "").trim();
+          if (!nextDate) return;
+          setBoardDate(nextDate);
+          await loadJobs();
+        });
+      });
+    }
+
+    function setBoardDate(value) {
+      const next = String(value || "").trim() || todayIsoDate();
+      activeBoardDate = next;
+      if (boardDateEl) {
+        boardDateEl.value = next;
+      }
+      if (appointmentDateEl && !appointmentDateEl.value) {
+        appointmentDateEl.value = next;
+      }
+      buildFiveDayCalendar();
+    }
 
     function updateManualUI() {
       const active = isDraggingJob && isCtrlPressed;
@@ -232,24 +662,24 @@
     function statusStyle(status) {
       if (status === "In Progress") {
         return {
-          card: "border-emerald-300 bg-emerald-50/90 hover:shadow-md",
-          text: "text-emerald-700",
-          pill: "bg-emerald-100 text-emerald-700",
+          card: "border-emerald-500/40 bg-emerald-500/10 hover:border-emerald-400/60",
+          text: "text-emerald-300",
+          pill: "bg-emerald-500/20 text-emerald-300",
           icon: "fa-solid fa-circle-play"
         };
       }
       if (status === "Completed" || status === "Finished") {
         return {
-          card: "border-slate-300 bg-slate-50/90 hover:shadow-md",
-          text: "text-slate-700",
-          pill: "bg-slate-200 text-slate-700",
+          card: "border-white/10 bg-white/5 hover:border-white/20",
+          text: "text-slate-400",
+          pill: "bg-white/10 text-slate-400",
           icon: "fa-solid fa-circle-check"
         };
       }
       return {
-        card: "border-blue-300 bg-blue-50/90 hover:shadow-md",
-        text: "text-blue-700",
-        pill: "bg-blue-100 text-blue-700",
+        card: "border-blue-500/40 bg-blue-500/10 hover:border-blue-400/60",
+        text: "text-blue-300",
+        pill: "bg-blue-500/20 text-blue-300",
         icon: "fa-solid fa-calendar-day"
       };
     }
@@ -289,53 +719,105 @@
       customer.textContent = job.customer_name;
       customer.className = `job-customer truncate text-sm font-bold ${style.text}`;
       type.textContent = job.service_type;
-      type.className = "job-type mt-1 text-xs text-slate-600";
+      type.className = "job-type mt-1 text-xs text-slate-300";
 
       if (job.emergency) {
-        icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-600" title="Emergency"><i class="fa-solid fa-bolt"></i></span>';
+      icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500/20 text-red-400" title="Emergency"><i class="fa-solid fa-bolt"></i></span>';
       }
       if (job.recurring) {
-        icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-amber-600" title="Recurring"><i class="fa-solid fa-arrows-rotate"></i></span>';
+      icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20 text-amber-400" title="Recurring"><i class="fa-solid fa-arrows-rotate"></i></span>';
       }
 
       statusEl.className = `job-status inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${style.pill}`;
       statusEl.innerHTML = `<i class="${style.icon}"></i><span>${status === "Completed" ? "Finished" : status}</span>`;
 
       detailBtn.addEventListener("click", () => {
-        alert(`Job ID: ${job.id}`);
+        openJobDetailModal(job);
       });
 
       return card;
+    }
+
+    function textOrFallback(value) {
+      const text = String(value || "").trim();
+      return text || "Not provided";
+    }
+
+    function formatAddress(job) {
+      const line1 = String(job.address_line1 || "").trim();
+      const line2 = String(job.address_line2 || "").trim();
+      const city = String(job.city || "").trim();
+      const state = String(job.state || "").trim();
+      const postal = String(job.postal_code || "").trim();
+
+      const cityStatePostal = [city, state, postal].filter(Boolean).join(", ");
+      const parts = [line1, line2, cityStatePostal].filter(Boolean);
+      return parts.length > 0 ? parts.join("\n") : "Not provided";
+    }
+
+    function openJobDetailModal(job) {
+      if (!jobDetailModal) return;
+
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+
+      setText("job-detail-subtitle", `Job #${job.id}`);
+      setText("job-detail-client", textOrFallback(job.customer_name));
+      setText("job-detail-phone", textOrFallback(job.phone));
+      setText("job-detail-email", textOrFallback(job.email));
+      setText("job-detail-service", textOrFallback(job.service_type));
+      setText("job-detail-address", formatAddress(job));
+      setText("job-detail-status", textOrFallback(job.status));
+      setText("job-detail-time", textOrFallback(job.time));
+      setText("job-detail-tech", textOrFallback(job.assigned_tech));
+      setText("job-detail-duration", `${Number(job.duration_minutes || 0) || 0} minutes`);
+      setText("job-detail-notes", textOrFallback(job.notes));
+
+      jobDetailModal.classList.remove("hidden");
+    }
+
+    function initJobDetailModal() {
+      closeJobDetailModalBtn?.addEventListener("click", () => {
+        jobDetailModal?.classList.add("hidden");
+      });
+
+      jobDetailModal?.addEventListener("click", (event) => {
+        if (event.target === jobDetailModal) {
+          jobDetailModal.classList.add("hidden");
+        }
+      });
     }
 
     function buildDispatchBoard() {
       if (!boardEl) return;
 
       const grid = document.createElement("div");
-      grid.className = "grid overflow-hidden rounded-xl border border-slate-200 bg-white";
+      grid.className = "grid overflow-hidden rounded-xl border border-white/10";
       grid.style.gridTemplateColumns = `92px repeat(${TECHNICIANS.length}, minmax(0, 1fr))`;
 
       const corner = document.createElement("div");
-      corner.className = "sticky left-0 top-0 z-20 border-b border-r border-slate-200 bg-slate-100 px-3 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500";
+      corner.className = "sticky left-0 top-0 z-20 border-b border-r border-white/10 bg-[#0a0f1e] px-3 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500";
       corner.textContent = "Time";
       grid.appendChild(corner);
 
       TECHNICIANS.forEach((tech) => {
         const head = document.createElement("div");
-        head.className = "border-b border-r border-slate-200 bg-gradient-to-b from-slate-50 to-slate-100 px-3 py-3 text-sm font-bold text-brand-blue";
+        head.className = "border-b border-r border-white/10 bg-blue-500/10 px-3 py-3 text-sm font-bold text-blue-300";
         head.textContent = tech;
         grid.appendChild(head);
       });
 
       TIMES.forEach((time) => {
         const timeCell = document.createElement("div");
-        timeCell.className = "border-r border-t border-slate-200 bg-slate-50/60 px-3 py-4 text-xs font-semibold text-slate-500";
+        timeCell.className = "border-r border-t border-white/10 bg-white/3 px-3 py-4 text-xs font-semibold text-slate-500";
         timeCell.textContent = time;
         grid.appendChild(timeCell);
 
         TECHNICIANS.forEach((tech) => {
           const cell = document.createElement("div");
-          cell.className = "dispatch-cell lux-grid min-h-[92px] border-r border-t border-slate-200 bg-white/90 p-2";
+          cell.className = "dispatch-cell lux-grid min-h-[92px] border-r border-t border-white/10 bg-white/3 p-2";
           cell.dataset.time = time;
           cell.dataset.tech = tech;
           grid.appendChild(cell);
@@ -372,7 +854,7 @@
           if (!blockCell) continue;
 
           const marker = document.createElement("div");
-          marker.className = "unavailable-slot mt-1 rounded-lg border border-slate-300 bg-slate-300/80 px-2 py-2 text-[11px] font-semibold text-slate-700";
+          marker.className = "unavailable-slot mt-1 rounded-lg border border-slate-300 bg-slate-300/80 px-2 py-2 text-[11px] font-semibold text-slate-300";
           marker.textContent = "Unavailable";
           blockCell.appendChild(marker);
         }
@@ -380,13 +862,18 @@
     }
 
     async function persistJobSchedule(jobId, status, time, assignedTech, manualBlockMinutes) {
+      const username = String(authenticatedUser || "").trim();
+      const user_id = authenticatedUserId || null;
       const response = await fetch("/api/jobs/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          username,
+          user_id,
           id: Number(jobId),
           status,
           time,
+          scheduled_date: selectedBoardDate(),
           assigned_tech: assignedTech,
           manual_block_minutes: manualBlockMinutes
         })
@@ -397,6 +884,1017 @@
         throw new Error(payload.error || "Failed to save job update.");
       }
       return response.json();
+    }
+
+    function maybeShowCalendarSyncWarning(payload) {
+      const warning = String(payload?.calendar_sync_warning || "").trim();
+      if (!warning) return;
+      showToast(`Schedule saved, but Google Calendar sync had an issue: ${warning}`, "warning");
+    }
+
+    function showToast(message, tone = "info") {
+      const text = String(message || "").trim();
+      if (!text) return;
+
+      let stack = document.getElementById("app-toast-stack");
+      if (!stack) {
+        stack = document.createElement("div");
+        stack.id = "app-toast-stack";
+        stack.className = "pointer-events-none fixed bottom-4 right-4 z-[120] flex max-w-sm flex-col gap-2";
+        document.body.appendChild(stack);
+      }
+
+      const toast = document.createElement("div");
+      const toneClass = tone === "warning"
+        ? "border-amber-300 bg-amber-50 text-amber-900"
+        : tone === "error"
+          ? "border-rose-300 bg-rose-50 text-rose-900"
+          : "border-blue-300 bg-blue-50 text-blue-900";
+      toast.className = `pointer-events-auto rounded-lg border px-3 py-2 text-sm shadow-lg transition-all duration-200 ${toneClass}`;
+      toast.textContent = text;
+      stack.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.style.opacity = "1";
+      });
+
+      window.setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(6px)";
+        window.setTimeout(() => {
+          toast.remove();
+          if (stack && stack.childElementCount === 0) {
+            stack.remove();
+          }
+        }, 220);
+      }, 3600);
+    }
+
+    async function createAppointment(payload) {
+      const username = String(authenticatedUser || "").trim();
+      const user_id = authenticatedUserId || null;
+      const response = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, username, user_id })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to create appointment.");
+      }
+      return response.json();
+    }
+
+    async function fetchClients() {
+      let query;
+      if (authenticatedUserId) {
+        query = new URLSearchParams({ user_id: authenticatedUserId });
+      } else {
+        query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+      }
+      const response = await fetch(`/api/clients?${query.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to load clients.");
+      }
+      const payload = await response.json();
+      return Array.isArray(payload.clients) ? payload.clients : [];
+    }
+
+    async function createClient(payload) {
+      const username = String(authenticatedUser || "").trim();
+      const user_id = authenticatedUserId || null;
+      const response = await fetch("/api/clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, username, user_id })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to save client.");
+      }
+      return response.json();
+    }
+
+    async function fetchEmployees() {
+      let query;
+      if (authenticatedUserId) {
+        query = new URLSearchParams({ user_id: authenticatedUserId });
+      } else {
+        query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+      }
+      const response = await fetch(`/api/employees?${query.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to load employees.");
+      }
+      const payload = await response.json();
+      return Array.isArray(payload.employees) ? payload.employees : [];
+    }
+
+    async function createEmployee(payload) {
+        const user_id = authenticatedUserId || null;
+      const username = String(authenticatedUser || "").trim();
+      const response = await fetch("/api/employees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, username, user_id })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to add employee.");
+      }
+      return response.json();
+    }
+
+    async function setEmployeeStatus(employeeId, active) {
+        const user_id = authenticatedUserId || null;
+      const username = String(authenticatedUser || "").trim();
+      const response = await fetch("/api/employees/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, user_id, employee_id: Number(employeeId), active })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to update employee status.");
+      }
+      return response.json();
+    }
+
+    async function deleteEmployee(employeeId) {
+        const user_id = authenticatedUserId || null;
+      const username = String(authenticatedUser || "").trim();
+      const response = await fetch("/api/employees/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, user_id, employee_id: Number(employeeId) })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to delete employee.");
+      }
+      return response.json();
+    }
+
+    async function importQuickBooksEmployees(username, user_id) {
+      const response = await fetch("/api/quickbooks/employees/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, user_id })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to import QuickBooks employees.");
+      }
+
+      const payload = await response.json();
+      return Array.isArray(payload.employees) ? payload.employees : [];
+    }
+
+    async function importQuickBooksClients(username, user_id) {
+      const response = await fetch("/api/quickbooks/clients/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, user_id })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to import QuickBooks clients.");
+      }
+
+      return response.json();
+    }
+
+    async function fetchUserConnectStatus(username) {
+      // Use user_id if available, otherwise use username
+      let query;
+      if (authenticatedUserId && username === authenticatedUser) {
+        query = new URLSearchParams({ user_id: authenticatedUserId });
+      } else {
+        query = new URLSearchParams({ username: String(username || "").trim() });
+      }
+      const response = await fetch(`/api/users/connect-status?${query.toString()}`);
+
+      if (!response.ok) {
+        let message = "Failed to load integration status.";
+        const payload = await response.json().catch(() => null);
+        if (payload && typeof payload.error === "string" && payload.error.trim()) {
+          message = payload.error.trim();
+        } else {
+          const fallbackText = await response.text().catch(() => "");
+          if (fallbackText) {
+            message = fallbackText.slice(0, 200).trim() || message;
+          }
+        }
+        throw new Error(message);
+      }
+
+      const payload = await response.json();
+      return payload.user || null;
+    }
+
+    async function fetchAppUsers() {
+      const response = await fetch("/api/users", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Failed to load users.");
+      }
+      const payload = await response.json();
+      return Array.isArray(payload.users) ? payload.users : [];
+    }
+
+    async function appUsernameExists(username) {
+      const normalized = String(username || "").trim().toLowerCase();
+      if (!normalized) return false;
+      const users = await fetchAppUsers();
+      return users.some((u) => String(u.username || "").trim().toLowerCase() === normalized);
+    }
+
+    function startQuickBooksAuth(username) {
+      const normalized = String(username || "").trim();
+      const params = new URLSearchParams();
+      if (authenticatedUserId && normalized === String(authenticatedUser || "").trim()) {
+        params.set("user_id", String(authenticatedUserId));
+      } else {
+        params.set("username", normalized);
+      }
+      window.location.href = `/api/quickbooks/connect?${params.toString()}`;
+    }
+
+    function startGoogleCalendarAuth(username) {
+      const normalized = String(username || "").trim();
+      const params = new URLSearchParams();
+      if (authenticatedUserId && normalized === String(authenticatedUser || "").trim()) {
+        params.set("user_id", String(authenticatedUserId));
+      } else {
+        params.set("username", normalized);
+      }
+      window.location.href = `/api/google-calendar/connect?${params.toString()}`;
+    }
+
+    function selectedConnectUsername() {
+      return String(connectUsernameEl?.value || authenticatedUser || "").trim();
+    }
+
+    async function disconnectUser(payload) {
+      const response = await fetch("/api/users/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to disconnect QuickBooks.");
+      }
+
+      return response.json();
+    }
+
+    function hasQuickBooksConnection() {
+      if (!userIntegration) return false;
+      if (typeof userIntegration.quickbooks_connected === "boolean") {
+        return userIntegration.quickbooks_connected;
+      }
+      return Boolean(
+        userIntegration.integration_connected
+        && String(userIntegration.integration_provider || "").trim() === "quickbooks"
+      );
+    }
+
+    function hasGoogleCalendarConnection() {
+      if (!userIntegration) return false;
+      if (typeof userIntegration.google_calendar_connected === "boolean") {
+        return userIntegration.google_calendar_connected;
+      }
+      return Boolean(
+        userIntegration.integration_connected
+        && String(userIntegration.integration_provider || "").trim() === "google_calendar"
+      );
+    }
+
+    function renderQuickBooksBadge() {
+      if (!quickbooksStatusBadgeEl) return;
+      quickbooksStatusBadgeEl.classList.remove("hidden");
+
+      const isConnected = hasQuickBooksConnection();
+      const provider = "QuickBooks";
+      const companyName = String(userIntegration?.quickbooks_company_name || "").trim();
+      if (isConnected) {
+        const descriptor = companyName ? `${provider} - ${companyName}` : provider;
+        quickbooksStatusBadgeEl.textContent = `QuickBooks: Connected (${descriptor})`;
+        quickbooksStatusBadgeEl.className = "rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800";
+        return;
+      }
+
+      quickbooksStatusBadgeEl.textContent = "QuickBooks: Not Connected";
+      quickbooksStatusBadgeEl.className = "rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800";
+    }
+
+    function renderGoogleCalendarBadge() {
+      const googleCalendarStatusBadgeEl = document.getElementById("google-calendar-status-badge");
+      if (!googleCalendarStatusBadgeEl) return;
+
+      const isConnected = hasGoogleCalendarConnection();
+      if (isConnected) {
+        googleCalendarStatusBadgeEl.textContent = "GC: Connected";
+        googleCalendarStatusBadgeEl.classList.remove(
+          "hidden",
+          "border-blue-500/40",
+          "bg-blue-500/15",
+          "text-blue-300"
+        );
+        googleCalendarStatusBadgeEl.classList.add(
+          "border-emerald-500/40",
+          "bg-emerald-500/15",
+          "text-emerald-300"
+        );
+      } else {
+        googleCalendarStatusBadgeEl.textContent = "GC: Not Connected";
+        googleCalendarStatusBadgeEl.classList.remove(
+          "border-emerald-500/40",
+          "bg-emerald-500/15",
+          "text-emerald-300"
+        );
+        googleCalendarStatusBadgeEl.classList.add(
+          "hidden",
+          "border-blue-500/40",
+          "bg-blue-500/15",
+          "text-blue-300"
+        );
+      }
+    }
+
+    function clientAddressText(client) {
+      const line1 = String(client.address_line1 || "").trim();
+      const line2 = String(client.address_line2 || "").trim();
+      const city = String(client.city || "").trim();
+      const state = String(client.state || "").trim();
+      const postal = String(client.postal_code || "").trim();
+      const cityStatePostal = [city, state, postal].filter(Boolean).join(", ");
+      return [line1, line2, cityStatePostal].filter(Boolean).join(" ");
+    }
+
+    function renderClientsTable(clients) {
+      if (!clientsTableBody) return;
+
+      if (clients.length === 0) {
+        clientsTableBody.innerHTML = '<tr><td colspan="4" class="px-3 py-3 text-center text-slate-500">No clients yet.</td></tr>';
+        return;
+      }
+
+      clientsTableBody.innerHTML = clients
+        .map((client) => {
+          const address = clientAddressText(client) || "Not provided";
+          return `
+            <tr class="border-t border-slate-200">
+              <td class="px-3 py-2 font-medium text-slate-900">${client.name || ""}</td>
+              <td class="px-3 py-2 text-slate-700">${client.phone || "Not provided"}</td>
+              <td class="px-3 py-2 text-slate-700">${client.email || "Not provided"}</td>
+              <td class="px-3 py-2 text-slate-700">${address}</td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function renderConnectClientPreview() {
+      if (!connectClientPreviewEl) return;
+      const targetUsername = selectedConnectUsername();
+      if (connectUsernameMissing && targetUsername) {
+        connectClientPreviewEl.textContent = `User: ${targetUsername}\nStatus: Not found in app database\n\nCreate this user first, then connect QuickBooks.`;
+        if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = true;
+        if (syncQuickBooksBtn) syncQuickBooksBtn.disabled = true;
+        if (disconnectClientBtn) disconnectClientBtn.disabled = true;
+        if (disconnectGoogleCalendarBtn) disconnectGoogleCalendarBtn.disabled = true;
+        return;
+      }
+      if (!userIntegration) {
+        connectClientPreviewEl.textContent = "Unable to load integration status.";
+        if (disconnectClientBtn) disconnectClientBtn.disabled = true;
+        if (disconnectGoogleCalendarBtn) disconnectGoogleCalendarBtn.disabled = true;
+        return;
+      }
+
+      const provider = String(userIntegration.integration_provider || "").trim();
+      const isConnected = Boolean(userIntegration.integration_connected);
+      const connectedAt = String(userIntegration.integration_connected_at || "").trim();
+      const tokenExpiresAt = String(userIntegration.quickbooks_token_expires_at || "").trim();
+      const companyName = String(userIntegration.quickbooks_company_name || "").trim();
+      const lastSyncAt = String(userIntegration.quickbooks_last_sync_at || "").trim();
+      const tokensEncrypted = Boolean(userIntegration.quickbooks_tokens_encrypted);
+      const isConfigured = Boolean(userIntegration.quickbooks_configured);
+      const quickBooksConnected = hasQuickBooksConnection();
+      const googleCalendarConnected = hasGoogleCalendarConnection();
+      const lines = [
+        `User: ${targetUsername || "Not signed in"}`,
+        `OAuth Configured: ${isConfigured ? "Yes" : "No"}`,
+        `Current Status: ${isConnected ? "Connected" : "Not connected"}`,
+        `Provider: ${provider || "None"}`,
+        `QuickBooks Connected: ${quickBooksConnected ? "Yes" : "No"}`,
+        `Google Calendar Connected: ${googleCalendarConnected ? "Yes" : "No"}`,
+        `Connected Company: ${companyName || "N/A"}`,
+        `Connected At: ${connectedAt || "N/A"}`,
+        `Token Expires At: ${tokenExpiresAt || "N/A"}`,
+        `Last Sync At: ${lastSyncAt || "N/A"}`,
+        `Tokens Encrypted At Rest: ${tokensEncrypted ? "Yes" : "No"}`
+      ];
+      connectClientPreviewEl.textContent = lines.join("\n");
+      if (connectClientSubmitBtn) {
+        connectClientSubmitBtn.textContent = isConnected ? "Reconnect" : "Connect";
+        connectClientSubmitBtn.disabled = !isConfigured;
+      }
+      if (syncQuickBooksBtn) {
+        syncQuickBooksBtn.disabled = !quickBooksConnected;
+      }
+      if (disconnectClientBtn) {
+        disconnectClientBtn.disabled = !quickBooksConnected;
+      }
+      if (disconnectGoogleCalendarBtn) {
+        disconnectGoogleCalendarBtn.disabled = !googleCalendarConnected;
+      }
+    }
+
+    function showQuickBooksAuthResult() {
+      const hash = window.location.hash.startsWith("#")
+        ? window.location.hash.slice(1)
+        : window.location.hash;
+      if (!hash) return;
+
+      const params = new URLSearchParams(hash);
+      const qbStatus = String(params.get("qb") || "").trim();
+      if (!qbStatus) return;
+
+      const message = String(params.get("message") || "").trim();
+      const detail = String(params.get("detail") || "").trim();
+      if (qbStatus === "connected") {
+        alert("QuickBooks connected successfully.");
+      } else {
+        const pretty = message
+          .replace(/[-_]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        const title = pretty
+          ? pretty.charAt(0).toUpperCase() + pretty.slice(1)
+          : "QuickBooks connection failed";
+        const suffix = detail ? `\n\nDetails: ${detail}` : "";
+        alert(`${title}.${suffix}`);
+      }
+
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    function showGoogleCalendarAuthResult() {
+      const hash = window.location.hash.startsWith("#")
+        ? window.location.hash.slice(1)
+        : window.location.hash;
+      if (!hash) return;
+
+      const params = new URLSearchParams(hash);
+      const gcStatus = String(params.get("gc") || "").trim();
+      if (!gcStatus) return;
+
+      const message = String(params.get("message") || "").trim();
+      const detail = String(params.get("detail") || "").trim();
+      if (gcStatus === "connected") {
+        alert("Google Calendar connected successfully.");
+      } else {
+        const pretty = message
+          .replace(/[-_]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        const title = pretty
+          ? pretty.charAt(0).toUpperCase() + pretty.slice(1)
+          : "Google Calendar connection failed";
+        const suffix = detail ? `\n\nDetails: ${detail}` : "";
+        alert(`${title}.${suffix}`);
+      }
+
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    function resetConnectClientForm() {
+      connectClientForm?.reset();
+      if (connectProviderEl) {
+        connectProviderEl.value = "quickbooks";
+      }
+      if (connectUsernameEl) {
+        connectUsernameEl.value = authenticatedUser || "";
+      }
+      renderConnectClientPreview();
+    }
+
+    async function refreshUserIntegrationStatus() {
+      if (!authenticatedUser) {
+        userIntegration = null;
+        renderQuickBooksBadge();
+          renderGoogleCalendarBadge();
+        return;
+      }
+      userIntegration = await fetchUserConnectStatus(authenticatedUser);
+        renderGoogleCalendarBadge();
+      renderQuickBooksBadge();
+    }
+
+    async function openConnectClientModal() {
+      connectClientModal?.classList.remove("hidden");
+      if (connectProviderEl) {
+        connectProviderEl.value = "quickbooks";
+      }
+      if (connectUsernameEl) {
+        connectUsernameEl.value = authenticatedUser || "";
+      }
+      await refreshConnectModalStatus();
+      renderConnectClientPreview();
+    }
+
+    async function refreshConnectModalStatus() {
+      const targetUsername = selectedConnectUsername();
+      if (!targetUsername) {
+        connectUsernameMissing = false;
+          renderGoogleCalendarBadge();
+        userIntegration = null;
+        renderQuickBooksBadge();
+        renderConnectClientPreview();
+        return;
+      }
+
+      const exists = await appUsernameExists(targetUsername);
+      if (!exists) {
+        connectUsernameMissing = true;
+        userIntegration = null;
+        renderConnectClientPreview();
+        return;
+      }
+
+      connectUsernameMissing = false;
+
+      userIntegration = await fetchUserConnectStatus(targetUsername);
+      if (targetUsername === authenticatedUser) {
+          renderGoogleCalendarBadge();
+        renderQuickBooksBadge();
+      }
+      renderConnectClientPreview();
+    }
+
+    async function openClientsModal() {
+      clientsModal?.classList.remove("hidden");
+      await refreshClientsData();
+    }
+
+    function renderClientOptions(clients) {
+      if (!appointmentClientIdEl) return;
+
+      const options = ['<option value="">Select a client</option>'];
+      clients.forEach((client) => {
+        options.push(`<option value="${client.id}">${client.name}</option>`);
+      });
+      appointmentClientIdEl.innerHTML = options.join("");
+    }
+
+    function selectedClientFromForm() {
+      const selectedId = Number(appointmentClientIdEl?.value || 0);
+      if (!selectedId) return null;
+      return clientsCache.find((client) => Number(client.id) === selectedId) || null;
+    }
+
+    function renderAppointmentClientPreview() {
+      if (!appointmentClientPreviewEl) return;
+      const client = selectedClientFromForm();
+      if (!client) {
+        appointmentClientPreviewEl.textContent = "Select a client to preview phone, email, and address.";
+        return;
+      }
+
+      const preview = [
+        `Name: ${client.name || "Not provided"}`,
+        `Phone: ${client.phone || "Not provided"}`,
+        `Email: ${client.email || "Not provided"}`,
+        `Address: ${clientAddressText(client) || "Not provided"}`,
+        `Notes: ${client.notes || "Not provided"}`
+      ];
+      appointmentClientPreviewEl.textContent = preview.join("\n");
+    }
+
+    async function refreshClientsData() {
+      clientsCache = await fetchClients();
+      renderClientsTable(clientsCache);
+      renderClientOptions(clientsCache);
+      renderAppointmentClientPreview();
+    }
+
+    async function refreshEmployeesData({ importFromQuickBooks = false } = {}) {
+      employeesCache = await fetchEmployees();
+
+      if (importFromQuickBooks && authenticatedUser && hasQuickBooksConnection()) {
+        try {
+          employeesCache = await importQuickBooksEmployees(authenticatedUser, authenticatedUserId);
+        } catch (error) {
+          console.warn("QuickBooks employee import skipped:", error);
+        }
+      }
+
+      const activeNames = employeesCache
+        .filter((employee) => employee && employee.active !== false)
+        .map((employee) => String(employee.name || "").trim())
+        .filter(Boolean);
+      TECHNICIANS = activeNames.length > 0 ? [...new Set(activeNames)] : [...DEFAULT_TECHNICIANS];
+
+      buildDispatchBoard();
+      setupSortable();
+      renderEmployeesTable(employeesCache);
+    }
+
+    function renderEmployeesTable(employees) {
+      if (!employeesTableBody) return;
+
+      if (!employees.length) {
+        employeesTableBody.innerHTML = '<tr><td colspan="4" class="px-3 py-3 text-center text-slate-500">No employees yet.</td></tr>';
+        return;
+      }
+
+      employeesTableBody.innerHTML = employees
+        .map((employee) => {
+          const employeeId = Number(employee.id || 0);
+          const isActive = employee.active !== false;
+          const statusPill = isActive
+            ? '<span class="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Active</span>'
+            : '<span class="inline-flex rounded-full bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-300">Inactive</span>';
+          const source = String(employee.source || "manual").trim().toLowerCase() === "quickbooks" ? "QuickBooks" : "Manual";
+          return `
+            <tr class="border-t border-slate-200">
+              <td class="px-3 py-2 font-medium text-slate-900">${employee.name || ""}</td>
+              <td class="px-3 py-2 text-slate-700">${source}</td>
+              <td class="px-3 py-2">${statusPill}</td>
+              <td class="px-3 py-2">
+                <div class="flex flex-wrap gap-2">
+                  <button data-employee-action="toggle" data-employee-id="${employeeId}" data-employee-active="${isActive ? "true" : "false"}" class="rounded-lg border px-3 py-1 text-xs font-semibold transition ${isActive ? "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100" : "border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}">${isActive ? "Deactivate" : "Activate"}</button>
+                  <button data-employee-action="delete" data-employee-id="${employeeId}" class="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100">Remove</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function initEmployees() {
+      addEmployeeBtn?.addEventListener("click", async () => {
+        employeesModal?.classList.remove("hidden");
+        try {
+          await refreshEmployeesData();
+        } catch (error) {
+          alert(error.message || "Unable to load employees.");
+        }
+      });
+
+      closeEmployeesModalBtn?.addEventListener("click", () => {
+        employeesModal?.classList.add("hidden");
+      });
+
+      employeesModal?.addEventListener("click", (event) => {
+        if (event.target === employeesModal) {
+          employeesModal.classList.add("hidden");
+        }
+      });
+
+      employeeForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const cleanName = String(employeeNameEl?.value || "").trim();
+        if (!cleanName) {
+          alert("Employee name is required.");
+          return;
+        }
+
+        if (saveEmployeeBtn) saveEmployeeBtn.disabled = true;
+        try {
+          await createEmployee({ name: cleanName });
+          employeeForm.reset();
+          await refreshEmployeesData();
+          await loadJobs();
+        } catch (error) {
+          alert(error.message || "Unable to add employee.");
+        } finally {
+          if (saveEmployeeBtn) saveEmployeeBtn.disabled = false;
+        }
+      });
+
+      employeesTableBody?.addEventListener("click", async (event) => {
+        const button = event.target instanceof HTMLElement
+          ? event.target.closest("button[data-employee-action]")
+          : null;
+        if (!button) return;
+
+        const action = String(button.dataset.employeeAction || "");
+        const employeeId = Number(button.dataset.employeeId || "0");
+        if (!employeeId) return;
+
+        button.disabled = true;
+        try {
+          if (action === "toggle") {
+            const currentlyActive = String(button.dataset.employeeActive || "true") === "true";
+            await setEmployeeStatus(employeeId, !currentlyActive);
+          } else if (action === "delete") {
+            if (!window.confirm("Remove this employee from the board?")) {
+              button.disabled = false;
+              return;
+            }
+            await deleteEmployee(employeeId);
+          }
+
+          await refreshEmployeesData();
+          await loadJobs();
+        } catch (error) {
+          alert(error.message || "Unable to update employee.");
+        } finally {
+          button.disabled = false;
+        }
+      });
+    }
+
+    function resetClientForm() {
+      clientForm?.reset();
+    }
+
+    function resetAppointmentForm() {
+      appointmentForm?.reset();
+      if (appointmentDateEl) {
+        appointmentDateEl.value = selectedBoardDate();
+      }
+      if (appointmentDurationEl) {
+        appointmentDurationEl.value = "60";
+      }
+      renderAppointmentClientPreview();
+    }
+
+    function initClientsModal() {
+      clientsBtn?.addEventListener("click", async () => {
+        try {
+          await openClientsModal();
+        } catch (error) {
+          alert(error.message || "Unable to load clients.");
+        }
+      });
+
+      connectionsBtn?.addEventListener("click", async () => {
+        try {
+          await openConnectClientModal();
+        } catch (error) {
+          alert(error.message || "Unable to load connections.");
+        }
+      });
+
+      closeClientsModalBtn?.addEventListener("click", () => {
+        clientsModal?.classList.add("hidden");
+      });
+
+      clientsModal?.addEventListener("click", (event) => {
+        if (event.target === clientsModal) {
+          clientsModal.classList.add("hidden");
+        }
+      });
+
+      clientForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const name = String(document.getElementById("client-name")?.value || "").trim();
+        if (!name) {
+          alert("Client name is required.");
+          return;
+        }
+
+        const payload = {
+          name,
+          phone: String(document.getElementById("client-phone")?.value || "").trim(),
+          email: String(document.getElementById("client-email")?.value || "").trim(),
+          address_line1: String(document.getElementById("client-address-line1")?.value || "").trim(),
+          address_line2: String(document.getElementById("client-address-line2")?.value || "").trim(),
+          city: String(document.getElementById("client-city")?.value || "").trim(),
+          state: String(document.getElementById("client-state")?.value || "").trim(),
+          postal_code: String(document.getElementById("client-postal-code")?.value || "").trim(),
+          notes: String(document.getElementById("client-notes")?.value || "").trim()
+        };
+
+        if (saveClientBtn) saveClientBtn.disabled = true;
+        try {
+          await createClient(payload);
+          resetClientForm();
+          await refreshClientsData();
+        } catch (error) {
+          alert(error.message || "Unable to save client.");
+        } finally {
+          if (saveClientBtn) saveClientBtn.disabled = false;
+        }
+      });
+    }
+
+    function initConnectClientModal() {
+      const setConnectButtonsDisabled = (disabled) => {
+        if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = disabled;
+        if (disconnectClientBtn) disconnectClientBtn.disabled = disabled;
+        if (disconnectGoogleCalendarBtn) disconnectGoogleCalendarBtn.disabled = disabled;
+      };
+
+      const disconnectIntegration = async (provider, providerLabel) => {
+        const targetUsername = selectedConnectUsername();
+        if (!targetUsername) {
+          alert("Username is required.");
+          return;
+        }
+
+        setConnectButtonsDisabled(true);
+        try {
+          const user_id = targetUsername === authenticatedUser ? authenticatedUserId : null;
+          await disconnectUser({ username: targetUsername, user_id, provider });
+          await refreshConnectModalStatus();
+          renderConnectClientPreview();
+          showToast(`${providerLabel} disconnected.`, "info");
+        } catch (error) {
+          alert(error.message || `Unable to disconnect ${providerLabel}.`);
+        } finally {
+          setConnectButtonsDisabled(false);
+          renderConnectClientPreview();
+        }
+      };
+
+      closeConnectClientModalBtn?.addEventListener("click", () => {
+        connectClientModal?.classList.add("hidden");
+      });
+
+      connectClientModal?.addEventListener("click", (event) => {
+        if (event.target === connectClientModal) {
+          connectClientModal.classList.add("hidden");
+        }
+      });
+
+      connectClientForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const provider = String(connectProviderEl?.value || "quickbooks").trim().toLowerCase();
+        const targetUsername = selectedConnectUsername();
+        if (!targetUsername) {
+          alert("Username is required.");
+          return;
+        }
+        if (provider !== "quickbooks" && provider !== "google_calendar") {
+          alert("Only QuickBooks and Google Calendar are supported.");
+          return;
+        }
+
+        const exists = await appUsernameExists(targetUsername);
+        if (!exists) {
+          connectUsernameMissing = true;
+          renderConnectClientPreview();
+          const providerName = provider === "google_calendar" ? "Google Calendar" : "QuickBooks";
+          alert(`That username does not exist in this app yet. Create the user first, then connect ${providerName}.`);
+          return;
+        }
+
+        if (provider === "google_calendar") {
+          startGoogleCalendarAuth(targetUsername);
+        } else {
+          startQuickBooksAuth(targetUsername);
+        }
+      });
+
+      connectUsernameEl?.addEventListener("change", async () => {
+        try {
+          await refreshConnectModalStatus();
+        } catch (error) {
+          alert(error.message || "Unable to load integration status.");
+        }
+      });
+
+      connectGoogleCalendarBtn?.addEventListener("click", async () => {
+        const targetUsername = selectedConnectUsername();
+        if (!targetUsername) {
+          alert("Username is required.");
+          return;
+        }
+
+        const exists = await appUsernameExists(targetUsername);
+        if (!exists) {
+          connectUsernameMissing = true;
+          renderConnectClientPreview();
+          alert("That username does not exist in this app yet. Create the user first, then connect Google Calendar.");
+          return;
+        }
+
+        startGoogleCalendarAuth(targetUsername);
+      });
+
+      disconnectClientBtn?.addEventListener("click", async () => {
+        await disconnectIntegration("quickbooks", "QuickBooks");
+      });
+
+      disconnectGoogleCalendarBtn?.addEventListener("click", async () => {
+        await disconnectIntegration("google_calendar", "Google Calendar");
+      });
+
+      syncQuickBooksBtn?.addEventListener("click", async () => {
+        const targetUsername = selectedConnectUsername();
+        if (!targetUsername) {
+          alert("Username is required.");
+          return;
+        }
+        if (!hasQuickBooksConnection()) {
+          alert("Connect QuickBooks before syncing.");
+          return;
+        }
+
+        if (syncQuickBooksBtn) syncQuickBooksBtn.disabled = true;
+        try {
+          const user_id = targetUsername === authenticatedUser ? authenticatedUserId : null;
+          await importQuickBooksClients(targetUsername, user_id);
+          await refreshEmployeesData({ importFromQuickBooks: targetUsername === authenticatedUser });
+          await refreshConnectModalStatus();
+          renderConnectClientPreview();
+          await refreshClientsData();
+          await loadJobs();
+          alert("QuickBooks sync complete.");
+        } catch (error) {
+          alert(error.message || "Unable to sync QuickBooks data.");
+        } finally {
+          if (syncQuickBooksBtn) {
+            syncQuickBooksBtn.disabled = !hasQuickBooksConnection();
+          }
+        }
+      });
+    }
+
+    function initAddAppointment() {
+      if (!addAppointmentBtn) return;
+
+      addAppointmentBtn.addEventListener("click", async () => {
+        appointmentModal?.classList.remove("hidden");
+        try {
+          await refreshClientsData();
+          resetAppointmentForm();
+        } catch (error) {
+          alert(error.message || "Unable to load clients.");
+        }
+      });
+
+      closeAppointmentModalBtn?.addEventListener("click", () => {
+        appointmentModal?.classList.add("hidden");
+      });
+
+      appointmentModal?.addEventListener("click", (event) => {
+        if (event.target === appointmentModal) {
+          appointmentModal.classList.add("hidden");
+        }
+      });
+
+      appointmentClientIdEl?.addEventListener("change", () => {
+        renderAppointmentClientPreview();
+      });
+
+      appointmentForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const client = selectedClientFromForm();
+        const serviceType = String(appointmentServiceEl?.value || "").trim();
+        const scheduledDate = String(appointmentDateEl?.value || "").trim();
+        const durationMinutes = Number(appointmentDurationEl?.value || "0");
+        const notes = String(appointmentNotesEl?.value || "").trim();
+
+        if (!client) {
+          alert("Please select a client.");
+          return;
+        }
+        if (!serviceType) {
+          alert("Service type is required.");
+          return;
+        }
+        if (!scheduledDate) {
+          alert("Appointment date is required.");
+          return;
+        }
+        if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
+          alert("Duration must be a positive number.");
+          return;
+        }
+
+        if (createAppointmentSubmitBtn) createAppointmentSubmitBtn.disabled = true;
+        try {
+          await createAppointment({
+            client_id: client.id,
+            customer_name: client.name,
+            service_type: serviceType,
+            scheduled_date: scheduledDate,
+            duration_minutes: durationMinutes,
+            notes
+          });
+          appointmentModal?.classList.add("hidden");
+          await loadJobs();
+        } catch (error) {
+          alert(error.message || "Unable to create appointment.");
+        } finally {
+          if (createAppointmentSubmitBtn) createAppointmentSubmitBtn.disabled = false;
+        }
+      });
     }
 
     function applyScheduledVisual(card, status) {
@@ -412,39 +1910,46 @@
     function setupSortable() {
       if (typeof Sortable === "undefined") return;
 
-      Sortable.create(pendingTrayEl, {
-        group: { name: "jobs", pull: true, put: ["jobs"] },
-        animation: 180,
-        ghostClass: "opacity-50",
-        onStart: (evt) => {
-          if (evt.item.classList.contains("job-card")) {
-            isDraggingJob = true;
-            updateManualUI();
+      if (pendingTrayEl.dataset.sortableBound !== "true") {
+        Sortable.create(pendingTrayEl, {
+          group: { name: "jobs", pull: true, put: ["jobs"] },
+          animation: 180,
+          ghostClass: "opacity-50",
+          onStart: (evt) => {
+            if (evt.item.classList.contains("job-card")) {
+              isDraggingJob = true;
+              updateManualUI();
+            }
+          },
+          onAdd: async (evt) => {
+            const card = evt.item;
+            card.dataset.assignedTech = "";
+            card.dataset.time = "Unscheduled";
+            card.dataset.status = "Pending";
+            card.dataset.manualBlockMinutes = "";
+            applyScheduledVisual(card, "Scheduled");
+            try {
+              const payload = await persistJobSchedule(card.dataset.jobId, "Pending", "Unscheduled", null, null);
+              maybeShowCalendarSyncWarning(payload);
+            } catch (error) {
+              alert(error.message);
+            }
+            renderUnavailableBlocks();
+          },
+          onEnd: (evt) => {
+            if (evt.item.classList.contains("job-card")) {
+              isDraggingJob = false;
+              updateManualUI();
+            }
           }
-        },
-        onAdd: async (evt) => {
-          const card = evt.item;
-          card.dataset.assignedTech = "";
-          card.dataset.time = "Unscheduled";
-          card.dataset.status = "Pending";
-          card.dataset.manualBlockMinutes = "";
-          applyScheduledVisual(card, "Scheduled");
-          try {
-            await persistJobSchedule(card.dataset.jobId, "Pending", "Unscheduled", null, null);
-          } catch (error) {
-            alert(error.message);
-          }
-          renderUnavailableBlocks();
-        },
-        onEnd: (evt) => {
-          if (evt.item.classList.contains("job-card")) {
-            isDraggingJob = false;
-            updateManualUI();
-          }
-        }
-      });
+        });
+        pendingTrayEl.dataset.sortableBound = "true";
+      }
 
       document.querySelectorAll(".dispatch-cell").forEach((cell) => {
+        if (cell.dataset.sortableBound === "true") {
+          return;
+        }
         Sortable.create(cell, {
           group: { name: "jobs", pull: true, put: ["jobs"] },
           animation: 180,
@@ -479,7 +1984,8 @@
             applyScheduledVisual(card, status);
 
             try {
-              await persistJobSchedule(card.dataset.jobId, status, time, tech, manualBlock);
+              const payload = await persistJobSchedule(card.dataset.jobId, status, time, tech, manualBlock);
+              maybeShowCalendarSyncWarning(payload);
             } catch (error) {
               alert(error.message);
             }
@@ -493,6 +1999,7 @@
             }
           }
         });
+        cell.dataset.sortableBound = "true";
       });
     }
 
@@ -533,7 +2040,14 @@
 
     async function loadJobs() {
       try {
-        const response = await fetch("/api/jobs");
+        let query;
+        const scheduled_date = selectedBoardDate();
+        if (authenticatedUserId) {
+          query = new URLSearchParams({ user_id: authenticatedUserId, scheduled_date });
+        } else {
+          query = new URLSearchParams({ username: String(authenticatedUser || "").trim(), scheduled_date });
+        }
+        const response = await fetch(`/api/jobs?${query.toString()}`);
         if (!response.ok) {
           throw new Error("Unable to load jobs.");
         }
@@ -557,18 +2071,60 @@
     if (!user) {
       window.location.href = "/index.html#login";
     } else {
+      setBoardDate(todayIsoDate());
+      authenticatedUser = user;
+      authenticatedRole = String(localStorage.getItem("fieldops_auth_role") || "Employee").trim() || "Employee";
+      if (authenticatedRole === "Client") {
+        window.location.href = "/client_portal.html";
+      } else if (authenticatedRole === "Employee") {
+        window.location.href = "/employee_schedule.html";
+      }
+      const userId = localStorage.getItem("fieldops_auth_user_id");
+      if (userId) {
+        authenticatedUserId = Number(userId);
+      }
+      showQuickBooksAuthResult();
+        showGoogleCalendarAuthResult();
       const userNameEl = document.getElementById("user-name");
       if (userNameEl) {
         userNameEl.textContent = user;
       }
-      buildDispatchBoard();
+
       initPendingToggle();
-      setupSortable();
-      loadJobs();
+      initJobDetailModal();
+      initClientsModal();
+      initEmployees();
+      initConnectClientModal();
+      initAddAppointment();
+
+      boardDateEl?.addEventListener("change", async () => {
+        setBoardDate(boardDateEl.value);
+        await loadJobs();
+      });
+      boardDateTodayBtn?.addEventListener("click", async () => {
+        setBoardDate(todayIsoDate());
+        await loadJobs();
+      });
+
+      (async () => {
+        try {
+          await refreshUserIntegrationStatus();
+        } catch {
+                    renderGoogleCalendarBadge();
+          renderQuickBooksBadge();
+        }
+
+        await refreshEmployeesData({
+          importFromQuickBooks: Boolean(userIntegration?.integration_connected),
+        });
+        await loadJobs();
+      })();
     }
 
     document.getElementById("logout-btn")?.addEventListener("click", () => {
       localStorage.removeItem("fieldops_auth_user");
+      localStorage.removeItem("fieldops_auth_user_id");
+      localStorage.removeItem("fieldops_auth_role");
       window.location.href = "/index.html#login";
     });
 
@@ -580,7 +2136,14 @@
     // Check if user is admin by fetching users list
     async function checkAdminStatus() {
       try {
-        const response = await fetch("/api/users", { method: "POST" });
+        const response = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: String(authenticatedUser || "").trim(),
+            user_id: authenticatedUserId,
+          }),
+        });
         if (!response.ok) return false;
         
         const data = await response.json();
@@ -596,7 +2159,14 @@
 
     async function loadUsersTable() {
       try {
-        const response = await fetch("/api/users", { method: "POST" });
+        const response = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: String(authenticatedUser || "").trim(),
+            user_id: authenticatedUserId,
+          }),
+        });
         if (!response.ok) {
           document.getElementById("users-table-body").innerHTML = '<tr><td colspan="4" class="px-4 py-3 text-center text-red-600">Failed to load users</td></tr>';
           return;
@@ -614,18 +2184,20 @@
         tbody.innerHTML = users.map(user => {
           const isAdmin = user.role === "Admin";
           const actionButton = `
-            <button class="change-role-btn rounded-lg ${isAdmin ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'} px-3 py-1.5 text-xs font-semibold transition" data-username="${user.username}" data-current-role="${user.role}">
-              Make ${isAdmin ? 'User' : 'Admin'}
-            </button>
+            <select class="change-role-select rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800" data-username="${user.username}" data-current-role="${user.role}">
+              <option value="Admin" ${user.role === "Admin" ? "selected" : ""}>Admin</option>
+              <option value="Employee" ${user.role === "Employee" ? "selected" : ""}>Employee</option>
+              <option value="Client" ${user.role === "Client" ? "selected" : ""}>Client</option>
+            </select>
           `;
           return `
-            <tr class="border-b border-slate-200 transition hover:bg-slate-100">
+            <tr class="border-b border-white/10 transition hover:bg-white/5">
               <td class="px-4 py-3 font-medium text-slate-900">${user.username}</td>
               <td class="px-4 py-3">
                 <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
                   isAdmin
                     ? "bg-amber-100 text-amber-700" 
-                    : "bg-slate-100 text-slate-700"
+                    : "bg-white/10 text-slate-300"
                 }">
                   ${user.role}
                 </span>
@@ -636,18 +2208,22 @@
           `;
         }).join("");
         
-        // Add event listeners to role change buttons
-        document.querySelectorAll(".change-role-btn").forEach(btn => {
-          btn.addEventListener("click", async (e) => {
+        // Add event listeners to role select controls
+        document.querySelectorAll(".change-role-select").forEach(select => {
+          select.addEventListener("change", async (e) => {
             const username = e.target.dataset.username;
-            const currentRole = e.target.dataset.currentRole;
-            const newRole = currentRole === "Admin" ? "User" : "Admin";
+            const newRole = e.target.value;
             
             try {
               const response = await fetch("/api/users/role", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, role: newRole })
+                body: JSON.stringify({
+                  actor_username: String(authenticatedUser || "").trim(),
+                  actor_user_id: authenticatedUserId,
+                  username,
+                  role: newRole,
+                })
               });
               
               if (response.ok) {
@@ -687,6 +2263,34 @@
         adminBtn.style.display = isAdmin ? "block" : "none";
       }
     });
+  </script>
+  <script>
+    // Live clock
+    function updateClock() {
+      const el = document.getElementById("live-clock");
+      if (!el) return;
+      const now = new Date();
+      el.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Dynamic KPI stat counters after board loads
+    function updateStats() {
+      const allCards = document.querySelectorAll(".job-card");
+      const inProgress = [...allCards].filter(c => c.dataset.status === "In Progress").length;
+      const unassigned = document.querySelectorAll("#pending-tray .job-card").length;
+      const ipEl = document.getElementById("stat-in-progress");
+      const uaEl = document.getElementById("stat-unassigned");
+      if (ipEl) ipEl.textContent = inProgress;
+      if (uaEl) uaEl.textContent = unassigned;
+    }
+    // Observe DOM changes on the board to update stats
+    const boardObs = new MutationObserver(updateStats);
+    const pendingEl = document.getElementById("pending-tray");
+    const dispatchEl = document.getElementById("dispatch-board");
+    if (pendingEl) boardObs.observe(pendingEl, { childList: true, subtree: true });
+    if (dispatchEl) boardObs.observe(dispatchEl, { childList: true, subtree: true });
   </script>
 </body>
 </html>

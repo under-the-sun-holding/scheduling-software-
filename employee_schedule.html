@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FieldOps | Employee Schedule</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            panel: {
+              deep: "#091327",
+              ink: "#112243",
+              line: "#25406f"
+            },
+            signal: {
+              blue: "#1d4ed8",
+              green: "#0f766e",
+              amber: "#a16207",
+              gray: "#334155"
+            }
+          },
+          fontFamily: {
+            sans: ["Space Grotesk", "ui-sans-serif", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background:
+        radial-gradient(1200px 500px at 12% -5%, rgba(59, 130, 246, 0.18), transparent 60%),
+        radial-gradient(900px 420px at 90% 0%, rgba(20, 184, 166, 0.14), transparent 62%),
+        linear-gradient(145deg, #070d1a 0%, #0a1326 45%, #0d1830 100%);
+    }
+
+    .frost {
+      background: rgba(9, 19, 39, 0.72);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .status-chip {
+      border: 1px solid;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 0.36rem 0.62rem;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status-scheduled {
+      color: #bfdbfe;
+      border-color: rgba(59, 130, 246, 0.45);
+      background: rgba(29, 78, 216, 0.2);
+    }
+
+    .status-inprogress {
+      color: #99f6e4;
+      border-color: rgba(15, 118, 110, 0.45);
+      background: rgba(15, 118, 110, 0.24);
+    }
+
+    .status-completed {
+      color: #bbf7d0;
+      border-color: rgba(22, 163, 74, 0.45);
+      background: rgba(22, 163, 74, 0.2);
+    }
+
+    .status-pending {
+      color: #fde68a;
+      border-color: rgba(161, 98, 7, 0.45);
+      background: rgba(161, 98, 7, 0.2);
+    }
+
+    .status-default {
+      color: #cbd5e1;
+      border-color: rgba(100, 116, 139, 0.45);
+      background: rgba(51, 65, 85, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 pb-8 pt-8 sm:px-6 lg:px-8">
+    <header class="frost rounded-2xl p-4 sm:p-5">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-300">FieldOps</p>
+          <h1 class="mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl">Employee Scheduling View</h1>
+          <p class="mt-2 text-sm text-slate-300">View assigned appointments for a selected employee and date.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="/home.html" class="rounded-lg border border-slate-500/50 bg-slate-900/40 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-800/60">Dispatcher Board</a>
+          <button id="logout-btn" type="button" class="rounded-lg bg-orange-500 px-3 py-2 text-xs font-bold text-white transition hover:bg-orange-400">Log Out</button>
+        </div>
+      </div>
+
+      <div class="mt-4 grid gap-3 sm:grid-cols-3">
+        <label class="space-y-1.5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Employee</span>
+          <select id="employee-select" class="w-full rounded-lg border border-panel-line bg-panel-ink px-3 py-2 text-sm text-white outline-none ring-blue-400/40 transition focus:ring-2"></select>
+        </label>
+        <label class="space-y-1.5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Date</span>
+          <input id="schedule-date" type="date" class="w-full rounded-lg border border-panel-line bg-panel-ink px-3 py-2 text-sm text-white outline-none ring-blue-400/40 transition focus:ring-2">
+        </label>
+        <div class="space-y-1.5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Refresh</span>
+          <button id="refresh-btn" type="button" class="w-full rounded-lg border border-blue-500/50 bg-blue-600/30 px-3 py-2 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/40">Reload Schedule</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="mt-4 grid gap-3 sm:grid-cols-4">
+      <article class="frost rounded-xl p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Total Appointments</p>
+        <p id="stat-total" class="mt-1 text-2xl font-bold text-white">0</p>
+      </article>
+      <article class="frost rounded-xl p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Scheduled</p>
+        <p id="stat-scheduled" class="mt-1 text-2xl font-bold text-blue-200">0</p>
+      </article>
+      <article class="frost rounded-xl p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">In Progress</p>
+        <p id="stat-progress" class="mt-1 text-2xl font-bold text-teal-200">0</p>
+      </article>
+      <article class="frost rounded-xl p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Completed</p>
+        <p id="stat-completed" class="mt-1 text-2xl font-bold text-green-200">0</p>
+      </article>
+    </section>
+
+    <main class="mt-4 frost rounded-2xl p-4 sm:p-5">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-lg font-bold text-white">Daily Schedule</h2>
+        <p id="schedule-caption" class="text-xs font-semibold uppercase tracking-wide text-slate-400">Loading</p>
+      </div>
+
+      <div id="schedule-list" class="space-y-3">
+        <p class="rounded-lg border border-slate-600/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-300">Loading schedule...</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let authenticatedUser = "";
+    let authenticatedUserId = null;
+    let authenticatedRole = "Employee";
+    let employees = [];
+    let jobs = [];
+
+    const employeeSelectEl = document.getElementById("employee-select");
+    const scheduleDateEl = document.getElementById("schedule-date");
+    const refreshBtnEl = document.getElementById("refresh-btn");
+    const scheduleCaptionEl = document.getElementById("schedule-caption");
+    const scheduleListEl = document.getElementById("schedule-list");
+
+    const statTotalEl = document.getElementById("stat-total");
+    const statScheduledEl = document.getElementById("stat-scheduled");
+    const statProgressEl = document.getElementById("stat-progress");
+    const statCompletedEl = document.getElementById("stat-completed");
+
+    function ownerParams(extra = {}) {
+      const params = new URLSearchParams();
+      if (authenticatedUserId) {
+        params.set("user_id", String(authenticatedUserId));
+      } else {
+        params.set("username", String(authenticatedUser || "").trim());
+      }
+      Object.entries(extra).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && String(value).trim() !== "") {
+          params.set(key, String(value));
+        }
+      });
+      return params;
+    }
+
+    function todayIsoDate() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseTimeValue(label) {
+      const text = String(label || "").trim();
+      if (!text || text.toLowerCase() === "unscheduled") return Number.POSITIVE_INFINITY;
+      const match = text.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (!match) return Number.POSITIVE_INFINITY - 1;
+      let hour = Number(match[1]);
+      const minute = Number(match[2]);
+      const period = String(match[3]).toUpperCase();
+      if (period === "PM" && hour !== 12) hour += 12;
+      if (period === "AM" && hour === 12) hour = 0;
+      return hour * 60 + minute;
+    }
+
+    function formatAddress(job) {
+      const parts = [
+        job.address_line1,
+        job.address_line2,
+        [job.city, job.state, job.postal_code].filter(Boolean).join(" "),
+      ]
+        .map((part) => String(part || "").trim())
+        .filter(Boolean);
+      return parts.join(", ") || "No address provided";
+    }
+
+    function statusClass(status) {
+      const value = String(status || "").toLowerCase();
+      if (value === "scheduled") return "status-scheduled";
+      if (value === "in progress") return "status-inprogress";
+      if (value === "completed") return "status-completed";
+      if (value === "pending") return "status-pending";
+      return "status-default";
+    }
+
+    function selectedEmployeeName() {
+      return String(employeeSelectEl?.value || "").trim();
+    }
+
+    function filteredJobs() {
+      const employee = selectedEmployeeName();
+      if (employee === "__ALL__") return [...jobs];
+      return jobs.filter((job) => String(job.assigned_tech || "").trim() === employee);
+    }
+
+    function renderStats(list) {
+      const scheduled = list.filter((job) => job.status === "Scheduled").length;
+      const inProgress = list.filter((job) => job.status === "In Progress").length;
+      const completed = list.filter((job) => job.status === "Completed").length;
+
+      statTotalEl.textContent = String(list.length);
+      statScheduledEl.textContent = String(scheduled);
+      statProgressEl.textContent = String(inProgress);
+      statCompletedEl.textContent = String(completed);
+    }
+
+    function renderSchedule() {
+      const selectedName = selectedEmployeeName();
+      const date = scheduleDateEl?.value || todayIsoDate();
+      const list = filteredJobs().sort((a, b) => parseTimeValue(a.time) - parseTimeValue(b.time));
+
+      const captionName = selectedName === "__ALL__" ? "All Employees" : selectedName;
+      scheduleCaptionEl.textContent = `${captionName} - ${date}`;
+      renderStats(list);
+
+      if (!list.length) {
+        scheduleListEl.innerHTML = '<p class="rounded-lg border border-slate-600/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-300">No appointments found for this selection.</p>';
+        return;
+      }
+
+      scheduleListEl.innerHTML = list
+        .map((job) => {
+          const client = String(job.customer_name || "Unnamed client").trim();
+          const service = String(job.service_type || "General service").trim();
+          const time = String(job.time || "Unscheduled").trim();
+          const tech = String(job.assigned_tech || "Unassigned").trim();
+          const phone = String(job.phone || "").trim();
+          const email = String(job.email || "").trim();
+          const notes = String(job.notes || "").trim();
+          const duration = Number(job.duration_minutes || 0);
+          const canAct = authenticatedRole === "Employee" || authenticatedRole === "Admin";
+          const actions = canAct
+            ? `<div class="mt-3 flex flex-wrap gap-2">
+                 <button type="button" class="rounded-md border border-teal-400/50 bg-teal-500/20 px-2.5 py-1 text-xs font-semibold text-teal-100 transition hover:bg-teal-500/30" onclick="shareLiveLocation(${Number(job.id || 0)})">Share Live Location</button>
+                 <button type="button" class="rounded-md border border-blue-400/50 bg-blue-500/20 px-2.5 py-1 text-xs font-semibold text-blue-100 transition hover:bg-blue-500/30" onclick="sendJobMessage(${Number(job.id || 0)})">Send Message</button>
+               </div>`
+            : "";
+
+          return `
+            <article class="rounded-xl border border-slate-600/50 bg-panel-ink/55 p-4">
+              <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p class="text-base font-bold text-white">${client}</p>
+                  <p class="text-sm text-slate-300">${service}</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="status-chip ${statusClass(job.status)}">${job.status || "Unknown"}</span>
+                  <span class="rounded-md border border-blue-400/40 bg-blue-500/15 px-2 py-1 text-xs font-semibold text-blue-200">${time}</span>
+                </div>
+              </div>
+              <div class="mt-3 grid gap-2 text-sm text-slate-300 sm:grid-cols-2">
+                <p><span class="font-semibold text-slate-200">Technician:</span> ${tech}</p>
+                <p><span class="font-semibold text-slate-200">Duration:</span> ${duration > 0 ? `${duration} min` : "N/A"}</p>
+                <p><span class="font-semibold text-slate-200">Phone:</span> ${phone || "N/A"}</p>
+                <p><span class="font-semibold text-slate-200">Email:</span> ${email || "N/A"}</p>
+                <p class="sm:col-span-2"><span class="font-semibold text-slate-200">Address:</span> ${formatAddress(job)}</p>
+                ${notes ? `<p class="sm:col-span-2"><span class="font-semibold text-slate-200">Notes:</span> ${notes}</p>` : ""}
+              </div>
+              ${actions}
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    async function shareLiveLocation(jobId) {
+      if (!("geolocation" in navigator)) {
+        alert("Geolocation is not supported in this browser.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const response = await fetch("/api/tech-location/update", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                username: authenticatedUser,
+                user_id: authenticatedUserId,
+                job_id: Number(jobId),
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                status: "En route",
+              }),
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              throw new Error(payload.error || "Unable to update location.");
+            }
+            alert("Location shared successfully.");
+          } catch (error) {
+            alert(error.message || "Unable to update location.");
+          }
+        },
+        (error) => {
+          alert(error.message || "Unable to read location.");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
+      );
+    }
+
+    async function sendJobMessage(jobId) {
+      const text = String(window.prompt("Message to client/dispatch:") || "").trim();
+      if (!text) return;
+
+      try {
+        const response = await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: authenticatedUser,
+            user_id: authenticatedUserId,
+            job_id: Number(jobId),
+            body: text,
+          }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.error || "Unable to send message.");
+        }
+        alert("Message sent.");
+      } catch (error) {
+        alert(error.message || "Unable to send message.");
+      }
+    }
+
+    async function loadEmployees() {
+      const response = await fetch(`/api/employees?${ownerParams().toString()}`);
+      if (!response.ok) {
+        throw new Error("Unable to load employees.");
+      }
+
+      const payload = await response.json();
+      employees = Array.isArray(payload.employees) ? payload.employees : [];
+      const names = employees
+        .filter((employee) => employee && employee.active !== false)
+        .map((employee) => String(employee.name || "").trim())
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
+
+      const fromQuery = String(new URLSearchParams(window.location.search).get("tech") || "").trim();
+      const selected = names.includes(fromQuery) ? fromQuery : names[0] || "__ALL__";
+
+      employeeSelectEl.innerHTML = [
+        '<option value="__ALL__">All Employees</option>',
+        ...names.map((name) => `<option value="${name}">${name}</option>`),
+      ].join("");
+
+      employeeSelectEl.value = selected;
+    }
+
+    async function loadJobs() {
+      const date = scheduleDateEl?.value || todayIsoDate();
+      const response = await fetch(`/api/jobs?${ownerParams({ scheduled_date: date }).toString()}`);
+      if (!response.ok) {
+        throw new Error("Unable to load jobs.");
+      }
+      const payload = await response.json();
+      jobs = Array.isArray(payload) ? payload : [];
+    }
+
+    async function refreshAll() {
+      try {
+        refreshBtnEl.disabled = true;
+        refreshBtnEl.textContent = "Refreshing...";
+        await loadJobs();
+        renderSchedule();
+      } catch (error) {
+        scheduleListEl.innerHTML = `<p class="rounded-lg border border-rose-500/40 bg-rose-900/30 px-3 py-2 text-sm text-rose-100">${error.message}</p>`;
+      } finally {
+        refreshBtnEl.disabled = false;
+        refreshBtnEl.textContent = "Reload Schedule";
+      }
+    }
+
+    function initAuth() {
+      const user = localStorage.getItem("fieldops_auth_user");
+      if (!user) {
+        window.location.href = "/index.html#login";
+        return false;
+      }
+      authenticatedUser = user;
+      authenticatedRole = String(localStorage.getItem("fieldops_auth_role") || "Employee").trim() || "Employee";
+      const userId = localStorage.getItem("fieldops_auth_user_id");
+      if (userId) {
+        authenticatedUserId = Number(userId);
+      }
+      if (authenticatedRole === "Client") {
+        window.location.href = "/client_portal.html";
+        return false;
+      }
+      return true;
+    }
+
+    function initEvents() {
+      employeeSelectEl?.addEventListener("change", renderSchedule);
+      scheduleDateEl?.addEventListener("change", refreshAll);
+      refreshBtnEl?.addEventListener("click", refreshAll);
+      document.getElementById("logout-btn")?.addEventListener("click", () => {
+        localStorage.removeItem("fieldops_auth_user");
+        localStorage.removeItem("fieldops_auth_user_id");
+        localStorage.removeItem("fieldops_auth_role");
+        window.location.href = "/index.html#login";
+      });
+    }
+
+    (async () => {
+      if (!initAuth()) return;
+      scheduleDateEl.value = todayIsoDate();
+      initEvents();
+
+      try {
+        await loadEmployees();
+        await loadJobs();
+        renderSchedule();
+      } catch (error) {
+        scheduleListEl.innerHTML = `<p class="rounded-lg border border-rose-500/40 bg-rose-900/30 px-3 py-2 text-sm text-rose-100">${error.message}</p>`;
+      }
+
+      window.setInterval(refreshAll, 60000);
+    })();
+  </script>
+</body>
+</html>
