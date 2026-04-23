@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Initial Setup | FieldOps Scheduler</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: "#1e3a8a",
+              action: "#f97316"
+            }
+          },
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body class="min-h-screen font-sans text-slate-100" style="background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #0d1a2e 100%)">
+  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -left-40 top-10 h-[500px] w-[500px] rounded-full bg-blue-900/30 blur-[120px]"></div>
+    <div class="absolute right-0 top-0 h-[400px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]"></div>
+    <div class="absolute bottom-0 left-1/3 h-[300px] w-[600px] rounded-full bg-cyan-900/15 blur-[80px]"></div>
+  </div>
+
+  <div class="flex min-h-screen items-center justify-center px-4 py-8">
+    <div class="w-full max-w-md">
+      <!-- Header -->
+      <div class="mb-8 text-center">
+        <div class="mb-4 flex justify-center">
+          <span class="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30">
+            <i class="fa-solid fa-calendar-check text-xl text-white"></i>
+          </span>
+        </div>
+        <h1 class="mb-2 text-4xl font-black text-white">FieldOps Setup</h1>
+        <p class="text-slate-300">Create your first admin account to get started</p>
+      </div>
+
+      <!-- Setup Form -->
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+        <form id="setup-form" class="space-y-5">
+          <div>
+            <label for="admin-email" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Admin Email</label>
+            <input 
+              id="admin-email" 
+              name="admin-email" 
+              type="email" 
+              placeholder="admin@company.com" 
+              class="w-full rounded-lg border border-white/15 bg-slate-900/60 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none ring-cyan-400/50 transition focus:border-cyan-300/50 focus:ring-2" 
+              required
+            >
+          </div>
+
+          <div>
+            <label for="admin-password" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Password</label>
+            <div class="relative">
+              <input 
+                id="admin-password" 
+                name="admin-password" 
+                type="password" 
+                placeholder="At least 8 characters" 
+                minlength="8"
+                class="w-full rounded-lg border border-white/15 bg-slate-900/60 px-4 py-3 pr-20 text-sm text-white placeholder-slate-500 outline-none ring-cyan-400/50 transition focus:border-cyan-300/50 focus:ring-2" 
+                required
+              >
+              <button type="button" id="toggle-password" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg border border-cyan-400 bg-cyan-500/25 px-2.5 py-1 text-xs font-bold text-cyan-200 transition hover:bg-cyan-500/40 hover:text-cyan-100">Show</button>
+            </div>
+          </div>
+
+          <div>
+            <label for="admin-password-confirm" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Confirm Password</label>
+            <div class="relative">
+              <input 
+                id="admin-password-confirm" 
+                name="admin-password-confirm" 
+                type="password" 
+                placeholder="Confirm password" 
+                minlength="8"
+                class="w-full rounded-lg border border-white/15 bg-slate-900/60 px-4 py-3 pr-20 text-sm text-white placeholder-slate-500 outline-none ring-cyan-400/50 transition focus:border-cyan-300/50 focus:ring-2" 
+                required
+              >
+              <button type="button" id="toggle-password-confirm" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg border border-cyan-400 bg-cyan-500/25 px-2.5 py-1 text-xs font-bold text-cyan-200 transition hover:bg-cyan-500/40 hover:text-cyan-100">Show</button>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full rounded-lg bg-cyan-500 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed">Create Admin Account</button>
+
+          <p id="setup-status" class="text-center text-sm font-medium text-slate-300" aria-live="polite"></p>
+        </form>
+
+        <!-- Success Message -->
+        <div id="success-message" class="hidden space-y-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-5">
+          <div class="flex items-center gap-3">
+            <div class="rounded-full bg-emerald-500/20 p-2">
+              <i class="fa-solid fa-check text-lg text-emerald-400"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-emerald-300">Admin Account Created!</h3>
+              <p class="text-sm text-emerald-200/90">You can now log in with your credentials</p>
+            </div>
+          </div>
+          <button type="button" onclick="window.location.href='/index.html'" class="w-full rounded-lg bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/30">
+            <i class="fa-solid fa-arrow-right mr-2"></i>Go to Login
+          </button>
+        </div>
+      </div>
+
+      <p class="mt-6 text-center text-xs text-slate-400">
+        <i class="fa-solid fa-shield-check mr-1"></i>Secure setup • First admin account only
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const setupForm = document.getElementById("setup-form");
+    const setupStatus = document.getElementById("setup-status");
+    const successMessage = document.getElementById("success-message");
+    const passwordInput = document.getElementById("admin-password");
+    const passwordConfirmInput = document.getElementById("admin-password-confirm");
+    const togglePasswordBtn = document.getElementById("toggle-password");
+    const togglePasswordConfirmBtn = document.getElementById("toggle-password-confirm");
+
+    function bindPasswordToggle(button, input) {
+      if (!button || !input) return;
+      button.addEventListener("click", (e) => {
+        e.preventDefault();
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+        button.textContent = isHidden ? "Hide" : "Show";
+      });
+    }
+
+    bindPasswordToggle(togglePasswordBtn, passwordInput);
+    bindPasswordToggle(togglePasswordConfirmBtn, passwordConfirmInput);
+
+    setupForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setupStatus.textContent = "Creating admin account...";
+      setupStatus.className = "text-center text-sm font-medium text-slate-300";
+
+      const email = document.getElementById("admin-email").value.trim();
+      const password = document.getElementById("admin-password").value;
+      const passwordConfirm = document.getElementById("admin-password-confirm").value;
+
+      try {
+        const response = await fetch("/api/setup/create-first-admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, password_confirm: passwordConfirm })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to create admin account");
+        }
+
+        setupStatus.textContent = "";
+        setupForm.classList.add("hidden");
+        successMessage.classList.remove("hidden");
+      } catch (error) {
+        setupStatus.textContent = error.message;
+        setupStatus.className = "text-center text-sm font-medium text-rose-300";
+      }
+    });
+
+    // Check if setup is needed on page load
+    async function checkSetupNeeded() {
+      try {
+        const response = await fetch("/api/setup/create-first-admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: "test", password: "test" })
+        });
+        const data = await response.json().catch(() => ({}));
+        
+        if (response.status === 403) {
+          // Admin already exists, redirect to login
+          window.location.href = "/index.html";
+        }
+      } catch (error) {
+        // Connection error, setup is needed
+      }
+    }
+
+    // Uncomment to auto-redirect if admin exists
+    // checkSetupNeeded();
+  </script>
+</body>
+</html>

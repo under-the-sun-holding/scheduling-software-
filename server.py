@@ -29,6 +29,7 @@ from auth_db import (
     change_password,
     create_user,
     find_user_by_username,
+    get_connection,
     init_db,
     set_user_role,
     verify_user,
@@ -1543,6 +1544,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         if self.path == "/api/password/reset":
             self._handle_password_reset()
             return
+        if self.path == "/api/setup/create-first-admin":
+            self._handle_create_first_admin()
+            return
         if self.path == "/api/users":
             self._handle_get_users()
             return
@@ -2257,6 +2261,57 @@ class AppHandler(SimpleHTTPRequestHandler):
 
             change_password(username, new_password)
             self._send_json(200, {"ok": True, "message": "password reset successful"})
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+        except Exception as exc:
+            self._send_json(500, {"error": str(exc)})
+
+    def _admin_exists(self) -> bool:
+        """Check if any admin user exists in the database."""
+        try:
+            from auth_db import get_connection
+            with get_connection() as conn:
+                cursor = conn.execute("SELECT COUNT(*) FROM users WHERE role = 'Admin'")
+                count = cursor.fetchone()[0]
+            return count > 0
+        except Exception:
+            return True  # Assume admin exists on error (safer)
+
+    def _handle_create_first_admin(self) -> None:
+        """Create the first admin account (only if no admins exist)."""
+        if self._admin_exists():
+            self._send_json(403, {"error": "admin account already exists; contact your administrator"})
+            return
+
+        payload = self._read_json_body()
+        email = str(payload.get("email", "")).strip().lower()
+        password = str(payload.get("password", ""))
+        password_confirm = str(payload.get("password_confirm", ""))
+
+        if not email or not password:
+            self._send_json(400, {"error": "email and password are required"})
+            return
+
+        if password != password_confirm:
+            self._send_json(400, {"error": "passwords do not match"})
+            return
+
+        if len(password) < 8:
+            self._send_json(400, {"error": "password must be at least 8 characters"})
+            return
+
+        if "@" not in email:
+            self._send_json(400, {"error": "invalid email address"})
+            return
+
+        try:
+            user = find_user_by_username(email)
+            if user is not None:
+                self._send_json(400, {"error": "email already registered"})
+                return
+
+            create_user(email, password, role="Admin")
+            self._send_json(200, {"ok": True, "message": "admin account created successfully", "email": email})
         except ValueError as exc:
             self._send_json(400, {"error": str(exc)})
         except Exception as exc:
