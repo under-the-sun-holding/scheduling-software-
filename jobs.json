@@ -19,7 +19,9 @@
     "postal_code": "",
     "notes": "",
     "client_id": null,
-    "owner_username": ""
+    "owner_username": "",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   },
   {
     "id": 102,
@@ -28,7 +30,7 @@
     "time": "09:00 AM",
     "status": "Scheduled",
     "duration_minutes": 60,
-    "assigned_tech": "Dave",
+    "assigned_tech": "Sarah",
     "emergency": false,
     "recurring": false,
     "manual_block_minutes": null,
@@ -41,7 +43,9 @@
     "postal_code": "",
     "notes": "",
     "client_id": null,
-    "owner_username": ""
+    "owner_username": "",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   },
   {
     "id": 103,
@@ -63,7 +67,9 @@
     "postal_code": "",
     "notes": "",
     "client_id": null,
-    "owner_username": ""
+    "owner_username": "",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   },
   {
     "id": 104,
@@ -85,7 +91,9 @@
     "postal_code": "",
     "notes": "",
     "client_id": null,
-    "owner_username": ""
+    "owner_username": "",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   },
   {
     "id": 105,
@@ -107,7 +115,9 @@
     "postal_code": "",
     "notes": "",
     "client_id": null,
-    "owner_username": ""
+    "owner_username": "",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   },
   {
     "id": 106,
@@ -129,7 +139,9 @@
     "postal_code": "",
     "notes": "",
     "client_id": null,
-    "owner_username": ""
+    "owner_username": "",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   },
   {
     "id": 107,
@@ -151,7 +163,9 @@
     "postal_code": "37201",
     "notes": "Gate code 1942",
     "client_id": null,
-    "owner_username": ""
+    "owner_username": "",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   },
   {
     "id": 108,
@@ -173,7 +187,9 @@
     "postal_code": "",
     "notes": "",
     "client_id": null,
-    "owner_username": ""
+    "owner_username": "",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   },
   {
     "id": 109,
@@ -195,7 +211,9 @@
     "state": "CA",
     "postal_code": "94213",
     "notes": "Imported from QuickBooks customer ID 3",
-    "owner_username": ""
+    "owner_username": "",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   },
   {
     "id": 110,
@@ -204,7 +222,7 @@
     "time": "08:00 AM",
     "status": "Scheduled",
     "duration_minutes": 60,
-    "assigned_tech": "sdghshhsdeh",
+    "assigned_tech": "John Johnson",
     "client_id": 31,
     "emergency": false,
     "recurring": false,
@@ -217,6 +235,32 @@
     "state": "CA",
     "postal_code": "94213",
     "notes": "Imported from QuickBooks customer ID 2",
-    "owner_username": "underthesunsolar24@gmail.com"
+    "owner_username": "underthesunsolar24@gmail.com",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
+  },
+  {
+    "id": 111,
+    "customer_name": "Amy's Bird Sanctuary",
+    "service_type": "testing",
+    "time": "09:00 AM",
+    "status": "Scheduled",
+    "duration_minutes": 400,
+    "assigned_tech": "James M. Carpenter",
+    "client_id": 30,
+    "emergency": false,
+    "recurring": false,
+    "manual_block_minutes": null,
+    "phone": "(650) 555-3311",
+    "email": "Birds@Intuit.com",
+    "address_line1": "4581 Finch St.",
+    "address_line2": "",
+    "city": "Bayshore",
+    "state": "CA",
+    "postal_code": "94326",
+    "notes": "Imported from QuickBooks customer ID 1",
+    "owner_username": "underthesunsolar24@gmail.com",
+    "scheduled_date": "2026-04-23",
+    "google_calendar_event_id": ""
   }
 ]

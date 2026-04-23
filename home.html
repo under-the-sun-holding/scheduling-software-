@@ -134,11 +134,8 @@
           <button id="add-employee-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-2 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/20">
             <i class="fa-solid fa-user-plus"></i>Employees
           </button>
-          <button id="connect-client-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
-            <i class="fa-solid fa-link"></i>Connect QB
-          </button>
-          <button id="google-calendar-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20">
-            <i class="fa-brands fa-google"></i>Google Calendar
+          <button id="connections-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
+            <i class="fa-solid fa-plug-circle-bolt"></i>Connections
           </button>
           <button id="add-appointment-btn" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-action px-4 py-2 text-xs font-bold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-500">
             <i class="fa-solid fa-plus"></i>Add Appointment
@@ -431,10 +428,11 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <button id="connect-client-submit" type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">Connect</button>
-          <button id="connect-google-calendar-btn" type="button" class="rounded-lg border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100">Connect Google Calendar</button>
-          <button id="sync-quickbooks-btn" type="button" class="rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">Sync Now</button>
-          <button id="disconnect-client-btn" type="button" class="rounded-lg border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">Disconnect</button>
+          <button id="connect-client-submit" type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">Connect</button>
+          <button id="connect-google-calendar-btn" type="button" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-60">Connect Google Calendar</button>
+          <button id="sync-quickbooks-btn" type="button" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60">Sync Now</button>
+          <button id="disconnect-client-btn" type="button" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60">Disconnect QuickBooks</button>
+          <button id="disconnect-google-calendar-btn" type="button" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-60">Disconnect Google Calendar</button>
         </div>
       </form>
     </div>
@@ -492,8 +490,7 @@
     const togglePendingBtn = document.getElementById("toggle-pending");
     const clientsBtn = document.getElementById("clients-btn");
     const addEmployeeBtn = document.getElementById("add-employee-btn");
-    const connectClientBtn = document.getElementById("connect-client-btn");
-    const googleCalendarBtn = document.getElementById("google-calendar-btn");
+    const connectionsBtn = document.getElementById("connections-btn");
     const addAppointmentBtn = document.getElementById("add-appointment-btn");
     const jobTemplate = document.getElementById("job-card-template");
     const jobDetailModal = document.getElementById("job-detail-modal");
@@ -529,6 +526,7 @@
     const connectGoogleCalendarBtn = document.getElementById("connect-google-calendar-btn");
     const syncQuickBooksBtn = document.getElementById("sync-quickbooks-btn");
     const disconnectClientBtn = document.getElementById("disconnect-client-btn");
+    const disconnectGoogleCalendarBtn = document.getElementById("disconnect-google-calendar-btn");
     const quickbooksStatusBadgeEl = document.getElementById("quickbooks-status-badge");
 
     let isCtrlPressed = false;
@@ -884,6 +882,50 @@
       return response.json();
     }
 
+    function maybeShowCalendarSyncWarning(payload) {
+      const warning = String(payload?.calendar_sync_warning || "").trim();
+      if (!warning) return;
+      showToast(`Schedule saved, but Google Calendar sync had an issue: ${warning}`, "warning");
+    }
+
+    function showToast(message, tone = "info") {
+      const text = String(message || "").trim();
+      if (!text) return;
+
+      let stack = document.getElementById("app-toast-stack");
+      if (!stack) {
+        stack = document.createElement("div");
+        stack.id = "app-toast-stack";
+        stack.className = "pointer-events-none fixed bottom-4 right-4 z-[120] flex max-w-sm flex-col gap-2";
+        document.body.appendChild(stack);
+      }
+
+      const toast = document.createElement("div");
+      const toneClass = tone === "warning"
+        ? "border-amber-300 bg-amber-50 text-amber-900"
+        : tone === "error"
+          ? "border-rose-300 bg-rose-50 text-rose-900"
+          : "border-blue-300 bg-blue-50 text-blue-900";
+      toast.className = `pointer-events-auto rounded-lg border px-3 py-2 text-sm shadow-lg transition-all duration-200 ${toneClass}`;
+      toast.textContent = text;
+      stack.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.style.opacity = "1";
+      });
+
+      window.setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(6px)";
+        window.setTimeout(() => {
+          toast.remove();
+          if (stack && stack.childElementCount === 0) {
+            stack.remove();
+          }
+        }, 220);
+      }, 3600);
+    }
+
     async function createAppointment(payload) {
       const username = String(authenticatedUser || "").trim();
       const user_id = authenticatedUserId || null;
@@ -1070,25 +1112,25 @@
     }
 
     function startQuickBooksAuth(username) {
-      // Use user_id if available, otherwise fallback to username
-      if (authenticatedUserId) {
-        const query = new URLSearchParams({ user_id: authenticatedUserId });
-        window.location.href = `/api/quickbooks/connect?${query.toString()}`;
+      const normalized = String(username || "").trim();
+      const params = new URLSearchParams();
+      if (authenticatedUserId && normalized === String(authenticatedUser || "").trim()) {
+        params.set("user_id", String(authenticatedUserId));
       } else {
-        const query = new URLSearchParams({ username });
-        window.location.href = `/api/quickbooks/connect?${query.toString()}`;
+        params.set("username", normalized);
       }
+      window.location.href = `/api/quickbooks/connect?${params.toString()}`;
     }
 
     function startGoogleCalendarAuth(username) {
-      // Use user_id if available, otherwise fallback to username
-      if (authenticatedUserId) {
-        const query = new URLSearchParams({ user_id: authenticatedUserId });
-        window.location.href = `/api/google-calendar/connect?${query.toString()}`;
+      const normalized = String(username || "").trim();
+      const params = new URLSearchParams();
+      if (authenticatedUserId && normalized === String(authenticatedUser || "").trim()) {
+        params.set("user_id", String(authenticatedUserId));
       } else {
-        const query = new URLSearchParams({ username });
-        window.location.href = `/api/google-calendar/connect?${query.toString()}`;
+        params.set("username", normalized);
       }
+      window.location.href = `/api/google-calendar/connect?${params.toString()}`;
     }
 
     function selectedConnectUsername() {
@@ -1110,12 +1152,34 @@
       return response.json();
     }
 
+    function hasQuickBooksConnection() {
+      if (!userIntegration) return false;
+      if (typeof userIntegration.quickbooks_connected === "boolean") {
+        return userIntegration.quickbooks_connected;
+      }
+      return Boolean(
+        userIntegration.integration_connected
+        && String(userIntegration.integration_provider || "").trim() === "quickbooks"
+      );
+    }
+
+    function hasGoogleCalendarConnection() {
+      if (!userIntegration) return false;
+      if (typeof userIntegration.google_calendar_connected === "boolean") {
+        return userIntegration.google_calendar_connected;
+      }
+      return Boolean(
+        userIntegration.integration_connected
+        && String(userIntegration.integration_provider || "").trim() === "google_calendar"
+      );
+    }
+
     function renderQuickBooksBadge() {
       if (!quickbooksStatusBadgeEl) return;
       quickbooksStatusBadgeEl.classList.remove("hidden");
 
-      const isConnected = Boolean(userIntegration?.integration_connected);
-      const provider = String(userIntegration?.integration_provider || "QuickBooks").trim();
+      const isConnected = hasQuickBooksConnection();
+      const provider = "QuickBooks";
       const companyName = String(userIntegration?.quickbooks_company_name || "").trim();
       if (isConnected) {
         const descriptor = companyName ? `${provider} - ${companyName}` : provider;
@@ -1132,10 +1196,7 @@
       const googleCalendarStatusBadgeEl = document.getElementById("google-calendar-status-badge");
       if (!googleCalendarStatusBadgeEl) return;
 
-      const isConnected = Boolean(
-        userIntegration?.integration_connected
-        && userIntegration?.integration_provider === "google_calendar"
-      );
+      const isConnected = hasGoogleCalendarConnection();
       if (isConnected) {
         googleCalendarStatusBadgeEl.textContent = "GC: Connected";
         googleCalendarStatusBadgeEl.classList.remove(
@@ -1206,11 +1267,13 @@
         if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = true;
         if (syncQuickBooksBtn) syncQuickBooksBtn.disabled = true;
         if (disconnectClientBtn) disconnectClientBtn.disabled = true;
+        if (disconnectGoogleCalendarBtn) disconnectGoogleCalendarBtn.disabled = true;
         return;
       }
       if (!userIntegration) {
         connectClientPreviewEl.textContent = "Unable to load integration status.";
         if (disconnectClientBtn) disconnectClientBtn.disabled = true;
+        if (disconnectGoogleCalendarBtn) disconnectGoogleCalendarBtn.disabled = true;
         return;
       }
 
@@ -1222,11 +1285,15 @@
       const lastSyncAt = String(userIntegration.quickbooks_last_sync_at || "").trim();
       const tokensEncrypted = Boolean(userIntegration.quickbooks_tokens_encrypted);
       const isConfigured = Boolean(userIntegration.quickbooks_configured);
+      const quickBooksConnected = hasQuickBooksConnection();
+      const googleCalendarConnected = hasGoogleCalendarConnection();
       const lines = [
         `User: ${targetUsername || "Not signed in"}`,
         `OAuth Configured: ${isConfigured ? "Yes" : "No"}`,
         `Current Status: ${isConnected ? "Connected" : "Not connected"}`,
         `Provider: ${provider || "None"}`,
+        `QuickBooks Connected: ${quickBooksConnected ? "Yes" : "No"}`,
+        `Google Calendar Connected: ${googleCalendarConnected ? "Yes" : "No"}`,
         `Connected Company: ${companyName || "N/A"}`,
         `Connected At: ${connectedAt || "N/A"}`,
         `Token Expires At: ${tokenExpiresAt || "N/A"}`,
@@ -1239,10 +1306,13 @@
         connectClientSubmitBtn.disabled = !isConfigured;
       }
       if (syncQuickBooksBtn) {
-        syncQuickBooksBtn.disabled = !isConnected;
+        syncQuickBooksBtn.disabled = !quickBooksConnected;
       }
       if (disconnectClientBtn) {
-        disconnectClientBtn.disabled = !isConnected;
+        disconnectClientBtn.disabled = !quickBooksConnected;
+      }
+      if (disconnectGoogleCalendarBtn) {
+        disconnectGoogleCalendarBtn.disabled = !googleCalendarConnected;
       }
     }
 
@@ -1417,7 +1487,7 @@
     async function refreshEmployeesData({ importFromQuickBooks = false } = {}) {
       employeesCache = await fetchEmployees();
 
-      if (importFromQuickBooks && authenticatedUser && userIntegration?.integration_connected) {
+      if (importFromQuickBooks && authenticatedUser && hasQuickBooksConnection()) {
         try {
           employeesCache = await importQuickBooksEmployees(authenticatedUser, authenticatedUserId);
         } catch (error) {
@@ -1567,24 +1637,11 @@
         }
       });
 
-      connectClientBtn?.addEventListener("click", async () => {
+      connectionsBtn?.addEventListener("click", async () => {
         try {
           await openConnectClientModal();
         } catch (error) {
-          alert(error.message || "Unable to load clients.");
-        }
-      });
-
-      googleCalendarBtn?.addEventListener("click", async () => {
-        try {
-          const targetUsername = String(authenticatedUser || "").trim();
-          if (!targetUsername) {
-            alert("Please log in first.");
-            return;
-          }
-          startGoogleCalendarAuth(targetUsername);
-        } catch (error) {
-          alert(error.message || "Unable to start Google Calendar connection.");
+          alert(error.message || "Unable to load connections.");
         }
       });
 
@@ -1632,6 +1689,34 @@
     }
 
     function initConnectClientModal() {
+      const setConnectButtonsDisabled = (disabled) => {
+        if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = disabled;
+        if (disconnectClientBtn) disconnectClientBtn.disabled = disabled;
+        if (disconnectGoogleCalendarBtn) disconnectGoogleCalendarBtn.disabled = disabled;
+      };
+
+      const disconnectIntegration = async (provider, providerLabel) => {
+        const targetUsername = selectedConnectUsername();
+        if (!targetUsername) {
+          alert("Username is required.");
+          return;
+        }
+
+        setConnectButtonsDisabled(true);
+        try {
+          const user_id = targetUsername === authenticatedUser ? authenticatedUserId : null;
+          await disconnectUser({ username: targetUsername, user_id, provider });
+          await refreshConnectModalStatus();
+          renderConnectClientPreview();
+          showToast(`${providerLabel} disconnected.`, "info");
+        } catch (error) {
+          alert(error.message || `Unable to disconnect ${providerLabel}.`);
+        } finally {
+          setConnectButtonsDisabled(false);
+          renderConnectClientPreview();
+        }
+      };
+
       closeConnectClientModalBtn?.addEventListener("click", () => {
         connectClientModal?.classList.add("hidden");
       });
@@ -1698,27 +1783,11 @@
       });
 
       disconnectClientBtn?.addEventListener("click", async () => {
-        const targetUsername = selectedConnectUsername();
-        if (!targetUsername) {
-          alert("Username is required.");
-          return;
-        }
+        await disconnectIntegration("quickbooks", "QuickBooks");
+      });
 
-        if (disconnectClientBtn) disconnectClientBtn.disabled = true;
-        if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = true;
-        try {
-          const user_id = targetUsername === authenticatedUser ? authenticatedUserId : null;
-          await disconnectUser({ username: targetUsername, user_id });
-          await refreshConnectModalStatus();
-          renderConnectClientPreview();
-        } catch (error) {
-          alert(error.message || "Unable to disconnect QuickBooks.");
-        } finally {
-          if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = false;
-          if (disconnectClientBtn) {
-            disconnectClientBtn.disabled = !Boolean(userIntegration?.integration_connected);
-          }
-        }
+      disconnectGoogleCalendarBtn?.addEventListener("click", async () => {
+        await disconnectIntegration("google_calendar", "Google Calendar");
       });
 
       syncQuickBooksBtn?.addEventListener("click", async () => {
@@ -1727,7 +1796,7 @@
           alert("Username is required.");
           return;
         }
-        if (!userIntegration?.integration_connected) {
+        if (!hasQuickBooksConnection()) {
           alert("Connect QuickBooks before syncing.");
           return;
         }
@@ -1746,7 +1815,7 @@
           alert(error.message || "Unable to sync QuickBooks data.");
         } finally {
           if (syncQuickBooksBtn) {
-            syncQuickBooksBtn.disabled = !Boolean(userIntegration?.integration_connected);
+            syncQuickBooksBtn.disabled = !hasQuickBooksConnection();
           }
         }
       });
@@ -1856,7 +1925,8 @@
             card.dataset.manualBlockMinutes = "";
             applyScheduledVisual(card, "Scheduled");
             try {
-              await persistJobSchedule(card.dataset.jobId, "Pending", "Unscheduled", null, null);
+              const payload = await persistJobSchedule(card.dataset.jobId, "Pending", "Unscheduled", null, null);
+              maybeShowCalendarSyncWarning(payload);
             } catch (error) {
               alert(error.message);
             }
@@ -1910,7 +1980,8 @@
             applyScheduledVisual(card, status);
 
             try {
-              await persistJobSchedule(card.dataset.jobId, status, time, tech, manualBlock);
+              const payload = await persistJobSchedule(card.dataset.jobId, status, time, tech, manualBlock);
+              maybeShowCalendarSyncWarning(payload);
             } catch (error) {
               alert(error.message);
             }

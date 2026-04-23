@@ -2445,7 +2445,13 @@ class AppHandler(SimpleHTTPRequestHandler):
                            quickbooks_token_expires_at,
                            quickbooks_company_name,
                            quickbooks_last_sync_at,
-                           quickbooks_tokens_encrypted
+                           quickbooks_tokens_encrypted,
+                           quickbooks_access_token,
+                           quickbooks_refresh_token,
+                           google_calendar_access_token,
+                           google_calendar_refresh_token,
+                           google_calendar_token_expires_at,
+                           google_calendar_tokens_encrypted
                     FROM users
                     WHERE id = ?
                     """,
@@ -2460,6 +2466,16 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         quickbooks_company_name = str(row[6] or "").strip()
+        quickbooks_access_token = str(row[9] or "").strip()
+        quickbooks_refresh_token = str(row[10] or "").strip()
+        google_calendar_access_token = str(row[11] or "").strip()
+        google_calendar_refresh_token = str(row[12] or "").strip()
+
+        quickbooks_connected = bool(quickbooks_access_token and quickbooks_refresh_token)
+        google_calendar_connected = bool(
+            google_calendar_access_token and google_calendar_refresh_token
+        )
+
         if bool(row[2]) and not quickbooks_company_name:
             try:
                 connection = get_quickbooks_user_connection(username)
@@ -2486,6 +2502,10 @@ class AppHandler(SimpleHTTPRequestHandler):
                     "quickbooks_company_name": quickbooks_company_name,
                     "quickbooks_last_sync_at": str(row[7] or "").strip(),
                     "quickbooks_tokens_encrypted": bool(row[8]),
+                    "quickbooks_connected": quickbooks_connected,
+                    "google_calendar_connected": google_calendar_connected,
+                    "google_calendar_token_expires_at": str(row[13] or "").strip(),
+                    "google_calendar_tokens_encrypted": bool(row[14]),
                     "quickbooks_configured": quickbooks_is_configured(),
                     "google_calendar_configured": google_calendar_is_configured(),
                 },
@@ -2496,6 +2516,11 @@ class AppHandler(SimpleHTTPRequestHandler):
         payload = self._read_json_body()
         username = str(payload.get("username", "")).strip()
         user_id_raw = payload.get("user_id")
+        provider = str(payload.get("provider", "all")).strip().lower() or "all"
+
+        if provider not in {"all", "quickbooks", "google_calendar"}:
+            self._send_json(400, {"error": "provider must be all, quickbooks, or google_calendar"})
+            return
 
         try:
             user = _resolve_user_identity(username=username, user_id_raw=user_id_raw)
@@ -2506,31 +2531,82 @@ class AppHandler(SimpleHTTPRequestHandler):
         user_id = int(user["id"])
         username = str(user["username"])
 
+        if provider == "quickbooks":
+            update_sql = """
+                UPDATE users
+                SET quickbooks_realm_id = '',
+                    quickbooks_access_token = '',
+                    quickbooks_refresh_token = '',
+                    quickbooks_token_expires_at = NULL,
+                    quickbooks_company_name = '',
+                    quickbooks_last_sync_at = NULL,
+                    quickbooks_tokens_encrypted = 0,
+                    integration_provider = CASE
+                        WHEN google_calendar_access_token <> '' AND google_calendar_refresh_token <> ''
+                        THEN 'google_calendar'
+                        ELSE ''
+                    END,
+                    integration_connected = CASE
+                        WHEN google_calendar_access_token <> '' AND google_calendar_refresh_token <> ''
+                        THEN 1
+                        ELSE 0
+                    END,
+                    integration_connected_at = CASE
+                        WHEN google_calendar_access_token <> '' AND google_calendar_refresh_token <> ''
+                        THEN integration_connected_at
+                        ELSE NULL
+                    END
+                WHERE id = ?
+            """
+        elif provider == "google_calendar":
+            update_sql = """
+                UPDATE users
+                SET google_calendar_access_token = '',
+                    google_calendar_refresh_token = '',
+                    google_calendar_token_expires_at = NULL,
+                    google_calendar_tokens_encrypted = 0,
+                    integration_provider = CASE
+                        WHEN quickbooks_access_token <> '' AND quickbooks_refresh_token <> ''
+                        THEN 'quickbooks'
+                        ELSE ''
+                    END,
+                    integration_connected = CASE
+                        WHEN quickbooks_access_token <> '' AND quickbooks_refresh_token <> ''
+                        THEN 1
+                        ELSE 0
+                    END,
+                    integration_connected_at = CASE
+                        WHEN quickbooks_access_token <> '' AND quickbooks_refresh_token <> ''
+                        THEN integration_connected_at
+                        ELSE NULL
+                    END
+                WHERE id = ?
+            """
+        else:
+            update_sql = """
+                UPDATE users
+                SET integration_provider = '',
+                    integration_connected = 0,
+                    integration_connected_at = NULL,
+                    quickbooks_realm_id = '',
+                    quickbooks_access_token = '',
+                    quickbooks_refresh_token = '',
+                    quickbooks_token_expires_at = NULL,
+                    quickbooks_company_name = '',
+                    quickbooks_last_sync_at = NULL,
+                    quickbooks_tokens_encrypted = 0,
+                    google_calendar_access_token = '',
+                    google_calendar_refresh_token = '',
+                    google_calendar_token_expires_at = NULL,
+                    google_calendar_tokens_encrypted = 0
+                WHERE id = ?
+            """
+
         try:
             from auth_db import get_connection
 
             with get_connection() as conn:
-                result = conn.execute(
-                    """
-                    UPDATE users
-                    SET integration_provider = '',
-                        integration_connected = 0,
-                        integration_connected_at = NULL,
-                        quickbooks_realm_id = '',
-                        quickbooks_access_token = '',
-                        quickbooks_refresh_token = '',
-                        quickbooks_token_expires_at = NULL,
-                        quickbooks_company_name = '',
-                        quickbooks_last_sync_at = NULL,
-                        quickbooks_tokens_encrypted = 0,
-                        google_calendar_access_token = '',
-                        google_calendar_refresh_token = '',
-                        google_calendar_token_expires_at = NULL,
-                        google_calendar_tokens_encrypted = 0
-                    WHERE id = ?
-                    """,
-                    (user_id,),
-                )
+                result = conn.execute(update_sql, (user_id,))
                 if result.rowcount == 0:
                     self._send_json(404, {"error": "user not found"})
                     return
@@ -2546,9 +2622,7 @@ class AppHandler(SimpleHTTPRequestHandler):
                 "user": {
                     "id": user_id,
                     "username": username,
-                    "integration_provider": "",
-                    "integration_connected": False,
-                    "integration_connected_at": "",
+                    "disconnected_provider": provider,
                 },
             },
         )
