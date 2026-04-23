@@ -161,7 +161,8 @@ def verify_password(password: str, stored_hash: str) -> bool:
 
 
 def create_user(username: str, password: str, role: str = "Employee") -> None:
-    if not username.strip():
+    username = str(username or "").strip().lower()
+    if not username:
         raise ValueError("Username cannot be empty.")
     if len(password) < 8:
         raise ValueError("Password must be at least 8 characters.")
@@ -180,9 +181,10 @@ def create_user(username: str, password: str, role: str = "Employee") -> None:
 
 def grant_admin(username: str) -> None:
     """Grant admin access to a user."""
+    username = str(username or "").strip()
     with get_connection() as conn:
         result = conn.execute(
-            "UPDATE users SET is_admin = 1, role = 'Admin' WHERE username = ?",
+            "UPDATE users SET is_admin = 1, role = 'Admin' WHERE lower(username) = lower(?)",
             (username,)
         )
         if result.rowcount == 0:
@@ -192,9 +194,10 @@ def grant_admin(username: str) -> None:
 
 def revoke_admin(username: str) -> None:
     """Revoke admin access from a user."""
+    username = str(username or "").strip()
     with get_connection() as conn:
         result = conn.execute(
-            "UPDATE users SET is_admin = 0, role = 'Employee' WHERE username = ?",
+            "UPDATE users SET is_admin = 0, role = 'Employee' WHERE lower(username) = lower(?)",
             (username,)
         )
         if result.rowcount == 0:
@@ -203,6 +206,7 @@ def revoke_admin(username: str) -> None:
 
 
 def change_password(username: str, new_password: str) -> None:
+    username = str(username or "").strip()
     if len(new_password) < 8:
         raise ValueError("Password must be at least 8 characters.")
 
@@ -210,7 +214,7 @@ def change_password(username: str, new_password: str) -> None:
 
     with get_connection() as conn:
         result = conn.execute(
-            "UPDATE users SET password_hash = ? WHERE username = ?",
+            "UPDATE users SET password_hash = ? WHERE lower(username) = lower(?)",
             (password_hash, username),
         )
         if result.rowcount == 0:
@@ -219,9 +223,10 @@ def change_password(username: str, new_password: str) -> None:
 
 
 def verify_user(username: str, password: str) -> bool:
+    username = str(username or "").strip()
     with get_connection() as conn:
         row = conn.execute(
-            "SELECT password_hash FROM users WHERE username = ?", (username,)
+            "SELECT password_hash FROM users WHERE lower(username) = lower(?)", (username,)
         ).fetchone()
 
     if row is None:
@@ -235,7 +240,7 @@ def find_user_by_username(username: str) -> dict | None:
         return None
     with get_connection() as conn:
         row = conn.execute(
-            "SELECT id, username, role, is_admin FROM users WHERE username = ?",
+            "SELECT id, username, role, is_admin FROM users WHERE lower(username) = lower(?)",
             (normalized,),
         ).fetchone()
     if row is None:
@@ -272,10 +277,11 @@ def get_user_role(username: str) -> str:
 
 
 def set_user_role(username: str, role: str) -> None:
+    username = str(username or "").strip()
     normalized_role = normalize_role(role)
     with get_connection() as conn:
         result = conn.execute(
-            "UPDATE users SET role = ?, is_admin = ? WHERE username = ?",
+            "UPDATE users SET role = ?, is_admin = ? WHERE lower(username) = lower(?)",
             (normalized_role, 1 if normalized_role == "Admin" else 0, username),
         )
         if result.rowcount == 0:

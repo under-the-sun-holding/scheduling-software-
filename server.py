@@ -28,6 +28,7 @@ from pathlib import Path
 from auth_db import (
     change_password,
     create_user,
+    find_user_by_username,
     init_db,
     set_user_role,
     verify_user,
@@ -3164,6 +3165,29 @@ def load_env_file() -> None:
                 os.environ[key] = value
 
 
+def ensure_bootstrap_admin_account() -> None:
+    """Optionally ensure an admin account exists in deployed environments.
+
+    Controlled by env vars:
+    - BOOTSTRAP_ADMIN_USERNAME
+    - BOOTSTRAP_ADMIN_PASSWORD
+    """
+    username = str(os.environ.get("BOOTSTRAP_ADMIN_USERNAME", "")).strip()
+    password = str(os.environ.get("BOOTSTRAP_ADMIN_PASSWORD", ""))
+    if not username or not password:
+        return
+
+    user = find_user_by_username(username)
+    try:
+        if user is None:
+            create_user(username, password, role="Admin")
+            return
+        set_user_role(username, "Admin")
+        change_password(username, password)
+    except Exception as exc:
+        print(f"[bootstrap-admin] warning: {exc}")
+
+
 def main(argv: list[str]) -> int:
     global LEGACY_DATA_OWNER
     # Render and similar hosts provide a dynamic PORT env var.
@@ -3176,6 +3200,7 @@ def main(argv: list[str]) -> int:
             return 1
 
     init_db()
+    ensure_bootstrap_admin_account()
     LEGACY_DATA_OWNER = resolve_legacy_data_owner()
     load_env_file()
     load_clients()
