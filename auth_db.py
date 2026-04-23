@@ -97,6 +97,25 @@ def init_db() -> None:
             conn.execute("ALTER TABLE users ADD COLUMN google_calendar_token_expires_at DATETIME")
         if "google_calendar_tokens_encrypted" not in columns:
             conn.execute("ALTER TABLE users ADD COLUMN google_calendar_tokens_encrypted INTEGER DEFAULT 0")
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS account_profiles (
+                user_id INTEGER PRIMARY KEY,
+                full_name TEXT DEFAULT '',
+                phone TEXT DEFAULT '',
+                company_name TEXT DEFAULT '',
+                address_line1 TEXT DEFAULT '',
+                address_line2 TEXT DEFAULT '',
+                city TEXT DEFAULT '',
+                state TEXT DEFAULT '',
+                postal_code TEXT DEFAULT '',
+                notes TEXT DEFAULT '',
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+            """
+        )
         conn.commit()
 
 
@@ -262,6 +281,132 @@ def set_user_role(username: str, role: str) -> None:
         if result.rowcount == 0:
             raise ValueError(f"User '{username}' not found.")
         conn.commit()
+
+
+def get_account_profile(user_id: int) -> dict:
+    with get_connection() as conn:
+        user_row = conn.execute(
+            "SELECT id, username, role FROM users WHERE id = ?",
+            (int(user_id),),
+        ).fetchone()
+        if user_row is None:
+            raise ValueError("user not found")
+
+        profile_row = conn.execute(
+            """
+            SELECT full_name,
+                   phone,
+                   company_name,
+                   address_line1,
+                   address_line2,
+                   city,
+                   state,
+                   postal_code,
+                   notes,
+                   updated_at
+            FROM account_profiles
+            WHERE user_id = ?
+            """,
+            (int(user_id),),
+        ).fetchone()
+
+    if profile_row is None:
+        return {
+            "user_id": int(user_row[0]),
+            "username": str(user_row[1] or "").strip(),
+            "role": str(user_row[2] or "Employee").strip() or "Employee",
+            "full_name": "",
+            "phone": "",
+            "company_name": "",
+            "address_line1": "",
+            "address_line2": "",
+            "city": "",
+            "state": "",
+            "postal_code": "",
+            "notes": "",
+            "updated_at": "",
+        }
+
+    return {
+        "user_id": int(user_row[0]),
+        "username": str(user_row[1] or "").strip(),
+        "role": str(user_row[2] or "Employee").strip() or "Employee",
+        "full_name": str(profile_row[0] or "").strip(),
+        "phone": str(profile_row[1] or "").strip(),
+        "company_name": str(profile_row[2] or "").strip(),
+        "address_line1": str(profile_row[3] or "").strip(),
+        "address_line2": str(profile_row[4] or "").strip(),
+        "city": str(profile_row[5] or "").strip(),
+        "state": str(profile_row[6] or "").strip(),
+        "postal_code": str(profile_row[7] or "").strip(),
+        "notes": str(profile_row[8] or "").strip(),
+        "updated_at": str(profile_row[9] or "").strip(),
+    }
+
+
+def upsert_account_profile(
+    user_id: int,
+    full_name: str = "",
+    phone: str = "",
+    company_name: str = "",
+    address_line1: str = "",
+    address_line2: str = "",
+    city: str = "",
+    state: str = "",
+    postal_code: str = "",
+    notes: str = "",
+) -> dict:
+    with get_connection() as conn:
+        user_row = conn.execute(
+            "SELECT id FROM users WHERE id = ?",
+            (int(user_id),),
+        ).fetchone()
+        if user_row is None:
+            raise ValueError("user not found")
+
+        conn.execute(
+            """
+            INSERT INTO account_profiles (
+                user_id,
+                full_name,
+                phone,
+                company_name,
+                address_line1,
+                address_line2,
+                city,
+                state,
+                postal_code,
+                notes,
+                updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(user_id) DO UPDATE SET
+                full_name = excluded.full_name,
+                phone = excluded.phone,
+                company_name = excluded.company_name,
+                address_line1 = excluded.address_line1,
+                address_line2 = excluded.address_line2,
+                city = excluded.city,
+                state = excluded.state,
+                postal_code = excluded.postal_code,
+                notes = excluded.notes,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (
+                int(user_id),
+                str(full_name or "").strip(),
+                str(phone or "").strip(),
+                str(company_name or "").strip(),
+                str(address_line1 or "").strip(),
+                str(address_line2 or "").strip(),
+                str(city or "").strip(),
+                str(state or "").strip(),
+                str(postal_code or "").strip(),
+                str(notes or "").strip(),
+            ),
+        )
+        conn.commit()
+
+    return get_account_profile(int(user_id))
 
 
 def print_usage() -> None:
