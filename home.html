@@ -123,6 +123,11 @@
           <p class="mt-1 text-sm text-slate-400">Fluid assignment and live time blocking for every tech on the board.</p>
         </div>
         <div class="flex flex-wrap items-center justify-end gap-2">
+          <div class="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5">
+            <label for="board-date" class="text-xs font-semibold text-slate-300">Date</label>
+            <input id="board-date" type="date" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-black">
+            <button id="board-date-today" type="button" class="rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/20">Today</button>
+          </div>
           <button id="clients-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-300 transition hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-blue-300">
             <i class="fa-solid fa-address-book"></i>Clients
           </button>
@@ -142,6 +147,13 @@
             <i class="fa-solid fa-hand-pointer mr-1"></i>Manual Block Mode (Ctrl)
           </div>
         </div>
+      </div>
+      <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
+        <div class="mb-2 flex items-center justify-between gap-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">5 Day Assignment Calendar</p>
+          <p id="active-board-date-label" class="text-xs font-semibold text-blue-300">Today</p>
+        </div>
+        <div id="five-day-calendar" class="grid grid-cols-1 gap-2 sm:grid-cols-5"></div>
       </div>
       <!-- KPI Stats -->
       <div class="mt-5 grid gap-3 sm:grid-cols-3">
@@ -368,6 +380,10 @@
             <option value="">Select a client</option>
           </select>
         </div>
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">Appointment Date</label>
+          <input id="appointment-date" type="date" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black">
+        </div>
         <input id="appointment-service" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:col-span-2" placeholder="Service type">
         <input id="appointment-duration" required type="number" min="1" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500" placeholder="Duration minutes" value="60">
         <textarea id="appointment-notes" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder-slate-500 sm:col-span-2" rows="2" placeholder="Appointment notes (optional)"></textarea>
@@ -467,6 +483,10 @@
     ];
 
     const boardEl = document.getElementById("dispatch-board");
+    const boardDateEl = document.getElementById("board-date");
+    const boardDateTodayBtn = document.getElementById("board-date-today");
+    const fiveDayCalendarEl = document.getElementById("five-day-calendar");
+    const activeBoardDateLabelEl = document.getElementById("active-board-date-label");
     const pendingTrayEl = document.getElementById("pending-tray");
     const manualIndicatorEl = document.getElementById("manual-block-indicator");
     const togglePendingBtn = document.getElementById("toggle-pending");
@@ -494,6 +514,7 @@
     const appointmentForm = document.getElementById("appointment-form");
     const appointmentClientIdEl = document.getElementById("appointment-client-id");
     const appointmentServiceEl = document.getElementById("appointment-service");
+    const appointmentDateEl = document.getElementById("appointment-date");
     const appointmentDurationEl = document.getElementById("appointment-duration");
     const appointmentNotesEl = document.getElementById("appointment-notes");
     const appointmentClientPreviewEl = document.getElementById("appointment-client-preview");
@@ -518,6 +539,99 @@
     let authenticatedUserId = null;
     let userIntegration = null;
     let connectUsernameMissing = false;
+    let activeBoardDate = "";
+
+    function todayIsoDate() {
+      const now = new Date();
+      const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 10);
+    }
+
+    function selectedBoardDate() {
+      return String(boardDateEl?.value || activeBoardDate || todayIsoDate()).trim();
+    }
+
+    function isoDateToLocalDate(isoDate) {
+      const value = String(isoDate || "").trim();
+      if (!value) return null;
+      const parts = value.split("-").map((part) => Number(part));
+      if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) {
+        return null;
+      }
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function formatBoardDateLabel(isoDate) {
+      const dateObj = isoDateToLocalDate(isoDate);
+      if (!dateObj) return "Today";
+      return dateObj.toLocaleDateString([], {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+    }
+
+    function buildFiveDayCalendar() {
+      if (!fiveDayCalendarEl) return;
+
+      const start = isoDateToLocalDate(todayIsoDate());
+      if (!start) return;
+
+      const selected = selectedBoardDate();
+      const cards = [];
+
+      for (let i = 0; i < 5; i += 1) {
+        const day = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+        const iso = [
+          day.getFullYear(),
+          String(day.getMonth() + 1).padStart(2, "0"),
+          String(day.getDate()).padStart(2, "0")
+        ].join("-");
+        const isSelected = iso === selected;
+        const isToday = i === 0;
+        const weekday = day.toLocaleDateString([], { weekday: "short" });
+        const monthDay = day.toLocaleDateString([], { month: "short", day: "numeric" });
+
+        cards.push(`
+          <button
+            type="button"
+            data-board-day="${iso}"
+            class="rounded-lg border px-3 py-2 text-left transition ${isSelected
+              ? "border-blue-400/60 bg-blue-500/20 text-blue-200"
+              : "border-white/15 bg-white/5 text-slate-300 hover:border-blue-500/40 hover:bg-blue-500/10"}"
+          >
+            <p class="text-[11px] font-semibold uppercase tracking-wide ${isSelected ? "text-blue-300" : "text-slate-400"}">${weekday}${isToday ? " · Today" : ""}</p>
+            <p class="mt-0.5 text-sm font-bold">${monthDay}</p>
+          </button>
+        `);
+      }
+
+      fiveDayCalendarEl.innerHTML = cards.join("");
+      if (activeBoardDateLabelEl) {
+        activeBoardDateLabelEl.textContent = formatBoardDateLabel(selected);
+      }
+
+      fiveDayCalendarEl.querySelectorAll("button[data-board-day]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const nextDate = String(button.getAttribute("data-board-day") || "").trim();
+          if (!nextDate) return;
+          setBoardDate(nextDate);
+          await loadJobs();
+        });
+      });
+    }
+
+    function setBoardDate(value) {
+      const next = String(value || "").trim() || todayIsoDate();
+      activeBoardDate = next;
+      if (boardDateEl) {
+        boardDateEl.value = next;
+      }
+      if (appointmentDateEl && !appointmentDateEl.value) {
+        appointmentDateEl.value = next;
+      }
+      buildFiveDayCalendar();
+    }
 
     function updateManualUI() {
       const active = isDraggingJob && isCtrlPressed;
@@ -757,6 +871,7 @@
           id: Number(jobId),
           status,
           time,
+          scheduled_date: selectedBoardDate(),
           assigned_tech: assignedTech,
           manual_block_minutes: manualBlockMinutes
         })
@@ -1434,6 +1549,9 @@
 
     function resetAppointmentForm() {
       appointmentForm?.reset();
+      if (appointmentDateEl) {
+        appointmentDateEl.value = selectedBoardDate();
+      }
       if (appointmentDurationEl) {
         appointmentDurationEl.value = "60";
       }
@@ -1665,6 +1783,7 @@
         event.preventDefault();
         const client = selectedClientFromForm();
         const serviceType = String(appointmentServiceEl?.value || "").trim();
+        const scheduledDate = String(appointmentDateEl?.value || "").trim();
         const durationMinutes = Number(appointmentDurationEl?.value || "0");
         const notes = String(appointmentNotesEl?.value || "").trim();
 
@@ -1674,6 +1793,10 @@
         }
         if (!serviceType) {
           alert("Service type is required.");
+          return;
+        }
+        if (!scheduledDate) {
+          alert("Appointment date is required.");
           return;
         }
         if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
@@ -1687,6 +1810,7 @@
             client_id: client.id,
             customer_name: client.name,
             service_type: serviceType,
+            scheduled_date: scheduledDate,
             duration_minutes: durationMinutes,
             notes
           });
@@ -1842,10 +1966,11 @@
     async function loadJobs() {
       try {
         let query;
+        const scheduled_date = selectedBoardDate();
         if (authenticatedUserId) {
-          query = new URLSearchParams({ user_id: authenticatedUserId });
+          query = new URLSearchParams({ user_id: authenticatedUserId, scheduled_date });
         } else {
-          query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+          query = new URLSearchParams({ username: String(authenticatedUser || "").trim(), scheduled_date });
         }
         const response = await fetch(`/api/jobs?${query.toString()}`);
         if (!response.ok) {
@@ -1871,6 +1996,7 @@
     if (!user) {
       window.location.href = "/index.html#login";
     } else {
+      setBoardDate(todayIsoDate());
       authenticatedUser = user;
       const userId = localStorage.getItem("fieldops_auth_user_id");
       if (userId) {
@@ -1889,6 +2015,15 @@
       initEmployees();
       initConnectClientModal();
       initAddAppointment();
+
+      boardDateEl?.addEventListener("change", async () => {
+        setBoardDate(boardDateEl.value);
+        await loadJobs();
+      });
+      boardDateTodayBtn?.addEventListener("click", async () => {
+        setBoardDate(todayIsoDate());
+        await loadJobs();
+      });
 
       (async () => {
         try {

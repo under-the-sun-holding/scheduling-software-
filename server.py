@@ -49,6 +49,7 @@ OAUTH_STATE_TTL_SECONDS = 600
 OAUTH_STATES: dict[str, dict[str, object]] = {}
 ENCRYPTED_TOKEN_PREFIX = "enc::"
 LEGACY_DATA_OWNER = ""
+DATE_ONLY_FORMAT = "%Y-%m-%d"
 
 
 def normalize_client(raw: dict) -> dict:
@@ -223,6 +224,12 @@ def load_jobs() -> None:
                         normalized.get("postal_code", "")
                     ).strip()
                     normalized["notes"] = str(normalized.get("notes", "")).strip()
+                    normalized["scheduled_date"] = normalize_scheduled_date(
+                        normalized.get("scheduled_date", "")
+                    )
+                    normalized["google_calendar_event_id"] = str(
+                        normalized.get("google_calendar_event_id", "")
+                    ).strip()
                     normalized["owner_username"] = str(
                         normalized.get("owner_username", "")
                     ).strip()
@@ -624,6 +631,187 @@ def parse_iso_datetime(value: str) -> datetime | None:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=timezone.utc)
     return parsed
+
+
+def today_iso_date() -> str:
+    return datetime.now().astimezone().date().isoformat()
+
+
+def normalize_scheduled_date(value: object) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return today_iso_date()
+    try:
+        parsed = datetime.strptime(raw, DATE_ONLY_FORMAT).date()
+    except ValueError:
+        return today_iso_date()
+    return parsed.isoformat()
+
+
+def parse_requested_scheduled_date(value: object, default_to_today: bool = True) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        if default_to_today:
+            return today_iso_date()
+        raise ValueError("scheduled_date is required")
+
+    try:
+        parsed = datetime.strptime(raw, DATE_ONLY_FORMAT).date()
+    except ValueError as exc:
+        raise ValueError("scheduled_date must use YYYY-MM-DD") from exc
+    return parsed.isoformat()
+
+
+def parse_dispatch_datetime(scheduled_date: str, time_label: str) -> datetime | None:
+    date_text = str(scheduled_date or "").strip()
+    time_text = str(time_label or "").strip()
+    if not date_text or not time_text or time_text == "Unscheduled":
+        return None
+
+    try:
+        naive = datetime.strptime(f"{date_text} {time_text}", "%Y-%m-%d %I:%M %p")
+    except ValueError:
+        return None
+
+    local_tz = datetime.now().astimezone().tzinfo or timezone.utc
+    return naive.replace(tzinfo=local_tz)
+
+
+def _google_calendar_api_request(
+    access_token: str,
+    method: str,
+    path: str,
+    payload: dict | None = None,
+) -> dict:
+    url = f"{GOOGLE_CALENDAR_API_BASE_URL}{path}"
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+    body = None
+    if payload is not None:
+        body = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+
+    request = urllib.request.Request(url, data=body, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            raw = response.read().decode("utf-8")
+            if not raw.strip():
+                return {}
+            return json.loads(raw)
+    except urllib.error.HTTPError as exc:
+        body_text = exc.read().decode("utf-8", errors="replace")
+        raise ValueError(f"Google Calendar API failed: {body_text}") from exc
+    except urllib.error.URLError as exc:
+        raise ValueError(f"Unable to reach Google Calendar: {exc.reason}") from exc
+
+
+def sync_job_to_google_calendar(
+    username: str,
+    user_id_raw: object,
+    job: dict,
+) -> None:
+    try:
+        connection = get_google_calendar_user_connection(
+            username=username,
+            user_id_raw=user_id_raw,
+        )
+    except ValueError:
+        return
+
+    connection = ensure_valid_google_calendar_access_token(
+        int(connection["user_id"]),
+        connection,
+    )
+    access_token = str(connection["access_token"])
+
+    event_id = str(job.get("google_calendar_event_id", "")).strip()
+    status = str(job.get("status", "")).strip().lower()
+    time_value = str(job.get("time", "")).strip()
+    scheduled_date = normalize_scheduled_date(job.get("scheduled_date", ""))
+    starts_at = parse_dispatch_datetime(scheduled_date, time_value)
+
+    should_sync = starts_at is not None and status in {
+        "scheduled",
+        "in progress",
+        "completed",
+        "finished",
+    }
+
+    if not should_sync:
+        if event_id:
+            path = f"/calendars/primary/events/{urllib.parse.quote(event_id, safe='')}"
+            try:
+                _google_calendar_api_request(access_token, "DELETE", path)
+            except ValueError:
+                pass
+        job["google_calendar_event_id"] = ""
+        return
+
+    if starts_at is None:
+        job["google_calendar_event_id"] = ""
+        return
+
+    duration_minutes = int(job.get("manual_block_minutes") or job.get("duration_minutes") or 60)
+    duration_minutes = max(duration_minutes, 15)
+    ends_at = datetime.fromtimestamp(
+        starts_at.timestamp() + (duration_minutes * 60),
+        tz=starts_at.tzinfo,
+    )
+
+    address_parts = [
+        str(job.get("address_line1", "")).strip(),
+        str(job.get("address_line2", "")).strip(),
+        ", ".join(
+            part
+            for part in [
+                str(job.get("city", "")).strip(),
+                str(job.get("state", "")).strip(),
+                str(job.get("postal_code", "")).strip(),
+            ]
+            if part
+        ),
+    ]
+    location = ", ".join(part for part in address_parts if part)
+
+    description_lines = [
+        f"Customer: {str(job.get('customer_name', '')).strip() or 'N/A'}",
+        f"Service: {str(job.get('service_type', '')).strip() or 'N/A'}",
+        f"Phone: {str(job.get('phone', '')).strip() or 'N/A'}",
+        f"Email: {str(job.get('email', '')).strip() or 'N/A'}",
+        f"Notes: {str(job.get('notes', '')).strip() or 'N/A'}",
+    ]
+
+    event_payload = {
+        "summary": f"{str(job.get('service_type', '')).strip() or 'Service'} - {str(job.get('customer_name', '')).strip() or 'Customer'}",
+        "description": "\n".join(description_lines),
+        "location": location,
+        "start": {"dateTime": starts_at.isoformat()},
+        "end": {"dateTime": ends_at.isoformat()},
+    }
+
+    if event_id:
+        path = f"/calendars/primary/events/{urllib.parse.quote(event_id, safe='')}"
+        try:
+            updated = _google_calendar_api_request(
+                access_token,
+                "PUT",
+                path,
+                event_payload,
+            )
+            job["google_calendar_event_id"] = str(updated.get("id", event_id)).strip()
+            return
+        except ValueError:
+            job["google_calendar_event_id"] = ""
+
+    created = _google_calendar_api_request(
+        access_token,
+        "POST",
+        "/calendars/primary/events",
+        event_payload,
+    )
+    job["google_calendar_event_id"] = str(created.get("id", "")).strip()
 
 
 def quickbooks_api_base_urls() -> list[str]:
@@ -1040,6 +1228,7 @@ class AppHandler(SimpleHTTPRequestHandler):
         query = urllib.parse.parse_qs(parsed.query)
         username = str((query.get("username") or [""])[0]).strip()
         user_id_raw = str((query.get("user_id") or [""])[0]).strip()
+        scheduled_date_raw = str((query.get("scheduled_date") or [""])[0]).strip()
 
         if path == "/api/jobs":
             try:
@@ -1047,7 +1236,21 @@ class AppHandler(SimpleHTTPRequestHandler):
             except ValueError as exc:
                 self._send_json(400, {"error": str(exc)})
                 return
-            self._send_json(200, filter_owned_records(JOBS, owner_username))
+            try:
+                selected_date = parse_requested_scheduled_date(
+                    scheduled_date_raw,
+                    default_to_today=True,
+                )
+            except ValueError as exc:
+                self._send_json(400, {"error": str(exc)})
+                return
+
+            filtered = [
+                job
+                for job in filter_owned_records(JOBS, owner_username)
+                if normalize_scheduled_date(job.get("scheduled_date", "")) == selected_date
+            ]
+            self._send_json(200, filtered)
             return
         if path == "/api/clients":
             try:
@@ -1881,6 +2084,7 @@ class AppHandler(SimpleHTTPRequestHandler):
         time_value = str(payload.get("time", "")).strip()
         assigned_tech = payload.get("assigned_tech")
         manual_block = payload.get("manual_block_minutes")
+        scheduled_date_raw = payload.get("scheduled_date")
 
         if not status:
             self._send_json(400, {"error": "status is required"})
@@ -1894,16 +2098,39 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._send_json(404, {"error": "job not found"})
             return
 
+        if scheduled_date_raw in (None, ""):
+            scheduled_date = normalize_scheduled_date(job.get("scheduled_date", ""))
+        else:
+            try:
+                scheduled_date = parse_requested_scheduled_date(
+                    scheduled_date_raw,
+                    default_to_today=False,
+                )
+            except ValueError as exc:
+                self._send_json(400, {"error": str(exc)})
+                return
+
         job["status"] = status
         job["time"] = time_value
         job["assigned_tech"] = str(assigned_tech).strip() if assigned_tech else None
+        job["scheduled_date"] = scheduled_date
         job["manual_block_minutes"] = (
             int(manual_block)
             if isinstance(manual_block, (int, float)) and int(manual_block) > 0
             else None
         )
+
+        calendar_sync_warning = ""
+        try:
+            sync_job_to_google_calendar(username, user_id_raw, job)
+        except Exception as exc:
+            calendar_sync_warning = str(exc)
+
         save_jobs()
-        self._send_json(200, {"ok": True, "job": job})
+        response = {"ok": True, "job": job}
+        if calendar_sync_warning:
+            response["calendar_sync_warning"] = calendar_sync_warning[:300]
+        self._send_json(200, response)
 
     def _handle_create_job(self) -> None:
         payload = self._read_json_body()
@@ -1949,6 +2176,14 @@ class AppHandler(SimpleHTTPRequestHandler):
             payload.get("postal_code") or (selected_client or {}).get("postal_code", "")
         ).strip()
         notes = str(payload.get("notes") or (selected_client or {}).get("notes", "")).strip()
+        try:
+            scheduled_date = parse_requested_scheduled_date(
+                payload.get("scheduled_date"),
+                default_to_today=True,
+            )
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+            return
 
         if not customer_name:
             self._send_json(400, {"error": "customer_name is required"})
@@ -1974,12 +2209,14 @@ class AppHandler(SimpleHTTPRequestHandler):
             "service_type": service_type,
             "time": "Unscheduled",
             "status": "Pending",
+            "scheduled_date": scheduled_date,
             "duration_minutes": duration_minutes,
             "assigned_tech": None,
             "client_id": client_id,
             "emergency": parse_bool(payload.get("emergency", False)),
             "recurring": parse_bool(payload.get("recurring", False)),
             "manual_block_minutes": None,
+            "google_calendar_event_id": "",
             "phone": phone,
             "email": email,
             "address_line1": address_line1,
