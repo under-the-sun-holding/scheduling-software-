@@ -2,6 +2,6 @@ services:
   - type: web
     name: scheduling-software
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt || pip install requests gunicorn
     startCommand: python server.py
     autoDeploy: true
