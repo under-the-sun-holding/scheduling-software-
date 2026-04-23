@@ -34,8 +34,8 @@
 
     .lux-grid {
       background-image:
-        linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+        linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
       background-size: 36px 36px;
     }
 
@@ -45,93 +45,152 @@
 
     .soft-glow {
       box-shadow:
-        0 10px 30px -15px rgba(30, 58, 138, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        0 10px 30px -15px rgba(59, 130, 246, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-dark {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.09);
+    }
+
+    .stat-glow-blue  { box-shadow: 0 0 20px rgba(59,130,246,0.25); }
+    .stat-glow-green { box-shadow: 0 0 20px rgba(16,185,129,0.25); }
+    .stat-glow-amber { box-shadow: 0 0 20px rgba(245,158,11,0.25); }
+
+    .pulse-dot {
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%,100% { opacity: 0.6; transform: scale(1); }
+      50%      { opacity: 1;   transform: scale(1.2); }
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
-<body class="min-h-screen bg-slate-100 font-sans text-slate-900">
+<body class="min-h-screen font-sans text-slate-100" style="background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #0d1a2e 100%)">
   <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-    <div class="absolute -left-24 top-24 h-80 w-80 rounded-full bg-blue-300/25 blur-3xl"></div>
-    <div class="absolute right-0 top-0 h-96 w-96 rounded-full bg-indigo-300/25 blur-3xl"></div>
-    <div class="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-cyan-200/30 blur-3xl"></div>
+    <div class="absolute -left-40 top-10 h-[500px] w-[500px] rounded-full bg-blue-900/30 blur-[120px]"></div>
+    <div class="absolute right-0 top-0 h-[400px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]"></div>
+    <div class="absolute bottom-0 left-1/3 h-[300px] w-[600px] rounded-full bg-cyan-900/15 blur-[80px]"></div>
   </div>
 
-  <header class="fixed inset-x-0 top-0 z-50 border-b border-white/20 bg-gradient-to-r from-brand-blue/95 via-blue-800/95 to-slate-900/95 text-white shadow-2xl backdrop-blur-md">
-    <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-4 lg:px-6">
+  <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10" style="background: rgba(10,15,30,0.85); backdrop-filter: blur(24px);">
+    <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-3.5 lg:px-6">
       <div class="flex items-center gap-3">
-        <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 ring-1 ring-white/40 soft-glow">
-          <i class="fa-solid fa-calendar-check text-base"></i>
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 soft-glow">
+          <i class="fa-solid fa-calendar-check text-sm text-white"></i>
         </span>
         <div>
-          <p class="text-xs uppercase tracking-[0.14em] text-blue-100">Daily Dispatch</p>
-          <h1 class="text-lg font-bold tracking-tight">FieldOps Scheduler Board</h1>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-blue-400">FieldOps</p>
+          <h1 class="text-base font-black tracking-tight text-white">Dispatch Board</h1>
         </div>
       </div>
+      <div class="hidden items-center gap-1 md:flex text-xs text-slate-400">
+        <i class="fa-regular fa-clock"></i>
+        <span id="live-clock"></span>
+      </div>
       <div class="flex items-center gap-3">
-        <p class="hidden text-sm text-blue-100 md:block">Dispatcher: <span id="user-name">User</span></p>
-        <span id="quickbooks-status-badge" class="hidden rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">QuickBooks: Not Connected</span>
-        <button id="admin-btn" class="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-blue-600" style="display: none;">Admin</button>
-        <button id="logout-btn" class="rounded-lg bg-brand-action px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-orange-500">Log Out</button>
+        <div class="hidden items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs md:flex">
+          <div class="pulse-dot h-2 w-2 rounded-full bg-emerald-400"></div>
+          <span class="font-semibold text-slate-300">Dispatcher:</span>
+          <span id="user-name" class="font-bold text-white">User</span>
+        </div>
+        <span id="quickbooks-status-badge" class="hidden rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-300">QB: Not Connected</span>
+        <button id="admin-btn" class="rounded-lg border border-blue-500/40 bg-blue-500/15 px-4 py-2 text-xs font-bold text-blue-300 transition hover:bg-blue-500/25" style="display: none;"><i class="fa-solid fa-shield-halved mr-1"></i>Admin</button>
+        <button id="logout-btn" class="rounded-lg bg-brand-action px-4 py-2 text-xs font-bold text-white transition hover:bg-orange-500"><i class="fa-solid fa-right-from-bracket mr-1"></i>Log Out</button>
       </div>
     </div>
   </header>
 
   <main class="mx-auto max-w-[1500px] px-4 pb-8 pt-24 lg:px-6 lg:pt-28">
-    <section class="mb-5 rounded-2xl border border-white/60 bg-white/85 p-4 elevated backdrop-blur sm:p-5">
-      <div class="flex flex-wrap items-center justify-between gap-3">
+    <!-- Toolbar Card -->
+    <section class="mb-5 glass-card rounded-2xl p-5">
+      <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 class="text-xl font-bold tracking-tight text-brand-blue">Premium Dispatch Grid</h2>
-          <p class="mt-1 text-sm text-slate-600">Operate your day like a high-performance control tower with fluid assignment and live time blocking.</p>
+          <div class="flex items-center gap-2">
+            <h2 class="text-xl font-black tracking-tight text-white">Dispatch Command Center</h2>
+            <span class="rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-bold text-blue-300 ring-1 ring-blue-500/30">Live</span>
+          </div>
+          <p class="mt-1 text-sm text-slate-400">Fluid assignment and live time blocking for every tech on the board.</p>
         </div>
         <div class="flex flex-wrap items-center justify-end gap-2">
-          <button id="clients-btn" class="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-brand-blue transition hover:-translate-y-0.5 hover:bg-blue-50">
-            <i class="fa-solid fa-address-book mr-1"></i>Clients
+          <button id="clients-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-300 transition hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-blue-300">
+            <i class="fa-solid fa-address-book"></i>Clients
           </button>
-          <button id="add-employee-btn" class="whitespace-nowrap rounded-lg border border-indigo-400 bg-indigo-100 px-3 py-2 text-xs font-semibold text-indigo-800 transition hover:-translate-y-0.5 hover:bg-indigo-200">
-            <i class="fa-solid fa-user-plus mr-1"></i>Employees
+          <button id="add-employee-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-2 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/20">
+            <i class="fa-solid fa-user-plus"></i>Employees
           </button>
-          <button id="connect-client-btn" class="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-100">
-            <i class="fa-solid fa-link mr-1"></i>Connect QuickBooks
+          <button id="connect-client-btn" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
+            <i class="fa-solid fa-link"></i>Connect QB
           </button>
-          <button id="add-appointment-btn" class="rounded-lg bg-brand-action px-3 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-orange-500">
-            <i class="fa-solid fa-plus mr-1"></i>Add Appointment
+          <button id="add-appointment-btn" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-action px-4 py-2 text-xs font-bold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-500">
+            <i class="fa-solid fa-plus"></i>Add Appointment
           </button>
-          <div id="manual-block-indicator" class="hidden rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-lg">
-            Manual Block Mode (Ctrl)
+          <div id="manual-block-indicator" class="hidden rounded-lg bg-violet-600/80 border border-violet-400/30 px-3 py-2 text-xs font-semibold text-white">
+            <i class="fa-solid fa-hand-pointer mr-1"></i>Manual Block Mode (Ctrl)
           </div>
         </div>
       </div>
-      <div class="mt-4 grid gap-3 sm:grid-cols-3">
-        <article class="rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3">
-          <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">On-Time Arrival</p>
-          <p class="mt-1 text-2xl font-extrabold text-blue-900">96.4%</p>
+      <!-- KPI Stats -->
+      <div class="mt-5 grid gap-3 sm:grid-cols-3">
+        <article class="stat-glow-blue flex items-center gap-4 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-5 py-4">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400">
+            <i class="fa-solid fa-clock"></i>
+          </span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-blue-400">On-Time Arrival</p>
+            <p class="mt-0.5 text-2xl font-black text-white">96.4<span class="text-sm font-bold text-blue-300">%</span></p>
+          </div>
         </article>
-        <article class="rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
-          <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">In Progress Jobs</p>
-          <p class="mt-1 text-2xl font-extrabold text-emerald-900">12</p>
+        <article class="stat-glow-green flex items-center gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+          </span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-400">In Progress</p>
+            <p class="mt-0.5 text-2xl font-black text-white" id="stat-in-progress">—</p>
+          </div>
         </article>
-        <article class="rounded-xl border border-amber-100 bg-amber-50/70 px-4 py-3">
-          <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Unassigned</p>
-          <p class="mt-1 text-2xl font-extrabold text-amber-900">5</p>
+        <article class="stat-glow-amber flex items-center gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-5 py-4">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">Unassigned</p>
+            <p class="mt-0.5 text-2xl font-black text-white" id="stat-unassigned">—</p>
+          </div>
         </article>
       </div>
     </section>
 
     <section class="grid gap-5 lg:grid-cols-[320px_1fr]">
-      <aside class="rounded-2xl border border-white/70 bg-white/90 p-4 elevated backdrop-blur">
+      <!-- Pending Tray -->
+      <aside class="glass-card rounded-2xl p-4">
         <div class="mb-3 flex items-center justify-between gap-2">
-          <h3 class="text-base font-bold text-brand-blue">Pending Tray</h3>
-          <button id="toggle-pending" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">Collapse</button>
+          <div class="flex items-center gap-2">
+            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400 text-xs">
+              <i class="fa-solid fa-inbox"></i>
+            </span>
+            <h3 class="text-sm font-bold text-white">Pending Tray</h3>
+          </div>
+          <button id="toggle-pending" class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:text-white">Collapse</button>
         </div>
-        <p class="mb-3 text-xs text-slate-500">Unassigned jobs waiting for dispatch.</p>
-        <div id="pending-tray" class="lux-grid space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-3">
+        <p class="mb-3 text-xs text-slate-500">Unassigned jobs awaiting dispatch.</p>
+        <div id="pending-tray" class="lux-grid space-y-3 rounded-xl border border-dashed border-white/10 bg-white/5 p-3">
           <p class="text-sm text-slate-500">Loading pending jobs...</p>
         </div>
       </aside>
 
-      <section class="rounded-2xl border border-white/70 bg-white/90 p-4 elevated backdrop-blur">
+      <!-- Dispatch Board -->
+      <section class="glass-card rounded-2xl p-4">
         <div class="overflow-x-auto">
           <div id="dispatch-board" class="min-w-[980px]"></div>
         </div>
@@ -140,70 +199,70 @@
   </main>
 
   <template id="job-card-template">
-    <article class="job-card cursor-grab rounded-xl border p-3 shadow-sm transition active:cursor-grabbing" draggable="false">
+    <article class="job-card cursor-grab rounded-xl border border-white/10 bg-white/8 p-3 shadow-sm transition hover:border-blue-500/30 hover:shadow-blue-500/10 active:cursor-grabbing" draggable="false" style="background: rgba(255,255,255,0.07);">
       <div class="flex items-start justify-between gap-2">
-        <p class="job-customer truncate text-sm font-bold"></p>
+        <p class="job-customer truncate text-sm font-bold text-white"></p>
         <div class="job-icons flex items-center gap-1 text-xs"></div>
       </div>
-      <p class="job-type mt-1 text-xs"></p>
+      <p class="job-type mt-1 text-xs text-slate-400"></p>
       <div class="mt-2 flex items-center justify-between">
         <span class="job-status inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold"></span>
-        <button type="button" class="job-detail-btn rounded-md bg-slate-800 px-2 py-1 text-[11px] font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-900">Details</button>
+        <button type="button" class="job-detail-btn rounded-md bg-white/10 border border-white/15 px-2 py-1 text-[11px] font-semibold text-slate-300 transition hover:bg-white/20 hover:text-white">Details</button>
       </div>
     </article>
   </template>
 
   <!-- Job Details Modal -->
   <div id="job-detail-modal" class="hidden fixed inset-0 z-[95] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+    <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-brand-blue">Appointment Details</h2>
+          <h2 class="text-2xl font-black text-white">Appointment Details</h2>
           <p id="job-detail-subtitle" class="mt-1 text-sm text-slate-600"></p>
         </div>
-        <button id="close-job-detail-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+        <button id="close-job-detail-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
 
       <div class="grid gap-3 sm:grid-cols-2">
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Client Name</p>
-          <p id="job-detail-client" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-client" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Phone</p>
-          <p id="job-detail-phone" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-phone" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</p>
-          <p id="job-detail-email" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-email" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Service</p>
-          <p id="job-detail-service" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-service" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:col-span-2">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3 sm:col-span-2">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Address</p>
-          <p id="job-detail-address" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-address" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
-          <p id="job-detail-status" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-status" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Scheduled Time</p>
-          <p id="job-detail-time" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-time" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Assigned Tech</p>
-          <p id="job-detail-tech" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-tech" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Duration</p>
-          <p id="job-detail-duration" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-duration" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:col-span-2">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3 sm:col-span-2">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Notes</p>
-          <p id="job-detail-notes" class="mt-1 text-sm font-semibold text-slate-900"></p>
+          <p id="job-detail-notes" class="mt-1 text-sm font-semibold text-white"></p>
         </div>
       </div>
     </div>
@@ -211,38 +270,38 @@
 
   <!-- Clients Modal -->
   <div id="clients-modal" class="hidden fixed inset-0 z-[96] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-brand-blue">Client Database</h2>
+          <h2 class="text-2xl font-black text-white">Client Database</h2>
           <p class="mt-1 text-sm text-slate-600">Save client details once, then reuse them for appointments.</p>
         </div>
-        <button id="close-clients-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+        <button id="close-clients-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
 
-      <form id="client-form" class="mb-5 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
-        <input id="client-name" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Client name">
-        <input id="client-phone" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Phone number">
-        <input id="client-email" type="email" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Email address">
-        <input id="client-address-line1" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Address line 1">
-        <input id="client-address-line2" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Address line 2">
-        <input id="client-city" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="City">
-        <input id="client-state" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="State">
-        <input id="client-postal-code" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Postal code">
-        <textarea id="client-notes" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:col-span-2" rows="2" placeholder="Client notes"></textarea>
+      <form id="client-form" class="mb-5 grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-2">
+        <input id="client-name" required class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Client name">
+        <input id="client-phone" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Phone number">
+        <input id="client-email" type="email" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Email address">
+        <input id="client-address-line1" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Address line 1">
+        <input id="client-address-line2" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Address line 2">
+        <input id="client-city" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="City">
+        <input id="client-state" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="State">
+        <input id="client-postal-code" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Postal code">
+        <textarea id="client-notes" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500 sm:col-span-2" rows="2" placeholder="Client notes"></textarea>
         <div class="sm:col-span-2">
-          <button id="save-client-btn" type="submit" class="rounded-lg bg-brand-blue px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">Save Client</button>
+          <button id="save-client-btn" type="submit" class="rounded-lg rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">Save Client</button>
         </div>
       </form>
 
       <div class="overflow-x-auto rounded-xl border border-slate-200">
         <table class="w-full text-sm">
-          <thead class="bg-slate-100">
+          <thead class="border-b border-white/10 bg-white/5">
             <tr>
-              <th class="px-3 py-2 text-left font-semibold text-slate-700">Name</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-700">Phone</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-700">Email</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-700">Address</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-300">Name</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-300">Phone</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-300">Email</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-300">Address</th>
             </tr>
           </thead>
           <tbody id="clients-table-body">
@@ -255,28 +314,28 @@
 
   <!-- Employees Modal -->
   <div id="employees-modal" class="hidden fixed inset-0 z-[96] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+    <div class="max-h-[85vh] w-full max-w-4xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-brand-blue">Employee Database</h2>
+          <h2 class="text-2xl font-black text-white">Employee Database</h2>
           <p class="mt-1 text-sm text-slate-600">Add, deactivate, or remove employees used for dispatch assignments.</p>
         </div>
-        <button id="close-employees-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+        <button id="close-employees-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
 
-      <form id="employee-form" class="mb-5 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-[1fr_auto]">
-        <input id="employee-name" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Employee name">
+      <form id="employee-form" class="mb-5 grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-[1fr_auto]">
+        <input id="employee-name" required class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Employee name">
         <button id="save-employee-btn" type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">Add Employee</button>
       </form>
 
       <div class="overflow-x-auto rounded-xl border border-slate-200">
         <table class="w-full text-sm">
-          <thead class="bg-slate-100">
+          <thead class="border-b border-white/10 bg-white/5">
             <tr>
-              <th class="px-3 py-2 text-left font-semibold text-slate-700">Name</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-700">Source</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-700">Status</th>
-              <th class="px-3 py-2 text-left font-semibold text-slate-700">Actions</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-300">Name</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-300">Source</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-300">Status</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-300">Actions</th>
             </tr>
           </thead>
           <tbody id="employees-table-body">
@@ -289,27 +348,27 @@
 
   <!-- Appointment Modal -->
   <div id="appointment-modal" class="hidden fixed inset-0 z-[97] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[85vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+    <div class="max-h-[85vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-brand-blue">Create Appointment</h2>
+          <h2 class="text-2xl font-black text-white">Create Appointment</h2>
           <p class="mt-1 text-sm text-slate-600">Choose a saved client and create a new appointment.</p>
         </div>
-        <button id="close-appointment-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+        <button id="close-appointment-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
 
       <form id="appointment-form" class="grid gap-3 sm:grid-cols-2">
         <div class="sm:col-span-2">
           <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Client</label>
-          <select id="appointment-client-id" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select id="appointment-client-id" required class="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white">
             <option value="">Select a client</option>
           </select>
         </div>
         <input id="appointment-service" required class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:col-span-2" placeholder="Service type">
-        <input id="appointment-duration" required type="number" min="1" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Duration minutes" value="60">
-        <textarea id="appointment-notes" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:col-span-2" rows="2" placeholder="Appointment notes (optional)"></textarea>
+        <input id="appointment-duration" required type="number" min="1" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="Duration minutes" value="60">
+        <textarea id="appointment-notes" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500 sm:col-span-2" rows="2" placeholder="Appointment notes (optional)"></textarea>
 
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 sm:col-span-2">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-slate-300 sm:col-span-2">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Client Preview</p>
           <p id="appointment-client-preview" class="mt-1 whitespace-pre-line">Select a client to preview phone, email, and address.</p>
         </div>
@@ -323,29 +382,29 @@
 
   <!-- Connect Client Modal -->
   <div id="connect-client-modal" class="hidden fixed inset-0 z-[98] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+    <div class="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-brand-blue">Connect QuickBooks</h2>
+          <h2 class="text-2xl font-black text-white">Connect QuickBooks</h2>
           <p class="mt-1 text-sm text-slate-600">Connect your business QuickBooks account to this scheduling software.</p>
         </div>
-        <button id="close-connect-client-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+        <button id="close-connect-client-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
 
       <form id="connect-client-form" class="grid gap-3">
         <div>
           <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Account</label>
-          <input id="connect-username" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700" placeholder="App username">
+          <input id="connect-username" class="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-500" placeholder="App username">
         </div>
 
         <div>
           <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Integration</label>
-          <select id="connect-provider" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select id="connect-provider" required class="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white">
             <option value="quickbooks">QuickBooks</option>
           </select>
         </div>
 
-        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Integration Status</p>
           <p id="connect-client-preview" class="mt-1 whitespace-pre-line">Loading connection status...</p>
         </div>
@@ -361,25 +420,25 @@
 
   <!-- Admin Modal -->
   <div id="admin-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/60 bg-white/95 p-6 shadow-2xl">
+    <div class="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-2xl border border-white/10 bg-[#0d1829]/95 p-6 shadow-2xl">
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-brand-blue">System Administration</h2>
+          <h2 class="text-2xl font-black text-white">System Administration</h2>
           <p class="mt-1 text-sm text-slate-600">Manage users and their roles</p>
         </div>
-        <button id="close-admin-modal" class="rounded-lg bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Close</button>
+        <button id="close-admin-modal" class="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/15">Close</button>
       </div>
       
-      <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-        <h3 class="mb-4 text-lg font-bold text-brand-blue">User Management</h3>
+      <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+        <h3 class="mb-4 text-lg font-bold text-white">User Management</h3>
         <div id="users-table-container" class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-slate-300">
-                <th class="px-4 py-3 text-left font-semibold text-slate-700">Username</th>
-                <th class="px-4 py-3 text-left font-semibold text-slate-700">Role</th>
-                <th class="px-4 py-3 text-left font-semibold text-slate-700">Created</th>
-                <th class="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-300">Username</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-300">Role</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-300">Created</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-300">Actions</th>
               </tr>
             </thead>
             <tbody id="users-table-body">
@@ -478,24 +537,24 @@
     function statusStyle(status) {
       if (status === "In Progress") {
         return {
-          card: "border-emerald-300 bg-emerald-50/90 hover:shadow-md",
-          text: "text-emerald-700",
-          pill: "bg-emerald-100 text-emerald-700",
+          card: "border-emerald-500/40 bg-emerald-500/10 hover:border-emerald-400/60",
+          text: "text-emerald-300",
+          pill: "bg-emerald-500/20 text-emerald-300",
           icon: "fa-solid fa-circle-play"
         };
       }
       if (status === "Completed" || status === "Finished") {
         return {
-          card: "border-slate-300 bg-slate-50/90 hover:shadow-md",
-          text: "text-slate-700",
-          pill: "bg-slate-200 text-slate-700",
+          card: "border-white/10 bg-white/5 hover:border-white/20",
+          text: "text-slate-400",
+          pill: "bg-white/10 text-slate-400",
           icon: "fa-solid fa-circle-check"
         };
       }
       return {
-        card: "border-blue-300 bg-blue-50/90 hover:shadow-md",
-        text: "text-blue-700",
-        pill: "bg-blue-100 text-blue-700",
+        card: "border-blue-500/40 bg-blue-500/10 hover:border-blue-400/60",
+        text: "text-blue-300",
+        pill: "bg-blue-500/20 text-blue-300",
         icon: "fa-solid fa-calendar-day"
       };
     }
@@ -538,10 +597,10 @@
       type.className = "job-type mt-1 text-xs text-slate-600";
 
       if (job.emergency) {
-        icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-600" title="Emergency"><i class="fa-solid fa-bolt"></i></span>';
+      icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500/20 text-red-400" title="Emergency"><i class="fa-solid fa-bolt"></i></span>';
       }
       if (job.recurring) {
-        icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-amber-600" title="Recurring"><i class="fa-solid fa-arrows-rotate"></i></span>';
+      icons.innerHTML += '<span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20 text-amber-400" title="Recurring"><i class="fa-solid fa-arrows-rotate"></i></span>';
       }
 
       statusEl.className = `job-status inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${style.pill}`;
@@ -610,30 +669,30 @@
       if (!boardEl) return;
 
       const grid = document.createElement("div");
-      grid.className = "grid overflow-hidden rounded-xl border border-slate-200 bg-white";
+      grid.className = "grid overflow-hidden rounded-xl border border-white/10";
       grid.style.gridTemplateColumns = `92px repeat(${TECHNICIANS.length}, minmax(0, 1fr))`;
 
       const corner = document.createElement("div");
-      corner.className = "sticky left-0 top-0 z-20 border-b border-r border-slate-200 bg-slate-100 px-3 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500";
+      corner.className = "sticky left-0 top-0 z-20 border-b border-r border-white/10 bg-[#0a0f1e] px-3 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500";
       corner.textContent = "Time";
       grid.appendChild(corner);
 
       TECHNICIANS.forEach((tech) => {
         const head = document.createElement("div");
-        head.className = "border-b border-r border-slate-200 bg-gradient-to-b from-slate-50 to-slate-100 px-3 py-3 text-sm font-bold text-brand-blue";
+        head.className = "border-b border-r border-white/10 bg-blue-500/10 px-3 py-3 text-sm font-bold text-blue-300";
         head.textContent = tech;
         grid.appendChild(head);
       });
 
       TIMES.forEach((time) => {
         const timeCell = document.createElement("div");
-        timeCell.className = "border-r border-t border-slate-200 bg-slate-50/60 px-3 py-4 text-xs font-semibold text-slate-500";
+        timeCell.className = "border-r border-t border-white/10 bg-white/3 px-3 py-4 text-xs font-semibold text-slate-500";
         timeCell.textContent = time;
         grid.appendChild(timeCell);
 
         TECHNICIANS.forEach((tech) => {
           const cell = document.createElement("div");
-          cell.className = "dispatch-cell lux-grid min-h-[92px] border-r border-t border-slate-200 bg-white/90 p-2";
+          cell.className = "dispatch-cell lux-grid min-h-[92px] border-r border-t border-white/10 bg-white/3 p-2";
           cell.dataset.time = time;
           cell.dataset.tech = tech;
           grid.appendChild(cell);
@@ -670,7 +729,7 @@
           if (!blockCell) continue;
 
           const marker = document.createElement("div");
-          marker.className = "unavailable-slot mt-1 rounded-lg border border-slate-300 bg-slate-300/80 px-2 py-2 text-[11px] font-semibold text-slate-700";
+          marker.className = "unavailable-slot mt-1 rounded-lg border border-slate-300 bg-slate-300/80 px-2 py-2 text-[11px] font-semibold text-slate-300";
           marker.textContent = "Unavailable";
           blockCell.appendChild(marker);
         }
@@ -1157,7 +1216,7 @@
           const isActive = employee.active !== false;
           const statusPill = isActive
             ? '<span class="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Active</span>'
-            : '<span class="inline-flex rounded-full bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-700">Inactive</span>';
+            : '<span class="inline-flex rounded-full bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-300">Inactive</span>';
           const source = String(employee.source || "manual").trim().toLowerCase() === "quickbooks" ? "QuickBooks" : "Manual";
           return `
             <tr class="border-t border-slate-200">
@@ -1730,13 +1789,13 @@
             </button>
           `;
           return `
-            <tr class="border-b border-slate-200 transition hover:bg-slate-100">
+            <tr class="border-b border-white/10 transition hover:bg-white/5">
               <td class="px-4 py-3 font-medium text-slate-900">${user.username}</td>
               <td class="px-4 py-3">
                 <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
                   isAdmin
                     ? "bg-amber-100 text-amber-700" 
-                    : "bg-slate-100 text-slate-700"
+                    : "bg-white/10 text-slate-300"
                 }">
                   ${user.role}
                 </span>
@@ -1798,6 +1857,34 @@
         adminBtn.style.display = isAdmin ? "block" : "none";
       }
     });
+  </script>
+  <script>
+    // Live clock
+    function updateClock() {
+      const el = document.getElementById("live-clock");
+      if (!el) return;
+      const now = new Date();
+      el.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Dynamic KPI stat counters after board loads
+    function updateStats() {
+      const allCards = document.querySelectorAll(".job-card");
+      const inProgress = [...allCards].filter(c => c.dataset.status === "In Progress").length;
+      const unassigned = document.querySelectorAll("#pending-tray .job-card").length;
+      const ipEl = document.getElementById("stat-in-progress");
+      const uaEl = document.getElementById("stat-unassigned");
+      if (ipEl) ipEl.textContent = inProgress;
+      if (uaEl) uaEl.textContent = unassigned;
+    }
+    // Observe DOM changes on the board to update stats
+    const boardObs = new MutationObserver(updateStats);
+    const pendingEl = document.getElementById("pending-tray");
+    const dispatchEl = document.getElementById("dispatch-board");
+    if (pendingEl) boardObs.observe(pendingEl, { childList: true, subtree: true });
+    if (dispatchEl) boardObs.observe(dispatchEl, { childList: true, subtree: true });
   </script>
 </body>
 </html>
