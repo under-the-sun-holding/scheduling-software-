@@ -72,15 +72,6 @@
       0%,100% { opacity: 0.6; transform: scale(1); }
       50%      { opacity: 1;   transform: scale(1.2); }
     }
-  </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
-</head>
-<body class="min-h-screen font-sans text-slate-100" style="background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #0d1a2e 100%)">
-  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-    <div class="absolute -left-40 top-10 h-[500px] w-[500px] rounded-full bg-blue-900/30 blur-[120px]"></div>
-    <div class="absolute right-0 top-0 h-[400px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]"></div>
-    <div class="absolute bottom-0 left-1/3 h-[300px] w-[600px] rounded-full bg-cyan-900/15 blur-[80px]"></div>
-  </div>
 
     @media (max-width: 768px) {
       button, input, select, textarea {
@@ -113,6 +104,15 @@
         padding-right: max(12px, env(safe-area-inset-right));
       }
     }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body class="min-h-screen font-sans text-slate-100" style="background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #0d1a2e 100%)">
+  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -left-40 top-10 h-[500px] w-[500px] rounded-full bg-blue-900/30 blur-[120px]"></div>
+    <div class="absolute right-0 top-0 h-[400px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]"></div>
+    <div class="absolute bottom-0 left-1/3 h-[300px] w-[600px] rounded-full bg-cyan-900/15 blur-[80px]"></div>
+  </div>
   <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10" style="background: rgba(10,15,30,0.85); backdrop-filter: blur(24px);">
     <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-3.5 lg:px-6">
       <div class="flex items-center gap-3">
