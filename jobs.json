@@ -166,5 +166,26 @@
     "postal_code": "",
     "notes": "",
     "client_id": null
+  },
+  {
+    "id": 109,
+    "customer_name": "Cool Cars",
+    "service_type": "testing",
+    "time": "10:00 AM",
+    "status": "Scheduled",
+    "duration_minutes": 240,
+    "assigned_tech": "Emily Platt",
+    "client_id": 3,
+    "emergency": false,
+    "recurring": false,
+    "manual_block_minutes": null,
+    "phone": "(415) 555-9933",
+    "email": "Cool_Cars@intuit.com",
+    "address_line1": "65 Ocean Dr.",
+    "address_line2": "",
+    "city": "Half Moon Bay",
+    "state": "CA",
+    "postal_code": "94213",
+    "notes": "Imported from QuickBooks customer ID 3"
   }
 ]

@@ -335,7 +335,7 @@
       <form id="connect-client-form" class="grid gap-3">
         <div>
           <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Account</label>
-          <input id="connect-username" readonly class="w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-700">
+          <input id="connect-username" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700" placeholder="App username">
         </div>
 
         <div>
@@ -449,6 +449,7 @@
     let employeesCache = [];
     let authenticatedUser = "";
     let userIntegration = null;
+    let connectUsernameMissing = false;
 
     function updateManualUI() {
       const active = isDraggingJob && isCtrlPressed;
@@ -837,9 +838,29 @@
       return payload.user || null;
     }
 
+    async function fetchAppUsers() {
+      const response = await fetch("/api/users", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Failed to load users.");
+      }
+      const payload = await response.json();
+      return Array.isArray(payload.users) ? payload.users : [];
+    }
+
+    async function appUsernameExists(username) {
+      const normalized = String(username || "").trim().toLowerCase();
+      if (!normalized) return false;
+      const users = await fetchAppUsers();
+      return users.some((u) => String(u.username || "").trim().toLowerCase() === normalized);
+    }
+
     function startQuickBooksAuth(username) {
       const query = new URLSearchParams({ username });
       window.location.href = `/api/quickbooks/connect?${query.toString()}`;
+    }
+
+    function selectedConnectUsername() {
+      return String(connectUsernameEl?.value || authenticatedUser || "").trim();
     }
 
     async function disconnectUser(payload) {
@@ -910,6 +931,14 @@
 
     function renderConnectClientPreview() {
       if (!connectClientPreviewEl) return;
+      const targetUsername = selectedConnectUsername();
+      if (connectUsernameMissing && targetUsername) {
+        connectClientPreviewEl.textContent = `User: ${targetUsername}\nStatus: Not found in app database\n\nCreate this user first, then connect QuickBooks.`;
+        if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = true;
+        if (syncQuickBooksBtn) syncQuickBooksBtn.disabled = true;
+        if (disconnectClientBtn) disconnectClientBtn.disabled = true;
+        return;
+      }
       if (!userIntegration) {
         connectClientPreviewEl.textContent = "Unable to load integration status.";
         if (disconnectClientBtn) disconnectClientBtn.disabled = true;
@@ -925,7 +954,7 @@
       const tokensEncrypted = Boolean(userIntegration.quickbooks_tokens_encrypted);
       const isConfigured = Boolean(userIntegration.quickbooks_configured);
       const lines = [
-        `User: ${authenticatedUser || "Not signed in"}`,
+        `User: ${targetUsername || "Not signed in"}`,
         `OAuth Configured: ${isConfigured ? "Yes" : "No"}`,
         `Current Status: ${isConnected ? "Connected" : "Not connected"}`,
         `Provider: ${provider || "None"}`,
@@ -1000,12 +1029,39 @@
 
     async function openConnectClientModal() {
       connectClientModal?.classList.remove("hidden");
-      await refreshUserIntegrationStatus();
       if (connectProviderEl) {
         connectProviderEl.value = "quickbooks";
       }
       if (connectUsernameEl) {
         connectUsernameEl.value = authenticatedUser || "";
+      }
+      await refreshConnectModalStatus();
+      renderConnectClientPreview();
+    }
+
+    async function refreshConnectModalStatus() {
+      const targetUsername = selectedConnectUsername();
+      if (!targetUsername) {
+        connectUsernameMissing = false;
+        userIntegration = null;
+        renderQuickBooksBadge();
+        renderConnectClientPreview();
+        return;
+      }
+
+      const exists = await appUsernameExists(targetUsername);
+      if (!exists) {
+        connectUsernameMissing = true;
+        userIntegration = null;
+        renderConnectClientPreview();
+        return;
+      }
+
+      connectUsernameMissing = false;
+
+      userIntegration = await fetchUserConnectStatus(targetUsername);
+      if (targetUsername === authenticatedUser) {
+        renderQuickBooksBadge();
       }
       renderConnectClientPreview();
     }
@@ -1271,8 +1327,9 @@
       connectClientForm?.addEventListener("submit", async (event) => {
         event.preventDefault();
         const provider = String(connectProviderEl?.value || "quickbooks").trim().toLowerCase();
-        if (!authenticatedUser) {
-          alert("No logged-in user found.");
+        const targetUsername = selectedConnectUsername();
+        if (!targetUsername) {
+          alert("Username is required.");
           return;
         }
         if (provider !== "quickbooks") {
@@ -1280,20 +1337,37 @@
           return;
         }
 
-        startQuickBooksAuth(authenticatedUser);
+        const exists = await appUsernameExists(targetUsername);
+        if (!exists) {
+          connectUsernameMissing = true;
+          renderConnectClientPreview();
+          alert("That username does not exist in this app yet. Create the user first, then connect QuickBooks.");
+          return;
+        }
+
+        startQuickBooksAuth(targetUsername);
+      });
+
+      connectUsernameEl?.addEventListener("change", async () => {
+        try {
+          await refreshConnectModalStatus();
+        } catch (error) {
+          alert(error.message || "Unable to load integration status.");
+        }
       });
 
       disconnectClientBtn?.addEventListener("click", async () => {
-        if (!authenticatedUser) {
-          alert("No logged-in user found.");
+        const targetUsername = selectedConnectUsername();
+        if (!targetUsername) {
+          alert("Username is required.");
           return;
         }
 
         if (disconnectClientBtn) disconnectClientBtn.disabled = true;
         if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = true;
         try {
-          await disconnectUser({ username: authenticatedUser });
-          await refreshUserIntegrationStatus();
+          await disconnectUser({ username: targetUsername });
+          await refreshConnectModalStatus();
           renderConnectClientPreview();
         } catch (error) {
           alert(error.message || "Unable to disconnect QuickBooks.");
@@ -1306,8 +1380,9 @@
       });
 
       syncQuickBooksBtn?.addEventListener("click", async () => {
-        if (!authenticatedUser) {
-          alert("No logged-in user found.");
+        const targetUsername = selectedConnectUsername();
+        if (!targetUsername) {
+          alert("Username is required.");
           return;
         }
         if (!userIntegration?.integration_connected) {
@@ -1317,9 +1392,9 @@
 
         if (syncQuickBooksBtn) syncQuickBooksBtn.disabled = true;
         try {
-          await importQuickBooksClients(authenticatedUser);
-          await refreshEmployeesData({ importFromQuickBooks: true });
-          await refreshUserIntegrationStatus();
+          await importQuickBooksClients(targetUsername);
+          await refreshEmployeesData({ importFromQuickBooks: targetUsername === authenticatedUser });
+          await refreshConnectModalStatus();
           renderConnectClientPreview();
           await refreshClientsData();
           await loadJobs();
