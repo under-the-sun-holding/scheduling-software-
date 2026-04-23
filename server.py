@@ -63,6 +63,7 @@ ENCRYPTED_TOKEN_PREFIX = "enc::"
 LEGACY_DATA_OWNER = ""
 DATE_ONLY_FORMAT = "%Y-%m-%d"
 ALLOWED_USER_ROLES = {"Admin", "Employee", "Client"}
+PRIME_ADMIN_USERNAME = str(os.environ.get("PRIME_ADMIN_USERNAME", "admin987654321")).strip().lower()
 
 
 def normalize_user_role(raw: object) -> str:
@@ -2192,6 +2193,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         if role_raw not in ALLOWED_USER_ROLES:
             self._send_json(400, {"error": "role must be Admin, Employee, or Client"})
             return
+        if role_raw == "Admin":
+            self._send_json(403, {"error": "admin role cannot be self-assigned"})
+            return
         role = role_raw
 
         if not username or not password:
@@ -2399,6 +2403,11 @@ class AppHandler(SimpleHTTPRequestHandler):
 
         if str(actor.get("role", "")) != "Admin":
             self._send_json(403, {"error": "admin credentials required"})
+            return
+
+        actor_username_normalized = str(actor.get("username", "")).strip().lower()
+        if role == "Admin" and actor_username_normalized != PRIME_ADMIN_USERNAME:
+            self._send_json(403, {"error": "only the prime admin can grant admin access"})
             return
         
         try:
