@@ -239,7 +239,16 @@
         }
         window.location.href = data.redirect || "/home.html";
       } catch (error) {
-        loginStatus.textContent = error.message;
+        const message = String(error?.message || "Login failed.");
+        if (message.toLowerCase().includes("no users configured yet")) {
+          loginStatus.textContent = "No admin account exists yet. Redirecting to setup...";
+          loginStatus.className = "text-sm font-medium text-amber-300";
+          setTimeout(() => {
+            window.location.href = "/setup.html";
+          }, 900);
+          return;
+        }
+        loginStatus.textContent = message;
         loginStatus.className = "text-sm font-medium text-rose-300";
       }
     });
