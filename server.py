@@ -31,56 +31,7 @@ ROOT = Path(__file__).resolve().parent
 JOBS_PATH = ROOT / "jobs.json"
 CLIENTS_PATH = ROOT / "clients.json"
 EMPLOYEES_PATH = ROOT / "employees.json"
-DEFAULT_JOBS = [
-    {
-        "id": 101,
-        "customer_name": "Harbor View Apartments",
-        "service_type": "HVAC Repair",
-        "time": "08:00 AM",
-        "status": "Scheduled",
-        "duration_minutes": 120,
-        "assigned_tech": "Dave",
-        "emergency": True,
-        "recurring": False,
-        "manual_block_minutes": None,
-    },
-    {
-        "id": 102,
-        "customer_name": "Baker Family Residence",
-        "service_type": "Electrical Inspection",
-        "time": "10:00 AM",
-        "status": "In Progress",
-        "duration_minutes": 60,
-        "assigned_tech": "Sarah",
-        "emergency": False,
-        "recurring": True,
-        "manual_block_minutes": None,
-    },
-    {
-        "id": 103,
-        "customer_name": "Oak Street Dental",
-        "service_type": "Plumbing Maintenance",
-        "time": "Unscheduled",
-        "status": "Pending",
-        "duration_minutes": 180,
-        "assigned_tech": None,
-        "emergency": False,
-        "recurring": False,
-        "manual_block_minutes": None,
-    },
-    {
-        "id": 104,
-        "customer_name": "Northside Warehouse",
-        "service_type": "Generator Service",
-        "time": "03:00 PM",
-        "status": "Completed",
-        "duration_minutes": 120,
-        "assigned_tech": "Alex",
-        "emergency": False,
-        "recurring": False,
-        "manual_block_minutes": None,
-    },
-]
+DEFAULT_JOBS = []
 JOBS: list[dict] = []
 CLIENTS: list[dict] = []
 EMPLOYEES: list[dict] = []
@@ -92,6 +43,7 @@ QUICKBOOKS_SANDBOX_API_BASE_URL = "https://sandbox-quickbooks.api.intuit.com"
 OAUTH_STATE_TTL_SECONDS = 600
 OAUTH_STATES: dict[str, dict[str, object]] = {}
 ENCRYPTED_TOKEN_PREFIX = "enc::"
+LEGACY_DATA_OWNER = ""
 
 
 def normalize_client(raw: dict) -> dict:
@@ -109,6 +61,7 @@ def normalize_client(raw: dict) -> dict:
         "integration_provider": str(raw.get("integration_provider", "")).strip(),
         "integration_connected": parse_bool(raw.get("integration_connected", False)),
         "integration_connected_at": str(raw.get("integration_connected_at", "")).strip(),
+        "owner_username": str(raw.get("owner_username", "")).strip(),
     }
 
 
@@ -134,10 +87,28 @@ def save_clients() -> None:
     CLIENTS_PATH.write_text(json.dumps(CLIENTS, indent=2), encoding="utf-8")
 
 
-def find_client(client_id: int) -> dict | None:
+def record_visible_to_owner(record: dict, owner_username: str) -> bool:
+    owner = owner_username.strip().lower()
+    if not owner:
+        return False
+
+    record_owner = str(record.get("owner_username", "")).strip().lower()
+    if record_owner == owner:
+        return True
+    # Backward compatibility: pre-existing records without owner stay visible only
+    # to the earliest account in the system.
+    if not record_owner and owner == LEGACY_DATA_OWNER.lower():
+        return True
+    return False
+
+
+def find_client(client_id: int, owner_username: str = "") -> dict | None:
     for client in CLIENTS:
-        if client.get("id") == client_id:
-            return client
+        if client.get("id") != client_id:
+            continue
+        if not record_visible_to_owner(client, owner_username):
+            continue
+        return client
     return None
 
 
@@ -153,6 +124,7 @@ def normalize_employee(raw: dict) -> dict:
         "email": str(raw.get("email", "")).strip(),
         "active": parse_bool(raw.get("active", True)),
         "added_at": str(raw.get("added_at", "")).strip(),
+        "owner_username": str(raw.get("owner_username", "")).strip(),
     }
 
 
@@ -190,6 +162,16 @@ def find_employee(employee_id: int) -> dict | None:
     for employee in EMPLOYEES:
         if int(employee.get("id", 0)) == employee_id:
             return employee
+    return None
+
+
+def find_employee_for_owner(employee_id: int, owner_username: str = "") -> dict | None:
+    for employee in EMPLOYEES:
+        if int(employee.get("id", 0)) != employee_id:
+            continue
+        if not record_visible_to_owner(employee, owner_username):
+            continue
+        return employee
     return None
 
 
@@ -236,6 +218,9 @@ def load_jobs() -> None:
                         normalized.get("postal_code", "")
                     ).strip()
                     normalized["notes"] = str(normalized.get("notes", "")).strip()
+                    normalized["owner_username"] = str(
+                        normalized.get("owner_username", "")
+                    ).strip()
                     JOBS.append(normalized)
                 if not JOBS:
                     JOBS = [dict(job) for job in DEFAULT_JOBS]
@@ -252,11 +237,33 @@ def save_jobs() -> None:
     JOBS_PATH.write_text(json.dumps(JOBS, indent=2), encoding="utf-8")
 
 
-def find_job(job_id: int) -> dict | None:
+def find_job(job_id: int, owner_username: str = "") -> dict | None:
     for job in JOBS:
-        if job.get("id") == job_id:
-            return job
+        if job.get("id") != job_id:
+            continue
+        if not record_visible_to_owner(job, owner_username):
+            continue
+        return job
     return None
+
+
+def filter_owned_records(records: list[dict], owner_username: str) -> list[dict]:
+    return [
+        record for record in records if record_visible_to_owner(record, owner_username)
+    ]
+
+
+def resolve_legacy_data_owner() -> str:
+    try:
+        from auth_db import get_connection
+
+        with get_connection() as conn:
+            row = conn.execute(
+                "SELECT username FROM users ORDER BY created_at ASC, username ASC LIMIT 1"
+            ).fetchone()
+            return str((row[0] if row else "") or "").strip()
+    except Exception:
+        return ""
 
 
 def parse_bool(value: object) -> bool:
@@ -592,7 +599,8 @@ def normalize_quickbooks_employee(employee: dict) -> dict:
     }
 
 
-def merge_quickbooks_employees(employees: list[dict]) -> tuple[int, int]:
+def merge_quickbooks_employees(employees: list[dict], owner_username: str) -> tuple[int, int]:
+    owner = owner_username.strip()
     imported = 0
     updated = 0
 
@@ -612,6 +620,7 @@ def merge_quickbooks_employees(employees: list[dict]) -> tuple[int, int]:
                 (
                     employee
                     for employee in EMPLOYEES
+                    if str(employee.get("owner_username", "")).strip().lower() == owner.lower()
                     if str(employee.get("quickbooks_employee_id", "")).strip() == qb_id
                 ),
                 None,
@@ -621,6 +630,7 @@ def merge_quickbooks_employees(employees: list[dict]) -> tuple[int, int]:
                 (
                     employee
                     for employee in EMPLOYEES
+                    if str(employee.get("owner_username", "")).strip().lower() == owner.lower()
                     if str(employee.get("name", "")).strip().lower() == name.lower()
                 ),
                 None,
@@ -640,6 +650,7 @@ def merge_quickbooks_employees(employees: list[dict]) -> tuple[int, int]:
                         "email": quickbooks_employee.get("email", ""),
                         "active": quickbooks_employee.get("active", True),
                         "added_at": datetime.now(timezone.utc).isoformat(),
+                        "owner_username": owner,
                     }
                 )
             )
@@ -770,15 +781,26 @@ class AppHandler(SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+        query = urllib.parse.parse_qs(parsed.query)
+        username = str((query.get("username") or [""])[0]).strip()
 
         if path == "/api/jobs":
-            self._send_json(200, JOBS)
+            if not username:
+                self._send_json(400, {"error": "username is required"})
+                return
+            self._send_json(200, filter_owned_records(JOBS, username))
             return
         if path == "/api/clients":
-            self._send_json(200, {"clients": CLIENTS})
+            if not username:
+                self._send_json(400, {"error": "username is required"})
+                return
+            self._send_json(200, {"clients": filter_owned_records(CLIENTS, username)})
             return
         if path == "/api/employees":
-            self._send_json(200, {"employees": EMPLOYEES})
+            if not username:
+                self._send_json(400, {"error": "username is required"})
+                return
+            self._send_json(200, {"employees": filter_owned_records(EMPLOYEES, username)})
             return
         if path == "/api/quickbooks/connect":
             self._handle_quickbooks_connect(parsed)
@@ -793,8 +815,6 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._handle_quickbooks_employees(parsed)
             return
         if path == "/api/users/connect-status":
-            query = urllib.parse.parse_qs(parsed.query)
-            username = str((query.get("username") or [""])[0]).strip()
             self._handle_user_connect_status(username)
             return
         super().do_GET()
@@ -1029,7 +1049,9 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         existing_names = {
-            str(client.get("name", "")).strip().lower(): client for client in CLIENTS
+            str(client.get("name", "")).strip().lower(): client
+            for client in CLIENTS
+            if str(client.get("owner_username", "")).strip().lower() == username.lower()
         }
         imported = 0
 
@@ -1057,6 +1079,7 @@ class AppHandler(SimpleHTTPRequestHandler):
                     "integration_provider": "quickbooks",
                     "integration_connected": True,
                     "integration_connected_at": datetime.now(timezone.utc).isoformat(),
+                    "owner_username": username,
                 }
             )
             CLIENTS.append(client)
@@ -1080,7 +1103,7 @@ class AppHandler(SimpleHTTPRequestHandler):
                 "ok": True,
                 "imported": imported,
                 "total_customers_seen": len(customers),
-                "clients": CLIENTS,
+                "clients": filter_owned_records(CLIENTS, username),
             },
         )
 
@@ -1100,7 +1123,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._send_json(500, {"error": str(exc)})
             return
 
-        imported, updated = merge_quickbooks_employees(employees)
+        imported, updated = merge_quickbooks_employees(employees, username)
         save_employees()
         try:
             connection = get_quickbooks_user_connection(username)
@@ -1120,7 +1143,7 @@ class AppHandler(SimpleHTTPRequestHandler):
                 "imported": imported,
                 "updated": updated,
                 "total_employees_seen": len(employees),
-                "employees": EMPLOYEES,
+                "employees": filter_owned_records(EMPLOYEES, username),
             },
         )
 
@@ -1222,7 +1245,7 @@ class AppHandler(SimpleHTTPRequestHandler):
 
         try:
             employees = self._fetch_quickbooks_employees(username)
-            imported, updated = merge_quickbooks_employees(employees)
+            imported, updated = merge_quickbooks_employees(employees, username)
             if imported > 0 or updated > 0:
                 save_employees()
             mark_quickbooks_sync(username, connected_at.isoformat())
@@ -1321,6 +1344,11 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def _handle_schedule_job(self) -> None:
         payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
+
+        if not username:
+            self._send_json(400, {"error": "username is required"})
+            return
 
         try:
             raw_job_id = payload.get("id")
@@ -1343,7 +1371,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._send_json(400, {"error": "time is required"})
             return
 
-        job = find_job(job_id)
+        job = find_job(job_id, username)
         if job is None:
             self._send_json(404, {"error": "job not found"})
             return
@@ -1361,6 +1389,12 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def _handle_create_job(self) -> None:
         payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
+
+        if not username:
+            self._send_json(400, {"error": "username is required"})
+            return
+
         selected_client = None
         raw_client_id = payload.get("client_id")
         client_id = None
@@ -1371,7 +1405,7 @@ class AppHandler(SimpleHTTPRequestHandler):
                 self._send_json(400, {"error": "client_id must be an integer"})
                 return
 
-            selected_client = find_client(client_id)
+            selected_client = find_client(client_id, username)
             if selected_client is None:
                 self._send_json(404, {"error": "client not found"})
                 return
@@ -1433,6 +1467,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             "state": state,
             "postal_code": postal_code,
             "notes": notes,
+            "owner_username": username,
         }
 
         JOBS.append(job)
@@ -1441,8 +1476,12 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def _handle_create_client(self) -> None:
         payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
         name = str(payload.get("name", "")).strip()
 
+        if not username:
+            self._send_json(400, {"error": "username is required"})
+            return
         if not name:
             self._send_json(400, {"error": "name is required"})
             return
@@ -1462,6 +1501,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             "integration_provider": "",
             "integration_connected": False,
             "integration_connected_at": "",
+            "owner_username": username,
         })
 
         CLIENTS.append(client)
@@ -1470,8 +1510,12 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def _handle_create_employee(self) -> None:
         payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
         name = str(payload.get("name", "")).strip()
 
+        if not username:
+            self._send_json(400, {"error": "username is required"})
+            return
         if not name:
             self._send_json(400, {"error": "name is required"})
             return
@@ -1480,6 +1524,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             (
                 employee
                 for employee in EMPLOYEES
+                if str(employee.get("owner_username", "")).strip().lower() == username.lower()
                 if str(employee.get("name", "")).strip().lower() == name.lower()
             ),
             None,
@@ -1500,6 +1545,7 @@ class AppHandler(SimpleHTTPRequestHandler):
                 "email": str(payload.get("email", "")).strip(),
                 "active": True,
                 "added_at": datetime.now(timezone.utc).isoformat(),
+                "owner_username": username,
             }
         )
 
@@ -1509,6 +1555,11 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def _handle_set_employee_status(self) -> None:
         payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
+
+        if not username:
+            self._send_json(400, {"error": "username is required"})
+            return
 
         try:
             raw_employee_id = payload.get("employee_id")
@@ -1523,7 +1574,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._send_json(400, {"error": "active is required"})
             return
 
-        employee = find_employee(employee_id)
+        employee = find_employee_for_owner(employee_id, username)
         if employee is None:
             self._send_json(404, {"error": "employee not found"})
             return
@@ -1534,6 +1585,11 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def _handle_delete_employee(self) -> None:
         payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
+
+        if not username:
+            self._send_json(400, {"error": "username is required"})
+            return
 
         try:
             raw_employee_id = payload.get("employee_id")
@@ -1544,7 +1600,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._send_json(400, {"error": "employee_id must be an integer"})
             return
 
-        employee = find_employee(employee_id)
+        employee = find_employee_for_owner(employee_id, username)
         if employee is None:
             self._send_json(404, {"error": "employee not found"})
             return
@@ -1555,6 +1611,11 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def _handle_connect_client(self) -> None:
         payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
+
+        if not username:
+            self._send_json(400, {"error": "username is required"})
+            return
 
         try:
             raw_client_id = payload.get("client_id")
@@ -1570,7 +1631,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._send_json(400, {"error": "provider must be quickbooks"})
             return
 
-        client = find_client(client_id)
+        client = find_client(client_id, username)
         if client is None:
             self._send_json(404, {"error": "client not found"})
             return
@@ -1727,6 +1788,7 @@ def load_env_file() -> None:
 
 
 def main(argv: list[str]) -> int:
+    global LEGACY_DATA_OWNER
     port = 8000
     if len(argv) > 1:
         try:
@@ -1736,6 +1798,7 @@ def main(argv: list[str]) -> int:
             return 1
 
     init_db()
+    LEGACY_DATA_OWNER = resolve_legacy_data_owner()
     load_env_file()
     load_clients()
     load_employees()

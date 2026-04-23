@@ -678,10 +678,12 @@
     }
 
     async function persistJobSchedule(jobId, status, time, assignedTech, manualBlockMinutes) {
+      const username = String(authenticatedUser || "").trim();
       const response = await fetch("/api/jobs/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          username,
           id: Number(jobId),
           status,
           time,
@@ -698,10 +700,11 @@
     }
 
     async function createAppointment(payload) {
+      const username = String(authenticatedUser || "").trim();
       const response = await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ ...payload, username })
       });
 
       if (!response.ok) {
@@ -712,7 +715,8 @@
     }
 
     async function fetchClients() {
-      const response = await fetch("/api/clients");
+      const query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+      const response = await fetch(`/api/clients?${query.toString()}`);
       if (!response.ok) {
         throw new Error("Failed to load clients.");
       }
@@ -721,10 +725,11 @@
     }
 
     async function createClient(payload) {
+      const username = String(authenticatedUser || "").trim();
       const response = await fetch("/api/clients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ ...payload, username })
       });
 
       if (!response.ok) {
@@ -735,7 +740,8 @@
     }
 
     async function fetchEmployees() {
-      const response = await fetch("/api/employees");
+      const query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+      const response = await fetch(`/api/employees?${query.toString()}`);
       if (!response.ok) {
         throw new Error("Failed to load employees.");
       }
@@ -744,10 +750,11 @@
     }
 
     async function createEmployee(payload) {
+      const username = String(authenticatedUser || "").trim();
       const response = await fetch("/api/employees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ ...payload, username })
       });
 
       if (!response.ok) {
@@ -758,10 +765,11 @@
     }
 
     async function setEmployeeStatus(employeeId, active) {
+      const username = String(authenticatedUser || "").trim();
       const response = await fetch("/api/employees/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employee_id: Number(employeeId), active })
+        body: JSON.stringify({ username, employee_id: Number(employeeId), active })
       });
 
       if (!response.ok) {
@@ -772,10 +780,11 @@
     }
 
     async function deleteEmployee(employeeId) {
+      const username = String(authenticatedUser || "").trim();
       const response = await fetch("/api/employees/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employee_id: Number(employeeId) })
+        body: JSON.stringify({ username, employee_id: Number(employeeId) })
       });
 
       if (!response.ok) {
@@ -1616,7 +1625,8 @@
 
     async function loadJobs() {
       try {
-        const response = await fetch("/api/jobs");
+        const query = new URLSearchParams({ username: String(authenticatedUser || "").trim() });
+        const response = await fetch(`/api/jobs?${query.toString()}`);
         if (!response.ok) {
           throw new Error("Unable to load jobs.");
         }

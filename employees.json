@@ -9,7 +9,8 @@
     "mobile": "",
     "email": "",
     "active": true,
-    "added_at": ""
+    "added_at": "",
+    "owner_username": ""
   },
   {
     "id": 2,
@@ -21,7 +22,8 @@
     "mobile": "",
     "email": "",
     "active": true,
-    "added_at": ""
+    "added_at": "",
+    "owner_username": ""
   },
   {
     "id": 3,
@@ -33,7 +35,8 @@
     "mobile": "",
     "email": "",
     "active": true,
-    "added_at": ""
+    "added_at": "",
+    "owner_username": ""
   },
   {
     "id": 4,
@@ -45,7 +48,8 @@
     "mobile": "",
     "email": "",
     "active": true,
-    "added_at": "2026-04-23T00:54:15.566568+00:00"
+    "added_at": "2026-04-23T00:54:15.566568+00:00",
+    "owner_username": ""
   },
   {
     "id": 5,
@@ -57,6 +61,72 @@
     "mobile": "",
     "email": "",
     "active": true,
-    "added_at": "2026-04-23T00:54:15.566605+00:00"
+    "added_at": "2026-04-23T00:54:15.566605+00:00",
+    "owner_username": ""
+  },
+  {
+    "id": 6,
+    "name": "Emily Platt",
+    "source": "quickbooks",
+    "quickbooks_employee_id": "55",
+    "title": "",
+    "phone": "",
+    "mobile": "",
+    "email": "",
+    "active": true,
+    "added_at": "2026-04-23T01:23:53.522262+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 7,
+    "name": "John Johnson",
+    "source": "quickbooks",
+    "quickbooks_employee_id": "54",
+    "title": "",
+    "phone": "(540) 555-9645",
+    "mobile": "",
+    "email": "",
+    "active": true,
+    "added_at": "2026-04-23T01:23:53.522296+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 8,
+    "name": "James M. Carpenter",
+    "source": "quickbooks",
+    "quickbooks_employee_id": "400000001",
+    "title": "",
+    "phone": "",
+    "mobile": "",
+    "email": "carpenterjames88@gmail.com",
+    "active": true,
+    "added_at": "2026-04-23T01:25:51.045160+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 9,
+    "name": "sdghshhsdeh",
+    "source": "manual",
+    "quickbooks_employee_id": "",
+    "title": "",
+    "phone": "",
+    "mobile": "",
+    "email": "",
+    "active": true,
+    "added_at": "2026-04-23T01:28:08.422836+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 10,
+    "name": "John testing",
+    "source": "quickbooks",
+    "quickbooks_employee_id": "400000002",
+    "title": "",
+    "phone": "",
+    "mobile": "",
+    "email": "carpenterjames88@gmail.com",
+    "active": true,
+    "added_at": "2026-04-23T01:28:58.903090+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
   }
 ]

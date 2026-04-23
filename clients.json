@@ -12,7 +12,8 @@
     "notes": "Imported from QuickBooks customer ID 1",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340801+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340801+00:00",
+    "owner_username": ""
   },
   {
     "id": 2,
@@ -27,7 +28,8 @@
     "notes": "Imported from QuickBooks customer ID 2",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340832+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340832+00:00",
+    "owner_username": ""
   },
   {
     "id": 3,
@@ -42,7 +44,8 @@
     "notes": "Imported from QuickBooks customer ID 3",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340845+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340845+00:00",
+    "owner_username": ""
   },
   {
     "id": 4,
@@ -57,7 +60,8 @@
     "notes": "Imported from QuickBooks customer ID 4",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340853+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340853+00:00",
+    "owner_username": ""
   },
   {
     "id": 5,
@@ -72,7 +76,8 @@
     "notes": "Imported from QuickBooks customer ID 5",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340860+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340860+00:00",
+    "owner_username": ""
   },
   {
     "id": 6,
@@ -87,7 +92,8 @@
     "notes": "Imported from QuickBooks customer ID 6",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340868+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340868+00:00",
+    "owner_username": ""
   },
   {
     "id": 7,
@@ -102,7 +108,8 @@
     "notes": "Imported from QuickBooks customer ID 7",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340875+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340875+00:00",
+    "owner_username": ""
   },
   {
     "id": 8,
@@ -117,7 +124,8 @@
     "notes": "Imported from QuickBooks customer ID 8",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340882+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340882+00:00",
+    "owner_username": ""
   },
   {
     "id": 9,
@@ -132,7 +140,8 @@
     "notes": "Imported from QuickBooks customer ID 9",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340893+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340893+00:00",
+    "owner_username": ""
   },
   {
     "id": 10,
@@ -147,7 +156,8 @@
     "notes": "Imported from QuickBooks customer ID 10",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340900+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340900+00:00",
+    "owner_username": ""
   },
   {
     "id": 11,
@@ -162,7 +172,8 @@
     "notes": "Imported from QuickBooks customer ID 11",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340908+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340908+00:00",
+    "owner_username": ""
   },
   {
     "id": 12,
@@ -177,7 +188,8 @@
     "notes": "Imported from QuickBooks customer ID 12",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340915+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340915+00:00",
+    "owner_username": ""
   },
   {
     "id": 13,
@@ -192,7 +204,8 @@
     "notes": "Imported from QuickBooks customer ID 13",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340923+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340923+00:00",
+    "owner_username": ""
   },
   {
     "id": 14,
@@ -207,7 +220,8 @@
     "notes": "Imported from QuickBooks customer ID 14",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340930+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340930+00:00",
+    "owner_username": ""
   },
   {
     "id": 15,
@@ -222,7 +236,8 @@
     "notes": "Imported from QuickBooks customer ID 16",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340937+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340937+00:00",
+    "owner_username": ""
   },
   {
     "id": 16,
@@ -237,7 +252,8 @@
     "notes": "Imported from QuickBooks customer ID 17",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340945+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340945+00:00",
+    "owner_username": ""
   },
   {
     "id": 17,
@@ -252,7 +268,8 @@
     "notes": "Imported from QuickBooks customer ID 18",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340954+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340954+00:00",
+    "owner_username": ""
   },
   {
     "id": 18,
@@ -267,7 +284,8 @@
     "notes": "Imported from QuickBooks customer ID 15",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340964+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340964+00:00",
+    "owner_username": ""
   },
   {
     "id": 19,
@@ -282,7 +300,8 @@
     "notes": "Imported from QuickBooks customer ID 19",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340971+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340971+00:00",
+    "owner_username": ""
   },
   {
     "id": 20,
@@ -297,7 +316,8 @@
     "notes": "Imported from QuickBooks customer ID 20",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340978+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340978+00:00",
+    "owner_username": ""
   },
   {
     "id": 21,
@@ -312,7 +332,8 @@
     "notes": "Imported from QuickBooks customer ID 21",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340985+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340985+00:00",
+    "owner_username": ""
   },
   {
     "id": 22,
@@ -327,7 +348,8 @@
     "notes": "Imported from QuickBooks customer ID 22",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340991+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340991+00:00",
+    "owner_username": ""
   },
   {
     "id": 23,
@@ -342,7 +364,8 @@
     "notes": "Imported from QuickBooks customer ID 23",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.340999+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.340999+00:00",
+    "owner_username": ""
   },
   {
     "id": 24,
@@ -357,7 +380,8 @@
     "notes": "Imported from QuickBooks customer ID 24",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.341006+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.341006+00:00",
+    "owner_username": ""
   },
   {
     "id": 25,
@@ -372,7 +396,8 @@
     "notes": "Imported from QuickBooks customer ID 25",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.341013+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.341013+00:00",
+    "owner_username": ""
   },
   {
     "id": 26,
@@ -387,7 +412,8 @@
     "notes": "Imported from QuickBooks customer ID 26",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.341020+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.341020+00:00",
+    "owner_username": ""
   },
   {
     "id": 27,
@@ -402,7 +428,8 @@
     "notes": "Imported from QuickBooks customer ID 27",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.341027+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.341027+00:00",
+    "owner_username": ""
   },
   {
     "id": 28,
@@ -417,7 +444,8 @@
     "notes": "Imported from QuickBooks customer ID 28",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.341034+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.341034+00:00",
+    "owner_username": ""
   },
   {
     "id": 29,
@@ -432,6 +460,471 @@
     "notes": "Imported from QuickBooks customer ID 29",
     "integration_provider": "quickbooks",
     "integration_connected": true,
-    "integration_connected_at": "2026-04-22T21:04:12.341044+00:00"
+    "integration_connected_at": "2026-04-22T21:04:12.341044+00:00",
+    "owner_username": ""
+  },
+  {
+    "id": 30,
+    "name": "Amy's Bird Sanctuary",
+    "phone": "(650) 555-3311",
+    "email": "Birds@Intuit.com",
+    "address_line1": "4581 Finch St.",
+    "address_line2": "",
+    "city": "Bayshore",
+    "state": "CA",
+    "postal_code": "94326",
+    "notes": "Imported from QuickBooks customer ID 1",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997497+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 31,
+    "name": "Bill's Windsurf Shop",
+    "phone": "(415) 444-6538",
+    "email": "Surf@Intuit.com",
+    "address_line1": "12 Ocean Dr.",
+    "address_line2": "",
+    "city": "Half Moon Bay",
+    "state": "CA",
+    "postal_code": "94213",
+    "notes": "Imported from QuickBooks customer ID 2",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997528+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 32,
+    "name": "Cool Cars",
+    "phone": "(415) 555-9933",
+    "email": "Cool_Cars@intuit.com",
+    "address_line1": "65 Ocean Dr.",
+    "address_line2": "",
+    "city": "Half Moon Bay",
+    "state": "CA",
+    "postal_code": "94213",
+    "notes": "Imported from QuickBooks customer ID 3",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997541+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 33,
+    "name": "Diego Rodriguez",
+    "phone": "(650) 555-4477",
+    "email": "Diego@Rodriguez.com",
+    "address_line1": "321 Channing",
+    "address_line2": "",
+    "city": "Palo Alto",
+    "state": "CA",
+    "postal_code": "94303",
+    "notes": "Imported from QuickBooks customer ID 4",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997551+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 34,
+    "name": "Dukes Basketball Camp",
+    "phone": "(520) 420-5638",
+    "email": "Dukes_bball@intuit.com",
+    "address_line1": "25 Court St.",
+    "address_line2": "",
+    "city": "Tucson",
+    "state": "AZ",
+    "postal_code": "85719",
+    "notes": "Imported from QuickBooks customer ID 5",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997560+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 35,
+    "name": "Dylan Sollfrank",
+    "phone": "",
+    "email": "",
+    "address_line1": "",
+    "address_line2": "",
+    "city": "",
+    "state": "",
+    "postal_code": "",
+    "notes": "Imported from QuickBooks customer ID 6",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997570+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 36,
+    "name": "Freeman Sporting Goods",
+    "phone": "(650) 555-0987",
+    "email": "Sporting_goods@intuit.com",
+    "address_line1": "370 Easy St.",
+    "address_line2": "",
+    "city": "Middlefield",
+    "state": "CA",
+    "postal_code": "94482",
+    "notes": "Imported from QuickBooks customer ID 7",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997579+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 37,
+    "name": "0969 Ocean View Road",
+    "phone": "(415) 555-9933",
+    "email": "Sporting_goods@intuit.com",
+    "address_line1": "370 Easy St.",
+    "address_line2": "",
+    "city": "Middlefield",
+    "state": "CA",
+    "postal_code": "94482",
+    "notes": "Imported from QuickBooks customer ID 8",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997589+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 38,
+    "name": "55 Twin Lane",
+    "phone": "(650) 555-0987",
+    "email": "Sporting_goods@intuit.com",
+    "address_line1": "370 Easy St.",
+    "address_line2": "",
+    "city": "Middlefield",
+    "state": "CA",
+    "postal_code": "94482",
+    "notes": "Imported from QuickBooks customer ID 9",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997598+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 39,
+    "name": "Geeta Kalapatapu",
+    "phone": "(650) 555-0022",
+    "email": "Geeta@Kalapatapu.com",
+    "address_line1": "1987 Main St.",
+    "address_line2": "",
+    "city": "Middlefield",
+    "state": "CA",
+    "postal_code": "94303",
+    "notes": "Imported from QuickBooks customer ID 10",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997610+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 40,
+    "name": "Gevelber Photography",
+    "phone": "(415) 222-4345",
+    "email": "Photography@intuit.com",
+    "address_line1": "1045 Main St.",
+    "address_line2": "",
+    "city": "Half Moon Bay",
+    "state": "CA",
+    "postal_code": "94213",
+    "notes": "Imported from QuickBooks customer ID 11",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997621+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 41,
+    "name": "Jeff's Jalopies",
+    "phone": "(650) 555-8989",
+    "email": "Jalopies@intuit.com",
+    "address_line1": "12 Willow Rd.",
+    "address_line2": "",
+    "city": "Menlo Park",
+    "state": "CA",
+    "postal_code": "94305",
+    "notes": "Imported from QuickBooks customer ID 12",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997630+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 42,
+    "name": "John Melton",
+    "phone": "(650) 555-5879",
+    "email": "John@Melton.com",
+    "address_line1": "85 Pine St.",
+    "address_line2": "",
+    "city": "Menlo Park",
+    "state": "CA",
+    "postal_code": "94304",
+    "notes": "Imported from QuickBooks customer ID 13",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997641+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 43,
+    "name": "Kate Whelan",
+    "phone": "(650) 554-8822",
+    "email": "Kate@Whelan.com",
+    "address_line1": "45 First St.",
+    "address_line2": "",
+    "city": "Menlo Park",
+    "state": "CA",
+    "postal_code": "94304",
+    "notes": "Imported from QuickBooks customer ID 14",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997651+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 44,
+    "name": "Kookies by Kathy",
+    "phone": "(650) 555-7896",
+    "email": "qbwebsamplecompany@yahoo.com",
+    "address_line1": "789 Sugar Lane",
+    "address_line2": "",
+    "city": "Middlefield",
+    "state": "CA",
+    "postal_code": "94303",
+    "notes": "Imported from QuickBooks customer ID 16",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997661+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 45,
+    "name": "Mark Cho",
+    "phone": "(650) 554-1479",
+    "email": "Mark@Cho.com",
+    "address_line1": "36 Willow Rd",
+    "address_line2": "",
+    "city": "Menlo Park",
+    "state": "CA",
+    "postal_code": "94304",
+    "notes": "Imported from QuickBooks customer ID 17",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997671+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 46,
+    "name": "Paulsen Medical Supplies",
+    "phone": "(650) 557-4569",
+    "email": "Medical@intuit.com",
+    "address_line1": "900 Main St.",
+    "address_line2": "",
+    "city": "Middlefield",
+    "state": "CA",
+    "postal_code": "94303",
+    "notes": "Imported from QuickBooks customer ID 18",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997681+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 47,
+    "name": "Pye's Cakes",
+    "phone": "(973) 555-4652",
+    "email": "pyescakes@intuit.com",
+    "address_line1": "350 Mountain View Dr.",
+    "address_line2": "",
+    "city": "South Orange",
+    "state": "NJ",
+    "postal_code": "07079",
+    "notes": "Imported from QuickBooks customer ID 15",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997719+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 48,
+    "name": "Rago Travel Agency",
+    "phone": "(650) 555-1596",
+    "email": "Rago_Travel@intuit.com",
+    "address_line1": "753 Cedar St.",
+    "address_line2": "",
+    "city": "Bayshore",
+    "state": "CA",
+    "postal_code": "94326",
+    "notes": "Imported from QuickBooks customer ID 19",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997741+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 49,
+    "name": "Red Rock Diner",
+    "phone": "(650) 555-4973",
+    "email": "qbwebsamplecompany@yahoo.com",
+    "address_line1": "500 Red Rock Rd.",
+    "address_line2": "",
+    "city": "Bayshore",
+    "state": "CA",
+    "postal_code": "94326",
+    "notes": "Imported from QuickBooks customer ID 20",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997752+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 50,
+    "name": "Rondonuwu Fruit and Vegi",
+    "phone": "(650) 555-2645",
+    "email": "Tony@Rondonuwu.com",
+    "address_line1": "847 California Ave.",
+    "address_line2": "",
+    "city": "San Jose",
+    "state": "CA",
+    "postal_code": "95021",
+    "notes": "Imported from QuickBooks customer ID 21",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997763+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 51,
+    "name": "Shara Barnett",
+    "phone": "(650) 555-4563",
+    "email": "Shara@Barnett.com",
+    "address_line1": "77 University",
+    "address_line2": "",
+    "city": "Palo Alto",
+    "state": "CA",
+    "postal_code": "94303",
+    "notes": "Imported from QuickBooks customer ID 22",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997775+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 52,
+    "name": "Barnett Design",
+    "phone": "(650) 557-1289",
+    "email": "Design@intuit.com",
+    "address_line1": "19 Main St.",
+    "address_line2": "",
+    "city": "Middlefield",
+    "state": "CA",
+    "postal_code": "94303",
+    "notes": "Imported from QuickBooks customer ID 23",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997786+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 53,
+    "name": "Sonnenschein Family Store",
+    "phone": "(650) 557-8463",
+    "email": "Familiystore@intuit.com",
+    "address_line1": "5647 Cypress Hill Ave.",
+    "address_line2": "",
+    "city": "Middlefield",
+    "state": "CA",
+    "postal_code": "94303",
+    "notes": "Imported from QuickBooks customer ID 24",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997797+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 54,
+    "name": "Sushi by Katsuyuki",
+    "phone": "(505) 570-0147",
+    "email": "Sushi@intuit.com",
+    "address_line1": "898 Elm St.",
+    "address_line2": "",
+    "city": "Maplewood",
+    "state": "NJ",
+    "postal_code": "07040",
+    "notes": "Imported from QuickBooks customer ID 25",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997809+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 55,
+    "name": "Travis Waldron",
+    "phone": "(650) 557-9977",
+    "email": "Travis@Waldron.com",
+    "address_line1": "78 First St.",
+    "address_line2": "",
+    "city": "Monlo Park",
+    "state": "CA",
+    "postal_code": "94304",
+    "notes": "Imported from QuickBooks customer ID 26",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997820+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 56,
+    "name": "Video Games by Dan",
+    "phone": "(650) 555-3456",
+    "email": "Videogames@intuit.com",
+    "address_line1": "202 Main St.",
+    "address_line2": "",
+    "city": "Tucson",
+    "state": "AZ",
+    "postal_code": "85704",
+    "notes": "Imported from QuickBooks customer ID 27",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997832+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 57,
+    "name": "Wedding Planning by Whitney",
+    "phone": "(650) 557-2473",
+    "email": "Dream_Wedding@intuit.com",
+    "address_line1": "135 Broadway",
+    "address_line2": "",
+    "city": "Menlo Park",
+    "state": "CA",
+    "postal_code": "94304",
+    "notes": "Imported from QuickBooks customer ID 28",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997844+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
+  },
+  {
+    "id": 58,
+    "name": "Weiskopf Consulting",
+    "phone": "(650) 555-1423",
+    "email": "Consulting@intuit.com",
+    "address_line1": "45612 Main St.",
+    "address_line2": "",
+    "city": "Bayshore",
+    "state": "CA",
+    "postal_code": "94326",
+    "notes": "Imported from QuickBooks customer ID 29",
+    "integration_provider": "quickbooks",
+    "integration_connected": true,
+    "integration_connected_at": "2026-04-23T01:24:03.997855+00:00",
+    "owner_username": "underthesunsolar24@gmail.com"
   }
 ]
