@@ -3,441 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FieldOps Scheduler | Field Service Scheduling Software</title>
+  <title>FieldOps | Sign In</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            brand: {
-              blue: "#1e3a8a",
-              slate: "#334155",
-              action: "#f97316",
-              glow: "#3b82f6"
+            panel: {
+              ink: "#0f1b36",
+              line: "#2f4f8a"
+            },
+            accent: {
+              cyan: "#22d3ee",
+              amber: "#f59e0b"
             }
           },
           fontFamily: {
-            sans: ["Plus Jakarta Sans", "ui-sans-serif", "system-ui", "sans-serif"]
-          },
-          boxShadow: {
-            panel: "0 24px 50px -30px rgba(15, 23, 42, 0.35)",
-            glow: "0 0 40px rgba(59,130,246,0.35)",
-            card: "0 20px 60px -20px rgba(15,23,42,0.5)"
-          },
-          animation: {
-            float: "float 6s ease-in-out infinite",
-            pulse2: "pulse2 3s ease-in-out infinite"
-          },
-          keyframes: {
-            float: {
-              "0%,100%": { transform: "translateY(0)" },
-              "50%": { transform: "translateY(-12px)" }
-            },
-            pulse2: {
-              "0%,100%": { opacity: "0.6" },
-              "50%": { opacity: "1" }
-            }
+            sans: ["Space Grotesk", "ui-sans-serif", "system-ui", "sans-serif"]
           }
         }
       }
     };
   </script>
   <style>
-    .hero-bg {
-      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59,130,246,0.4) 0%, transparent 70%),
-                  linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+    :root {
+      --bg-1: #060f1f;
+      --bg-2: #0d1f3f;
+      --bg-3: #12315e;
     }
-    .glass {
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.12);
+
+    body {
+      background:
+        radial-gradient(900px 450px at 8% -12%, rgba(34, 211, 238, 0.2), transparent 58%),
+        radial-gradient(720px 360px at 92% 8%, rgba(245, 158, 11, 0.14), transparent 62%),
+        linear-gradient(145deg, var(--bg-1) 0%, var(--bg-2) 48%, var(--bg-3) 100%);
     }
-    .glass-white {
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(20px);
+
+    .panel {
+      background: rgba(12, 28, 56, 0.72);
+      border: 1px solid rgba(127, 171, 255, 0.2);
+      backdrop-filter: blur(12px);
     }
-    .gradient-text {
-      background: linear-gradient(135deg, #fff 0%, #93c5fd 50%, #f97316 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+
+    .edge {
+      position: relative;
+      overflow: hidden;
     }
-    .glow-btn {
-      box-shadow: 0 0 0 0 rgba(249,115,22,0.5);
-      transition: all 0.3s;
-    }
-    .glow-btn:hover {
-      box-shadow: 0 0 30px 4px rgba(249,115,22,0.4), 0 8px 24px rgba(249,115,22,0.3);
-      transform: translateY(-2px);
-    }
-    .feature-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.09);
-      transition: all 0.3s;
-    }
-    .feature-card:hover {
-      background: rgba(255,255,255,0.07);
-      border-color: rgba(99,102,241,0.5);
-      transform: translateY(-4px);
-      box-shadow: 0 24px 50px -20px rgba(59,130,246,0.3);
-    }
-    .stat-pulse { animation: pulse2 3s ease-in-out infinite; }
-    .ticker-orb {
-      animation: float 6s ease-in-out infinite;
-    }
-    .nav-blur {
-      background: rgba(15,23,42,0.8);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+
+    .edge::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(34, 211, 238, 0.22), transparent 42%, rgba(245, 158, 11, 0.16));
+      pointer-events: none;
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
-<body class="bg-[#0f172a] text-slate-100 antialiased">
-  <!-- Ambient background orbs -->
-  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-    <div class="ticker-orb absolute -left-40 top-10 h-[500px] w-[500px] rounded-full bg-blue-700/20 blur-[120px]"></div>
-    <div class="absolute right-0 top-0 h-[400px] w-[400px] rounded-full bg-indigo-700/15 blur-[100px]"></div>
-    <div class="absolute bottom-0 left-1/2 h-[300px] w-[600px] -translate-x-1/2 rounded-full bg-violet-800/10 blur-[80px]"></div>
-  </div>
-
-  <div class="relative">
-    <!-- NAV -->
-    <nav class="nav-blur fixed inset-x-0 top-0 z-50">
-      <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-        <div class="flex items-center gap-3 text-white">
-          <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30">
-            <i class="fa-solid fa-calendar-check text-base"></i>
-          </span>
-          <div>
-            <p class="text-sm font-bold tracking-tight">FieldOps</p>
-            <p class="text-[10px] font-medium uppercase tracking-widest text-blue-300">Scheduler</p>
-          </div>
-        </div>
-        <div class="hidden items-center gap-3 md:flex">
-          <a href="#features" class="text-sm font-medium text-slate-300 transition hover:text-white">Features</a>
-          <a href="#pricing" class="text-sm font-medium text-slate-300 transition hover:text-white">Pricing</a>
-          <a href="#login" class="rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10">Login</a>
-          <a href="#lead-form" class="glow-btn rounded-lg bg-brand-action px-5 py-2.5 text-sm font-bold text-white">Book a Demo</a>
-        </div>
-        <button class="md:hidden rounded-lg border border-white/20 px-3 py-2 text-sm text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-      </div>
-      <div id="mobile-menu" class="hidden border-t border-white/10 px-6 pb-4 md:hidden">
-        <div class="flex flex-col gap-3 pt-3">
-          <a href="#features" class="text-sm font-medium text-slate-300">Features</a>
-          <a href="#pricing" class="text-sm font-medium text-slate-300">Pricing</a>
-          <a href="#login" class="text-sm font-medium text-white">Login</a>
-          <a href="#lead-form" class="glow-btn inline-block rounded-lg bg-brand-action px-4 py-2 text-sm font-bold text-white text-center">Book a Demo</a>
-        </div>
-      </div>
-    </nav>
-
-    <main>
-      <!-- HERO -->
-      <section class="relative min-h-screen flex items-center pt-20">
-        <div class="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
-          <div class="grid gap-16 lg:grid-cols-2 lg:items-center">
+<body class="min-h-screen font-sans text-slate-100 antialiased">
+  <div class="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-10 sm:px-6 lg:px-8">
+    <main class="grid w-full gap-6 lg:grid-cols-[1fr_1.2fr]">
+      <section class="panel edge rounded-3xl p-7 sm:p-9">
+        <div class="relative z-10">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-400/20 ring-1 ring-cyan-300/30">
+              <i class="fa-solid fa-calendar-check text-cyan-200"></i>
+            </span>
             <div>
-              <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-300">
-                <span class="stat-pulse h-1.5 w-1.5 rounded-full bg-blue-400"></span>
-                Trusted by 500+ field service teams
-              </div>
-              <h1 class="max-w-xl text-5xl font-black leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl">
-                <span class="gradient-text">Smarter dispatch.</span><br>
-                <span class="text-white">More jobs done.</span>
-              </h1>
-              <p class="mt-6 max-w-lg text-lg leading-relaxed text-slate-400">
-                Eliminate paperwork, automate scheduling, and keep every dispatch, technician, and customer update in one unified command center.
-              </p>
-              <div class="mt-10 flex flex-wrap items-center gap-4">
-                <a href="#lead-form" class="glow-btn rounded-xl bg-brand-action px-8 py-4 text-sm font-bold text-white">Get Started Free</a>
-                <a href="#features" class="group inline-flex items-center gap-2 rounded-xl border border-white/15 px-8 py-4 text-sm font-semibold text-slate-300 transition hover:border-white/30 hover:text-white">
-                  See How It Works
-                  <i class="fa-solid fa-arrow-right text-xs transition group-hover:translate-x-1"></i>
-                </a>
-              </div>
-              <!-- trust logos -->
-              <div class="mt-12 flex flex-wrap items-center gap-6">
-                <p class="text-xs uppercase tracking-widest text-slate-500">Used by</p>
-                <span class="flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-400"><i class="fa-solid fa-wrench text-blue-400"></i> HVAC Pros</span>
-                <span class="flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-400"><i class="fa-solid fa-droplet text-blue-400"></i> Plumbers</span>
-                <span class="flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-400"><i class="fa-solid fa-bolt text-blue-400"></i> Electricians</span>
-                <span class="flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-400"><i class="fa-solid fa-gear text-blue-400"></i> Field Services</span>
-              </div>
+              <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-200">FieldOps</p>
+              <p class="text-sm font-semibold text-white">Access Portal</p>
             </div>
+          </div>
 
-            <!-- Live stats card -->
-            <div class="glass rounded-3xl p-8 shadow-card">
-              <div class="mb-5 flex items-center justify-between">
-                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Live Operations Snapshot</p>
-                <span class="stat-pulse flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
-                  <span class="h-2 w-2 rounded-full bg-emerald-400"></span> Live
-                </span>
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="rounded-2xl bg-gradient-to-br from-blue-600/30 to-blue-800/20 p-5 ring-1 ring-blue-500/20">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-blue-300">Job Fill Rate</p>
-                  <p class="mt-2 text-3xl font-black text-white">98.3<span class="text-lg text-blue-300">%</span></p>
-                  <p class="mt-1 text-xs text-blue-400">↑ 4.2% this month</p>
-                </div>
-                <div class="rounded-2xl bg-gradient-to-br from-emerald-600/30 to-emerald-800/20 p-5 ring-1 ring-emerald-500/20">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-emerald-300">No-Show Reduction</p>
-                  <p class="mt-2 text-3xl font-black text-white">-37<span class="text-lg text-emerald-300">%</span></p>
-                  <p class="mt-1 text-xs text-emerald-400">vs. industry avg</p>
-                </div>
-                <div class="rounded-2xl bg-gradient-to-br from-violet-600/30 to-violet-800/20 p-5 ring-1 ring-violet-500/20">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-violet-300">ETA Accuracy</p>
-                  <p class="mt-2 text-3xl font-black text-white">92<span class="text-lg text-violet-300">%</span></p>
-                  <p class="mt-1 text-xs text-violet-400">Across all routes</p>
-                </div>
-                <div class="rounded-2xl bg-gradient-to-br from-amber-600/30 to-amber-800/20 p-5 ring-1 ring-amber-500/20">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-amber-300">Invoices Faster</p>
-                  <p class="mt-2 text-3xl font-black text-white">2.1<span class="text-lg text-amber-300">×</span></p>
-                  <p class="mt-1 text-xs text-amber-400">Average paid faster</p>
-                </div>
-              </div>
-              <div class="mt-5 rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                <div class="flex items-center justify-between text-xs">
-                  <span class="font-semibold text-slate-300">Today's Completion Rate</span>
-                  <span class="font-bold text-emerald-400">94%</span>
-                </div>
-                <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/10">
-                  <div class="h-full w-[94%] rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"></div>
-                </div>
-              </div>
+          <h1 class="text-3xl font-bold leading-tight text-white sm:text-4xl">Sign in to scheduling operations</h1>
+          <p class="mt-4 max-w-md text-sm leading-relaxed text-slate-300">
+            Secure access for dispatch admins, field employees, and clients.
+            Use your account to continue to your role-specific workspace.
+          </p>
+
+          <div class="mt-8 grid gap-3 text-sm">
+            <div class="rounded-xl border border-cyan-300/25 bg-cyan-500/10 p-3">
+              <p class="font-semibold text-cyan-100">Admin</p>
+              <p class="mt-1 text-slate-200/90">Dispatch board, user roles, and integrations.</p>
+            </div>
+            <div class="rounded-xl border border-amber-300/25 bg-amber-500/10 p-3">
+              <p class="font-semibold text-amber-100">Employee</p>
+              <p class="mt-1 text-slate-200/90">Assigned schedule, live location, and messaging.</p>
+            </div>
+            <div class="rounded-xl border border-emerald-300/25 bg-emerald-500/10 p-3">
+              <p class="font-semibold text-emerald-100">Client</p>
+              <p class="mt-1 text-slate-200/90">Appointment tracking and technician updates.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- FEATURES -->
-      <section id="features" class="relative py-24">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
-          <div class="mx-auto mb-14 max-w-2xl text-center">
-            <p class="mb-3 text-xs font-bold uppercase tracking-widest text-blue-400">Why FieldOps</p>
-            <h2 class="text-4xl font-black tracking-tight text-white sm:text-5xl">Built different. <span class="gradient-text">Runs better.</span></h2>
-            <p class="mt-5 text-lg text-slate-400">Everything your team needs to dispatch faster, serve better, and grow without the chaos.</p>
-          </div>
-          <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <article class="feature-card rounded-2xl p-7">
-              <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30">
-                <i class="fa-solid fa-route text-lg"></i>
-              </span>
-              <h3 class="mt-5 text-lg font-bold text-white">Smart Dispatching</h3>
-              <p class="mt-3 text-sm leading-relaxed text-slate-400">Assign the right technician based on skill, location, and live schedule. Zero guesswork.</p>
-              <div class="mt-5 flex items-center gap-1.5 text-xs font-semibold text-blue-400">
-                Learn more <i class="fa-solid fa-arrow-right text-[10px]"></i>
-              </div>
-            </article>
-            <article class="feature-card rounded-2xl p-7">
-              <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30">
-                <i class="fa-solid fa-users text-lg"></i>
-              </span>
-              <h3 class="mt-5 text-lg font-bold text-white">Client Database</h3>
-              <p class="mt-3 text-sm leading-relaxed text-slate-400">Store all client info, service history, and notes in one searchable hub synced with QuickBooks.</p>
-              <div class="mt-5 flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
-                Learn more <i class="fa-solid fa-arrow-right text-[10px]"></i>
-              </div>
-            </article>
-            <article class="feature-card rounded-2xl p-7">
-              <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/20 text-violet-400 ring-1 ring-violet-500/30">
-                <i class="fa-solid fa-bell text-lg"></i>
-              </span>
-              <h3 class="mt-5 text-lg font-bold text-white">Auto Notifications</h3>
-              <p class="mt-3 text-sm leading-relaxed text-slate-400">Automated SMS and email reminders slash no-shows and eliminate inbound status calls.</p>
-              <div class="mt-5 flex items-center gap-1.5 text-xs font-semibold text-violet-400">
-                Learn more <i class="fa-solid fa-arrow-right text-[10px]"></i>
-              </div>
-            </article>
-            <article class="feature-card rounded-2xl p-7">
-              <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/30">
-                <i class="fa-brands fa-quickbooks text-lg"></i>
-              </span>
-              <h3 class="mt-5 text-lg font-bold text-white">QuickBooks Sync</h3>
-              <p class="mt-3 text-sm leading-relaxed text-slate-400">One-click sync pulls all your customers and employees directly from QuickBooks — no data entry.</p>
-              <div class="mt-5 flex items-center gap-1.5 text-xs font-semibold text-amber-400">
-                Learn more <i class="fa-solid fa-arrow-right text-[10px]"></i>
-              </div>
-            </article>
-          </div>
+      <section class="panel rounded-3xl p-7 sm:p-9">
+        <div class="grid gap-6">
+          <form id="login-form" class="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
+            <h2 class="text-xl font-bold text-white">Sign In</h2>
+            <div>
+              <label for="login-email" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Email</label>
+              <input id="login-email" name="login-email" type="email" placeholder="you@company.com" class="w-full rounded-xl border border-white/15 bg-slate-900/60 px-4 py-3 text-sm text-white placeholder-slate-400 outline-none ring-cyan-400/50 transition focus:border-cyan-300/50 focus:ring-2" required>
+            </div>
+            <div>
+              <label for="login-password" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Password</label>
+              <input id="login-password" name="login-password" type="password" placeholder="Enter password" class="w-full rounded-xl border border-white/15 bg-slate-900/60 px-4 py-3 text-sm text-white placeholder-slate-400 outline-none ring-cyan-400/50 transition focus:border-cyan-300/50 focus:ring-2" required>
+            </div>
+            <button type="submit" class="w-full rounded-xl bg-cyan-500 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-400">Sign In</button>
+            <p id="login-status" class="text-sm font-medium text-slate-300" aria-live="polite"></p>
+          </form>
+
+          <form id="register-form" class="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
+            <h2 class="text-xl font-bold text-white">Create Account</h2>
+            <div>
+              <label for="register-email" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Email</label>
+              <input id="register-email" name="register-email" type="email" placeholder="newuser@company.com" class="w-full rounded-xl border border-white/15 bg-slate-900/60 px-4 py-3 text-sm text-white placeholder-slate-400 outline-none ring-amber-400/50 transition focus:border-amber-300/50 focus:ring-2" required>
+            </div>
+            <div>
+              <label for="register-password" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Password</label>
+              <input id="register-password" name="register-password" type="password" minlength="8" placeholder="At least 8 characters" class="w-full rounded-xl border border-white/15 bg-slate-900/60 px-4 py-3 text-sm text-white placeholder-slate-400 outline-none ring-amber-400/50 transition focus:border-amber-300/50 focus:ring-2" required>
+            </div>
+            <div>
+              <label for="register-role" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Account Type</label>
+              <select id="register-role" name="register-role" class="w-full rounded-xl border border-white/15 bg-slate-900/60 px-4 py-3 text-sm text-white outline-none ring-amber-400/50 transition focus:border-amber-300/50 focus:ring-2" required>
+                <option value="Employee">Employee</option>
+                <option value="Client">Client</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <button type="submit" class="w-full rounded-xl bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-amber-400">Create Account</button>
+            <p id="register-status" class="text-sm font-medium text-slate-300" aria-live="polite"></p>
+          </form>
         </div>
       </section>
-
-      <!-- SOCIAL PROOF TICKER -->
-      <section class="py-10 border-y border-white/10">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
-          <div class="flex flex-wrap items-center justify-center gap-12 text-slate-500">
-            <p class="text-xs font-bold uppercase tracking-widest text-slate-600">Trusted by</p>
-            <span class="text-sm font-semibold">⚡ 500+ businesses</span>
-            <span class="text-sm font-semibold">📍 38 states</span>
-            <span class="text-sm font-semibold">🔧 HVAC · Plumbing · Electrical</span>
-            <span class="text-sm font-semibold">⭐ 4.9/5 avg rating</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- PRICING -->
-      <section id="pricing" class="py-24">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
-          <div class="mx-auto mb-14 max-w-2xl text-center">
-            <p class="mb-3 text-xs font-bold uppercase tracking-widest text-blue-400">Pricing</p>
-            <h2 class="text-4xl font-black tracking-tight text-white sm:text-5xl">Simple, honest <span class="gradient-text">pricing.</span></h2>
-            <p class="mt-5 text-lg text-slate-400">Start free. Scale as your team grows. No hidden fees.</p>
-          </div>
-          <div class="grid gap-6 lg:grid-cols-2 lg:max-w-4xl lg:mx-auto">
-            <!-- Pro Plan -->
-            <div class="glass rounded-3xl p-8 ring-1 ring-white/10">
-              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Professional</p>
-              <div class="mt-4 flex items-end gap-1">
-                <span class="text-5xl font-black text-white">$199</span>
-                <span class="mb-1 text-slate-400">/month</span>
-              </div>
-              <p class="mt-2 text-sm text-slate-400">For growing field service businesses.</p>
-              <ul class="mt-8 space-y-3">
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-emerald-400 w-4"></i> Up to 25 technicians</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-emerald-400 w-4"></i> Standard dispatch automation</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-emerald-400 w-4"></i> Client portal &amp; payments</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-emerald-400 w-4"></i> QuickBooks sync</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-emerald-400 w-4"></i> Priority email support</li>
-              </ul>
-              <a href="#lead-form" class="mt-8 block w-full rounded-xl border border-white/20 py-3 text-center text-sm font-bold text-white transition hover:bg-white/10">Get Started</a>
-            </div>
-            <!-- Enterprise Plan -->
-            <div class="relative rounded-3xl p-8 ring-2 ring-blue-500/70" style="background: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(99,102,241,0.15) 100%)">
-              <span class="absolute -top-3 left-8 rounded-full bg-brand-action px-4 py-1 text-xs font-bold text-white shadow-lg">Most Popular</span>
-              <p class="text-xs font-bold uppercase tracking-widest text-blue-300">Enterprise</p>
-              <div class="mt-4 flex items-end gap-1">
-                <span class="text-5xl font-black text-white">Custom</span>
-              </div>
-              <p class="mt-2 text-sm text-slate-400">For large operations with complex needs.</p>
-              <ul class="mt-8 space-y-3">
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-blue-400 w-4"></i> Unlimited technicians</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-blue-400 w-4"></i> AI priority routing</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-blue-400 w-4"></i> Custom branding</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-blue-400 w-4"></i> Advanced analytics</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-blue-400 w-4"></i> Dedicated success manager</li>
-              </ul>
-              <a href="#lead-form" class="glow-btn mt-8 block w-full rounded-xl bg-brand-action py-3 text-center text-sm font-bold text-white">Book a Demo</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- LOGIN -->
-      <section id="login" class="py-24">
-        <div class="mx-auto max-w-5xl px-6 lg:px-8">
-          <div class="grid gap-10 overflow-hidden rounded-3xl ring-1 ring-white/10 lg:grid-cols-2" style="background: linear-gradient(135deg, rgba(30,58,138,0.4) 0%, rgba(15,23,42,0.8) 100%)">
-            <div class="p-10 lg:p-12">
-              <p class="text-xs font-bold uppercase tracking-widest text-blue-400">Customer Access</p>
-              <h2 class="mt-3 text-3xl font-black leading-tight text-white sm:text-4xl">Your command center awaits.</h2>
-              <p class="mt-4 text-slate-400">Securely access dispatch boards, technician schedules, and customer data from one dashboard.</p>
-              <ul class="mt-8 space-y-4">
-                <li class="flex items-center gap-3 text-sm text-slate-300"><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400"><i class="fa-solid fa-shield-halved text-xs"></i></span> Bank-grade encrypted sessions</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400"><i class="fa-solid fa-mobile-screen-button text-xs"></i></span> Works on desktop and mobile</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400"><i class="fa-solid fa-bolt text-xs"></i></span> Real-time updates in seconds</li>
-              </ul>
-            </div>
-            <div class="space-y-6 bg-white/5 p-10 lg:p-12">
-              <form id="login-form" class="space-y-4">
-                <h3 class="text-lg font-bold text-white">Sign In</h3>
-                <div>
-                  <label for="login-email" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Business Email</label>
-                  <input id="login-email" name="login-email" type="email" placeholder="you@company.com" class="w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none ring-blue-500/50 transition focus:border-blue-500/50 focus:ring-2" required>
-                </div>
-                <div>
-                  <label for="login-password" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Password</label>
-                  <input id="login-password" name="login-password" type="password" placeholder="Enter your password" class="w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none ring-blue-500/50 transition focus:border-blue-500/50 focus:ring-2" required>
-                </div>
-                <button type="submit" class="glow-btn w-full rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white">
-                  Sign In
-                </button>
-                <p id="login-status" class="text-sm font-medium text-slate-400" aria-live="polite"></p>
-              </form>
-
-              <div class="border-t border-white/10 pt-6">
-                <form id="register-form" class="space-y-4">
-                  <h3 class="text-sm font-bold text-slate-300">New account</h3>
-                  <div>
-                    <label for="register-email" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Business Email</label>
-                    <input id="register-email" name="register-email" type="email" placeholder="newuser@company.com" class="w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none ring-blue-500/50 transition focus:border-blue-500/50 focus:ring-2" required>
-                  </div>
-                  <div>
-                    <label for="register-password" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Password</label>
-                    <input id="register-password" name="register-password" type="password" minlength="8" placeholder="At least 8 characters" class="w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none ring-blue-500/50 transition focus:border-blue-500/50 focus:ring-2" required>
-                  </div>
-                  <div>
-                    <label for="register-role" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Account Type</label>
-                    <select id="register-role" name="register-role" class="w-full rounded-xl border border-white/15 bg-[#1e293b] px-4 py-3 text-sm text-white outline-none ring-blue-500/50 transition focus:border-blue-500/50 focus:ring-2" required>
-                      <option value="Employee">Employee</option>
-                      <option value="Client">Client</option>
-                      <option value="Admin">Admin</option>
-                    </select>
-                  </div>
-                  <button type="submit" class="glow-btn w-full rounded-xl bg-brand-action px-5 py-3.5 text-sm font-bold text-white">
-                    Create Account
-                  </button>
-                  <p id="register-status" class="text-sm font-medium text-slate-400" aria-live="polite"></p>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- DEMO FORM -->
-      <section id="lead-form" class="py-24">
-        <div class="mx-auto max-w-5xl px-6 lg:px-8">
-          <div class="overflow-hidden rounded-3xl ring-1 ring-white/10 lg:grid lg:grid-cols-2" style="background: linear-gradient(135deg, rgba(249,115,22,0.12) 0%, rgba(15,23,42,0.9) 60%)">
-            <div class="p-10 lg:p-12">
-              <p class="text-xs font-bold uppercase tracking-widest text-orange-400">Book a Demo</p>
-              <h2 class="mt-3 text-3xl font-black text-white sm:text-4xl">See FieldOps in action. <span class="gradient-text">Free.</span></h2>
-              <p class="mt-4 text-slate-400">We'll show you how to cut scheduling overhead and increase daily job capacity in under 30 minutes.</p>
-              <ul class="mt-8 space-y-4">
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-brand-action"></i> Fast onboarding, no credit card required</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-brand-action"></i> Migration support from spreadsheets</li>
-                <li class="flex items-center gap-3 text-sm text-slate-300"><i class="fa-solid fa-check text-brand-action"></i> ROI review in first 30 days guaranteed</li>
-              </ul>
-            </div>
-            <div class="bg-white/5 p-10 lg:p-12">
-              <form class="space-y-4">
-                <div>
-                  <label for="demo-name" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Name</label>
-                  <input id="demo-name" name="name" type="text" placeholder="Jane Smith" class="w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/30" required>
-                </div>
-                <div>
-                  <label for="demo-email" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Business Email</label>
-                  <input id="demo-email" name="email" type="email" placeholder="jane@company.com" class="w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/30" required>
-                </div>
-                <div>
-                  <label for="demo-industry" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Industry</label>
-                  <select id="demo-industry" name="industry" class="w-full rounded-xl border border-white/15 bg-[#1e293b] px-4 py-3 text-sm text-white outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/30" required>
-                    <option value="">Select your industry</option>
-                    <option>HVAC</option>
-                    <option>Plumbing</option>
-                    <option>Electrical</option>
-                    <option>General Field Services</option>
-                  </select>
-                </div>
-                <button type="submit" class="glow-btn w-full rounded-xl bg-brand-action px-5 py-3.5 text-sm font-bold text-white">
-                  Book My Free Demo
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer class="border-t border-white/10 py-10 text-center">
-        <p class="text-xs text-slate-600">&copy; 2026 FieldOps Scheduler. Built for field service teams that move fast.</p>
-      </footer>
     </main>
   </div>
+
   <script>
     async function postJson(url, data) {
       const response = await fetch(url, {
@@ -460,7 +166,7 @@
     loginForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
       loginStatus.textContent = "Signing in...";
-      loginStatus.className = "text-sm font-medium text-slate-600";
+      loginStatus.className = "text-sm font-medium text-slate-300";
 
       const username = document.getElementById("login-email").value.trim();
       const password = document.getElementById("login-password").value;
@@ -468,7 +174,7 @@
       try {
         const data = await postJson("/api/login", { username, password });
         loginStatus.textContent = data.message || "Login successful.";
-        loginStatus.className = "text-sm font-medium text-emerald-600";
+        loginStatus.className = "text-sm font-medium text-emerald-300";
         localStorage.setItem("fieldops_auth_user", username);
         if (data.user_id) {
           localStorage.setItem("fieldops_auth_user_id", data.user_id);
@@ -479,14 +185,14 @@
         window.location.href = data.redirect || "/home.html";
       } catch (error) {
         loginStatus.textContent = error.message;
-        loginStatus.className = "text-sm font-medium text-red-600";
+        loginStatus.className = "text-sm font-medium text-rose-300";
       }
     });
 
     registerForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
       registerStatus.textContent = "Creating account...";
-      registerStatus.className = "text-sm font-medium text-slate-600";
+      registerStatus.className = "text-sm font-medium text-slate-300";
 
       const username = document.getElementById("register-email").value.trim();
       const password = document.getElementById("register-password").value;
@@ -496,11 +202,11 @@
         const data = await postJson("/api/register", { username, password, role });
         const createdRole = data.role || role;
         registerStatus.textContent = `${data.message || "User created."} (${createdRole})`;
-        registerStatus.className = "text-sm font-medium text-emerald-600";
+        registerStatus.className = "text-sm font-medium text-emerald-300";
         registerForm.reset();
       } catch (error) {
         registerStatus.textContent = error.message;
-        registerStatus.className = "text-sm font-medium text-red-600";
+        registerStatus.className = "text-sm font-medium text-rose-300";
       }
     });
   </script>

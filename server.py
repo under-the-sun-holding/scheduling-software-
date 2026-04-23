@@ -292,6 +292,62 @@ def find_employee_for_owner(employee_id: int, owner_username: str = "") -> dict 
     return None
 
 
+def employee_records_for_login(username: str) -> list[dict]:
+    normalized = str(username or "").strip().lower()
+    if not normalized:
+        return []
+    matches: list[dict] = []
+    for employee in EMPLOYEES:
+        email = str(employee.get("email", "")).strip().lower()
+        if email and email == normalized:
+            matches.append(employee)
+    if not matches:
+        return []
+
+    def sort_key(employee: dict) -> tuple[int, int, int]:
+        # Prefer active records, then owned records, then smallest id for stability.
+        is_active = 0 if parse_bool(employee.get("active", True)) else 1
+        has_owner = 0 if str(employee.get("owner_username", "")).strip() else 1
+        employee_id = int(employee.get("id", 0))
+        return (is_active, has_owner, employee_id)
+
+    primary = sorted(matches, key=sort_key)[0]
+    return [primary]
+
+
+def employee_scope_for_login(username: str) -> tuple[set[str], set[str]]:
+    records = employee_records_for_login(username)
+    tech_names: set[str] = set()
+    owner_candidates: set[str] = set()
+
+    for employee in records:
+        name = str(employee.get("name", "")).strip()
+        if name:
+            tech_names.add(name.lower())
+        owner = str(employee.get("owner_username", "")).strip()
+        if owner:
+            owner_candidates.add(owner)
+
+    if not owner_candidates and LEGACY_DATA_OWNER:
+        owner_candidates.add(LEGACY_DATA_OWNER)
+    if not owner_candidates:
+        owner_candidates.add(str(username or "").strip())
+
+    return tech_names, owner_candidates
+
+
+def employee_can_view_job(job: dict, username: str) -> bool:
+    tech_names, owner_candidates = employee_scope_for_login(username)
+    assigned_tech = str(job.get("assigned_tech", "")).strip().lower()
+    if not assigned_tech or assigned_tech not in tech_names:
+        return False
+
+    for owner in owner_candidates:
+        if record_visible_to_owner(job, owner):
+            return True
+    return False
+
+
 def load_jobs() -> None:
     global JOBS
     if JOBS_PATH.exists():
@@ -1345,7 +1401,9 @@ class AppHandler(SimpleHTTPRequestHandler):
 
         if path == "/api/jobs":
             try:
-                owner_username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+                user = _resolve_user_identity(username=username, user_id_raw=user_id_raw)
+                owner_username = str(user.get("username", "")).strip()
+                role = str(user.get("role", "Employee"))
             except ValueError as exc:
                 self._send_json(400, {"error": str(exc)})
                 return
@@ -1358,11 +1416,20 @@ class AppHandler(SimpleHTTPRequestHandler):
                 self._send_json(400, {"error": str(exc)})
                 return
 
-            filtered = [
-                job
-                for job in filter_owned_records(JOBS, owner_username)
-                if normalize_scheduled_date(job.get("scheduled_date", "")) == selected_date
-            ]
+            if role == "Employee":
+                filtered = [
+                    job
+                    for job in JOBS
+                    if normalize_scheduled_date(job.get("scheduled_date", ""))
+                    == selected_date
+                    and employee_can_view_job(job, owner_username)
+                ]
+            else:
+                filtered = [
+                    job
+                    for job in filter_owned_records(JOBS, owner_username)
+                    if normalize_scheduled_date(job.get("scheduled_date", "")) == selected_date
+                ]
             self._send_json(200, filtered)
             return
         if path == "/api/clients":
@@ -1375,9 +1442,21 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
         if path == "/api/employees":
             try:
-                owner_username = _resolve_owner_username(username=username, user_id_raw=user_id_raw)
+                user = _resolve_user_identity(username=username, user_id_raw=user_id_raw)
+                owner_username = str(user.get("username", "")).strip()
+                role = str(user.get("role", "Employee"))
             except ValueError as exc:
                 self._send_json(400, {"error": str(exc)})
+                return
+            if role == "Employee":
+                _, owner_candidates = employee_scope_for_login(owner_username)
+                scoped: list[dict] = []
+                for employee in EMPLOYEES:
+                    for owner in owner_candidates:
+                        if record_visible_to_owner(employee, owner):
+                            scoped.append(employee)
+                            break
+                self._send_json(200, {"employees": scoped})
                 return
             self._send_json(200, {"employees": filter_owned_records(EMPLOYEES, owner_username)})
             return
@@ -2237,8 +2316,10 @@ class AppHandler(SimpleHTTPRequestHandler):
     def _job_visible_to_user(self, job: dict, user: dict[str, int | str]) -> bool:
         role = str(user.get("role", "Employee"))
         username = str(user.get("username", "")).strip()
-        if role in {"Admin", "Employee"}:
+        if role == "Admin":
             return record_visible_to_owner(job, username)
+        if role == "Employee":
+            return employee_can_view_job(job, username)
         if role == "Client":
             return client_has_access_to_job(job, username)
         return False
