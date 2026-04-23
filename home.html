@@ -352,6 +352,7 @@
 
         <div class="flex flex-wrap items-center gap-2">
           <button id="connect-client-submit" type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">Connect</button>
+          <button id="sync-quickbooks-btn" type="button" class="rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">Sync Now</button>
           <button id="disconnect-client-btn" type="button" class="rounded-lg border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">Disconnect</button>
         </div>
       </form>
@@ -438,6 +439,7 @@
     const connectProviderEl = document.getElementById("connect-provider");
     const connectClientPreviewEl = document.getElementById("connect-client-preview");
     const connectClientSubmitBtn = document.getElementById("connect-client-submit");
+    const syncQuickBooksBtn = document.getElementById("sync-quickbooks-btn");
     const disconnectClientBtn = document.getElementById("disconnect-client-btn");
     const quickbooksStatusBadgeEl = document.getElementById("quickbooks-status-badge");
 
@@ -798,6 +800,21 @@
       return Array.isArray(payload.employees) ? payload.employees : [];
     }
 
+    async function importQuickBooksClients(username) {
+      const response = await fetch("/api/quickbooks/clients/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Failed to import QuickBooks clients.");
+      }
+
+      return response.json();
+    }
+
     async function fetchUserConnectStatus(username) {
       const query = new URLSearchParams({ username: String(username || "").trim() });
       const response = await fetch(`/api/users/connect-status?${query.toString()}`);
@@ -846,8 +863,10 @@
 
       const isConnected = Boolean(userIntegration?.integration_connected);
       const provider = String(userIntegration?.integration_provider || "QuickBooks").trim();
+      const companyName = String(userIntegration?.quickbooks_company_name || "").trim();
       if (isConnected) {
-        quickbooksStatusBadgeEl.textContent = `QuickBooks: Connected (${provider})`;
+        const descriptor = companyName ? `${provider} - ${companyName}` : provider;
+        quickbooksStatusBadgeEl.textContent = `QuickBooks: Connected (${descriptor})`;
         quickbooksStatusBadgeEl.className = "rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800";
         return;
       }
@@ -901,19 +920,28 @@
       const isConnected = Boolean(userIntegration.integration_connected);
       const connectedAt = String(userIntegration.integration_connected_at || "").trim();
       const tokenExpiresAt = String(userIntegration.quickbooks_token_expires_at || "").trim();
+      const companyName = String(userIntegration.quickbooks_company_name || "").trim();
+      const lastSyncAt = String(userIntegration.quickbooks_last_sync_at || "").trim();
+      const tokensEncrypted = Boolean(userIntegration.quickbooks_tokens_encrypted);
       const isConfigured = Boolean(userIntegration.quickbooks_configured);
       const lines = [
         `User: ${authenticatedUser || "Not signed in"}`,
         `OAuth Configured: ${isConfigured ? "Yes" : "No"}`,
         `Current Status: ${isConnected ? "Connected" : "Not connected"}`,
         `Provider: ${provider || "None"}`,
+        `Connected Company: ${companyName || "N/A"}`,
         `Connected At: ${connectedAt || "N/A"}`,
-        `Token Expires At: ${tokenExpiresAt || "N/A"}`
+        `Token Expires At: ${tokenExpiresAt || "N/A"}`,
+        `Last Sync At: ${lastSyncAt || "N/A"}`,
+        `Tokens Encrypted At Rest: ${tokensEncrypted ? "Yes" : "No"}`
       ];
       connectClientPreviewEl.textContent = lines.join("\n");
       if (connectClientSubmitBtn) {
         connectClientSubmitBtn.textContent = isConnected ? "Reconnect" : "Connect";
         connectClientSubmitBtn.disabled = !isConfigured;
+      }
+      if (syncQuickBooksBtn) {
+        syncQuickBooksBtn.disabled = !isConnected;
       }
       if (disconnectClientBtn) {
         disconnectClientBtn.disabled = !isConnected;
@@ -931,10 +959,19 @@
       if (!qbStatus) return;
 
       const message = String(params.get("message") || "").trim();
+      const detail = String(params.get("detail") || "").trim();
       if (qbStatus === "connected") {
         alert("QuickBooks connected successfully.");
       } else {
-        alert(`QuickBooks connection failed${message ? `: ${message}` : "."}`);
+        const pretty = message
+          .replace(/[-_]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        const title = pretty
+          ? pretty.charAt(0).toUpperCase() + pretty.slice(1)
+          : "QuickBooks connection failed";
+        const suffix = detail ? `\n\nDetails: ${detail}` : "";
+        alert(`${title}.${suffix}`);
       }
 
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -1264,6 +1301,34 @@
           if (connectClientSubmitBtn) connectClientSubmitBtn.disabled = false;
           if (disconnectClientBtn) {
             disconnectClientBtn.disabled = !Boolean(userIntegration?.integration_connected);
+          }
+        }
+      });
+
+      syncQuickBooksBtn?.addEventListener("click", async () => {
+        if (!authenticatedUser) {
+          alert("No logged-in user found.");
+          return;
+        }
+        if (!userIntegration?.integration_connected) {
+          alert("Connect QuickBooks before syncing.");
+          return;
+        }
+
+        if (syncQuickBooksBtn) syncQuickBooksBtn.disabled = true;
+        try {
+          await importQuickBooksClients(authenticatedUser);
+          await refreshEmployeesData({ importFromQuickBooks: true });
+          await refreshUserIntegrationStatus();
+          renderConnectClientPreview();
+          await refreshClientsData();
+          await loadJobs();
+          alert("QuickBooks sync complete.");
+        } catch (error) {
+          alert(error.message || "Unable to sync QuickBooks data.");
+        } finally {
+          if (syncQuickBooksBtn) {
+            syncQuickBooksBtn.disabled = !Boolean(userIntegration?.integration_connected);
           }
         }
       });

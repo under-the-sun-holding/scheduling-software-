@@ -60,6 +60,12 @@ def init_db() -> None:
             conn.execute("ALTER TABLE users ADD COLUMN quickbooks_refresh_token TEXT DEFAULT ''")
         if "quickbooks_token_expires_at" not in columns:
             conn.execute("ALTER TABLE users ADD COLUMN quickbooks_token_expires_at DATETIME")
+        if "quickbooks_company_name" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_company_name TEXT DEFAULT ''")
+        if "quickbooks_last_sync_at" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_last_sync_at DATETIME")
+        if "quickbooks_tokens_encrypted" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN quickbooks_tokens_encrypted INTEGER DEFAULT 0")
         conn.commit()
 
 

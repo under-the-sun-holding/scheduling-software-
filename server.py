@@ -91,6 +91,7 @@ QUICKBOOKS_API_BASE_URL = "https://quickbooks.api.intuit.com"
 QUICKBOOKS_SANDBOX_API_BASE_URL = "https://sandbox-quickbooks.api.intuit.com"
 OAUTH_STATE_TTL_SECONDS = 600
 OAUTH_STATES: dict[str, dict[str, object]] = {}
+ENCRYPTED_TOKEN_PREFIX = "enc::"
 
 
 def normalize_client(raw: dict) -> dict:
@@ -266,6 +267,121 @@ def parse_bool(value: object) -> bool:
     if isinstance(value, (int, float)):
         return bool(value)
     return False
+
+
+def _token_encryption_key() -> bytes | None:
+    # If APP_SECRET_KEY is set, derive a stable Fernet key from it.
+    raw = os.environ.get("APP_SECRET_KEY", "").strip()
+    if not raw:
+        return None
+    digest = hashlib.sha256(raw.encode("utf-8")).digest()
+    return base64.urlsafe_b64encode(digest)
+
+
+def can_encrypt_quickbooks_tokens() -> bool:
+    if _token_encryption_key() is None:
+        return False
+    try:
+        from cryptography.fernet import Fernet  # type: ignore
+    except Exception:
+        return False
+    return Fernet is not None
+
+
+def encrypt_quickbooks_token(value: str) -> str:
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    if token.startswith(ENCRYPTED_TOKEN_PREFIX):
+        return token
+    key = _token_encryption_key()
+    if key is None:
+        return token
+    try:
+        from cryptography.fernet import Fernet  # type: ignore
+    except Exception:
+        return token
+    cipher = Fernet(key)
+    encrypted = cipher.encrypt(token.encode("utf-8")).decode("utf-8")
+    return f"{ENCRYPTED_TOKEN_PREFIX}{encrypted}"
+
+
+def decrypt_quickbooks_token(value: str) -> str:
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    if not token.startswith(ENCRYPTED_TOKEN_PREFIX):
+        return token
+    key = _token_encryption_key()
+    if key is None:
+        return ""
+    payload = token[len(ENCRYPTED_TOKEN_PREFIX) :]
+    try:
+        from cryptography.fernet import Fernet, InvalidToken  # type: ignore
+    except Exception:
+        return ""
+    try:
+        cipher = Fernet(key)
+        return cipher.decrypt(payload.encode("utf-8")).decode("utf-8").strip()
+    except InvalidToken:
+        return ""
+
+
+def mark_quickbooks_sync(username: str, synced_at_iso: str | None = None) -> None:
+    from auth_db import get_connection
+
+    synced_at = synced_at_iso or datetime.now(timezone.utc).isoformat()
+    with get_connection() as conn:
+        conn.execute(
+            """
+            UPDATE users
+            SET quickbooks_last_sync_at = ?
+            WHERE username = ?
+            """,
+            (synced_at, username),
+        )
+        conn.commit()
+
+
+def set_quickbooks_company_name(username: str, company_name: str) -> None:
+    from auth_db import get_connection
+
+    name = str(company_name or "").strip()
+    if not name:
+        return
+    with get_connection() as conn:
+        conn.execute(
+            """
+            UPDATE users
+            SET quickbooks_company_name = ?
+            WHERE username = ?
+            """,
+            (name, username),
+        )
+        conn.commit()
+
+
+def fetch_quickbooks_company_name(realm_id: str, access_token: str) -> str:
+    payload = quickbooks_query(
+        realm_id,
+        access_token,
+        "SELECT * FROM CompanyInfo STARTPOSITION 1 MAXRESULTS 1",
+    )
+    query_response = payload.get("QueryResponse", {})
+    if not isinstance(query_response, dict):
+        return ""
+    company_list = query_response.get("CompanyInfo", [])
+    if not isinstance(company_list, list) or not company_list:
+        return ""
+    company_info = company_list[0] if isinstance(company_list[0], dict) else {}
+    if not isinstance(company_info, dict):
+        return ""
+    return str(
+        company_info.get("CompanyName")
+        or company_info.get("LegalName")
+        or company_info.get("Name")
+        or ""
+    ).strip()
 
 
 def quickbooks_settings() -> dict[str, str]:
@@ -573,8 +689,8 @@ def get_quickbooks_user_connection(username: str) -> dict[str, str]:
 
     integration_connected = bool(row[0])
     realm_id = str(row[1] or "").strip()
-    access_token = str(row[2] or "").strip()
-    refresh_token = str(row[3] or "").strip()
+    access_token = decrypt_quickbooks_token(str(row[2] or "").strip())
+    refresh_token = decrypt_quickbooks_token(str(row[3] or "").strip())
     expires_at_iso = str(row[4] or "").strip()
 
     if not integration_connected:
@@ -610,6 +726,13 @@ def ensure_valid_quickbooks_access_token(username: str, connection: dict[str, st
     if not access_token or not refresh_token:
         raise ValueError("invalid QuickBooks refresh response")
 
+    encrypted_access_token = encrypt_quickbooks_token(access_token)
+    encrypted_refresh_token = encrypt_quickbooks_token(refresh_token)
+    tokens_encrypted = int(
+        encrypted_access_token.startswith(ENCRYPTED_TOKEN_PREFIX)
+        and encrypted_refresh_token.startswith(ENCRYPTED_TOKEN_PREFIX)
+    )
+
     from auth_db import get_connection
 
     with get_connection() as conn:
@@ -618,10 +741,17 @@ def ensure_valid_quickbooks_access_token(username: str, connection: dict[str, st
             UPDATE users
             SET quickbooks_access_token = ?,
                 quickbooks_refresh_token = ?,
-                quickbooks_token_expires_at = ?
+                quickbooks_token_expires_at = ?,
+                quickbooks_tokens_encrypted = ?
             WHERE username = ?
             """,
-            (access_token, refresh_token, new_expiry, username),
+            (
+                encrypted_access_token,
+                encrypted_refresh_token,
+                new_expiry,
+                tokens_encrypted,
+                username,
+            ),
         )
         conn.commit()
 
@@ -735,6 +865,14 @@ class AppHandler(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
 
+    def _redirect_qb_error(self, code: str, detail: str = "") -> None:
+        safe_code = urllib.parse.quote(str(code or "quickbooks-error").strip(), safe="")
+        query = f"qb=error&message={safe_code}"
+        detail_clean = str(detail or "").strip()
+        if detail_clean:
+            query += f"&detail={urllib.parse.quote(detail_clean[:300], safe='')}"
+        self._redirect(f"/home.html#{query}")
+
     def _handle_quickbooks_webhook(self) -> None:
         verifier_token = os.environ.get("QUICKBOOKS_VERIFIER_TOKEN", "").strip()
         length = int(self.headers.get("Content-Length", "0"))
@@ -773,11 +911,11 @@ class AppHandler(SimpleHTTPRequestHandler):
         query = urllib.parse.parse_qs(parsed.query)
         username = str((query.get("username") or [""])[0]).strip()
         if not username:
-            self._redirect("/home.html#qb=error&message=missing-user")
+            self._redirect_qb_error("missing-user")
             return
 
         if not quickbooks_is_configured():
-            self._redirect("/home.html#qb=error&message=quickbooks-not-configured")
+            self._redirect_qb_error("quickbooks-not-configured")
             return
 
         prune_oauth_states()
@@ -926,6 +1064,16 @@ class AppHandler(SimpleHTTPRequestHandler):
             imported += 1
 
         save_clients()
+        try:
+            connection = get_quickbooks_user_connection(username)
+            connection = ensure_valid_quickbooks_access_token(username, connection)
+            company_name = fetch_quickbooks_company_name(
+                connection["realm_id"], connection["access_token"]
+            )
+            set_quickbooks_company_name(username, company_name)
+        except Exception:
+            pass
+        mark_quickbooks_sync(username)
         self._send_json(
             200,
             {
@@ -954,6 +1102,16 @@ class AppHandler(SimpleHTTPRequestHandler):
 
         imported, updated = merge_quickbooks_employees(employees)
         save_employees()
+        try:
+            connection = get_quickbooks_user_connection(username)
+            connection = ensure_valid_quickbooks_access_token(username, connection)
+            company_name = fetch_quickbooks_company_name(
+                connection["realm_id"], connection["access_token"]
+            )
+            set_quickbooks_company_name(username, company_name)
+        except Exception:
+            pass
+        mark_quickbooks_sync(username)
 
         self._send_json(
             200,
@@ -974,29 +1132,28 @@ class AppHandler(SimpleHTTPRequestHandler):
         realm_id = str((query.get("realmId") or [""])[0]).strip()
 
         if error:
-            self._redirect("/home.html#qb=error&message=oauth-denied")
+            self._redirect_qb_error("oauth-denied", error)
             return
 
         if not state or not code:
-            self._redirect("/home.html#qb=error&message=missing-oauth-params")
+            self._redirect_qb_error("missing-oauth-params")
             return
 
         prune_oauth_states()
         state_entry = OAUTH_STATES.pop(state, None)
         if not state_entry:
-            self._redirect("/home.html#qb=error&message=invalid-oauth-state")
+            self._redirect_qb_error("invalid-oauth-state")
             return
 
         username = str(state_entry.get("username", "")).strip()
         if not username:
-            self._redirect("/home.html#qb=error&message=missing-state-user")
+            self._redirect_qb_error("missing-state-user")
             return
 
         try:
             token_payload = exchange_quickbooks_code(code)
         except ValueError as exc:
-            msg = urllib.parse.quote(str(exc), safe="")
-            self._redirect(f"/home.html#qb=error&message={msg}")
+            self._redirect_qb_error("token-exchange-failed", str(exc))
             return
 
         access_token = str(token_payload.get("access_token", "")).strip()
@@ -1007,8 +1164,21 @@ class AppHandler(SimpleHTTPRequestHandler):
         expires_at_iso = datetime.fromtimestamp(expires_at, tz=timezone.utc).isoformat()
 
         if not access_token or not refresh_token:
-            self._redirect("/home.html#qb=error&message=invalid-token-response")
+            self._redirect_qb_error("invalid-token-response")
             return
+
+        encrypted_access_token = encrypt_quickbooks_token(access_token)
+        encrypted_refresh_token = encrypt_quickbooks_token(refresh_token)
+        tokens_encrypted = int(
+            encrypted_access_token.startswith(ENCRYPTED_TOKEN_PREFIX)
+            and encrypted_refresh_token.startswith(ENCRYPTED_TOKEN_PREFIX)
+        )
+
+        company_name = ""
+        try:
+            company_name = fetch_quickbooks_company_name(realm_id, access_token)
+        except Exception:
+            company_name = ""
 
         try:
             from auth_db import get_connection
@@ -1023,26 +1193,31 @@ class AppHandler(SimpleHTTPRequestHandler):
                         quickbooks_realm_id = ?,
                         quickbooks_access_token = ?,
                         quickbooks_refresh_token = ?,
-                        quickbooks_token_expires_at = ?
+                        quickbooks_token_expires_at = ?,
+                        quickbooks_company_name = ?,
+                        quickbooks_tokens_encrypted = ?,
+                        quickbooks_last_sync_at = ?
                     WHERE username = ?
                     """,
                     (
                         "quickbooks",
                         connected_at.isoformat(),
                         realm_id,
-                        access_token,
-                        refresh_token,
+                        encrypted_access_token,
+                        encrypted_refresh_token,
                         expires_at_iso,
+                        company_name,
+                        tokens_encrypted,
+                        connected_at.isoformat(),
                         username,
                     ),
                 )
                 if result.rowcount == 0:
-                    self._redirect("/home.html#qb=error&message=user-not-found")
+                    self._redirect_qb_error("user-not-found")
                     return
                 conn.commit()
         except Exception as exc:
-            msg = urllib.parse.quote(str(exc), safe="")
-            self._redirect(f"/home.html#qb=error&message={msg}")
+            self._redirect_qb_error("save-connection-failed", str(exc))
             return
 
         try:
@@ -1050,6 +1225,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             imported, updated = merge_quickbooks_employees(employees)
             if imported > 0 or updated > 0:
                 save_employees()
+            mark_quickbooks_sync(username, connected_at.isoformat())
         except Exception as exc:
             print(f"[QB employees sync warning] {exc}")
 
@@ -1426,7 +1602,10 @@ class AppHandler(SimpleHTTPRequestHandler):
                            integration_connected,
                            integration_connected_at,
                            quickbooks_realm_id,
-                           quickbooks_token_expires_at
+                           quickbooks_token_expires_at,
+                           quickbooks_company_name,
+                           quickbooks_last_sync_at,
+                           quickbooks_tokens_encrypted
                     FROM users
                     WHERE username = ?
                     """,
@@ -1440,6 +1619,18 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._send_json(404, {"error": "user not found"})
             return
 
+        quickbooks_company_name = str(row[6] or "").strip()
+        if bool(row[2]) and not quickbooks_company_name:
+            try:
+                connection = get_quickbooks_user_connection(username)
+                connection = ensure_valid_quickbooks_access_token(username, connection)
+                quickbooks_company_name = fetch_quickbooks_company_name(
+                    connection["realm_id"], connection["access_token"]
+                )
+                set_quickbooks_company_name(username, quickbooks_company_name)
+            except Exception:
+                pass
+
         self._send_json(
             200,
             {
@@ -1451,6 +1642,9 @@ class AppHandler(SimpleHTTPRequestHandler):
                     "integration_connected_at": str(row[3] or "").strip(),
                     "quickbooks_realm_id": str(row[4] or "").strip(),
                     "quickbooks_token_expires_at": str(row[5] or "").strip(),
+                    "quickbooks_company_name": quickbooks_company_name,
+                    "quickbooks_last_sync_at": str(row[7] or "").strip(),
+                    "quickbooks_tokens_encrypted": bool(row[8]),
                     "quickbooks_configured": quickbooks_is_configured(),
                 },
             },
@@ -1477,7 +1671,10 @@ class AppHandler(SimpleHTTPRequestHandler):
                         quickbooks_realm_id = '',
                         quickbooks_access_token = '',
                         quickbooks_refresh_token = '',
-                        quickbooks_token_expires_at = NULL
+                        quickbooks_token_expires_at = NULL,
+                        quickbooks_company_name = '',
+                        quickbooks_last_sync_at = NULL,
+                        quickbooks_tokens_encrypted = 0
                     WHERE username = ?
                     """,
                     (username,),
