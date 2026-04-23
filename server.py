@@ -2219,7 +2219,6 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         if verify_user(username, password):
-            from auth_db import find_user_by_username
             user = find_user_by_username(username)
             user_id = user["id"] if user else None
             role = normalize_user_role((user or {}).get("role", "Employee"))
@@ -2240,7 +2239,29 @@ class AppHandler(SimpleHTTPRequestHandler):
             )
             return
 
-        self._send_json(401, {"ok": False, "error": "invalid credentials"})
+        try:
+            with get_connection() as conn:
+                total_users_row = conn.execute("SELECT COUNT(*) FROM users").fetchone()
+                total_users = int((total_users_row or [0])[0])
+        except Exception:
+            total_users = -1
+
+        if total_users == 0:
+            self._send_json(
+                401,
+                {
+                    "ok": False,
+                    "error": "no users configured yet; create your first admin at /setup.html",
+                },
+            )
+            return
+
+        existing_user = find_user_by_username(username)
+        if existing_user is None:
+            self._send_json(401, {"ok": False, "error": "user not found"})
+            return
+
+        self._send_json(401, {"ok": False, "error": "incorrect password"})
 
     def _handle_password_reset(self) -> None:
         payload = self._read_json_body()
