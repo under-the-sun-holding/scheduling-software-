@@ -2284,12 +2284,12 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         payload = self._read_json_body()
-        email = str(payload.get("email", "")).strip().lower()
+        username = str(payload.get("username", payload.get("email", ""))).strip().lower()
         password = str(payload.get("password", ""))
         password_confirm = str(payload.get("password_confirm", ""))
 
-        if not email or not password:
-            self._send_json(400, {"error": "email and password are required"})
+        if not username or not password:
+            self._send_json(400, {"error": "username and password are required"})
             return
 
         if password != password_confirm:
@@ -2300,18 +2300,14 @@ class AppHandler(SimpleHTTPRequestHandler):
             self._send_json(400, {"error": "password must be at least 8 characters"})
             return
 
-        if "@" not in email:
-            self._send_json(400, {"error": "invalid email address"})
-            return
-
         try:
-            user = find_user_by_username(email)
+            user = find_user_by_username(username)
             if user is not None:
-                self._send_json(400, {"error": "email already registered"})
+                self._send_json(400, {"error": "username already registered"})
                 return
 
-            create_user(email, password, role="Admin")
-            self._send_json(200, {"ok": True, "message": "admin account created successfully", "email": email})
+            create_user(username, password, role="Admin")
+            self._send_json(200, {"ok": True, "message": "admin account created successfully", "username": username})
         except ValueError as exc:
             self._send_json(400, {"error": str(exc)})
         except Exception as exc:

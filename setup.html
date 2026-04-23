@@ -51,12 +51,12 @@
       <div class="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
         <form id="setup-form" class="space-y-5">
           <div>
-            <label for="admin-email" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Admin Email</label>
+            <label for="admin-email" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Admin Username</label>
             <input 
               id="admin-email" 
               name="admin-email" 
-              type="email" 
-              placeholder="admin@company.com" 
+              type="text" 
+              placeholder="admin username" 
               class="w-full rounded-lg border border-white/15 bg-slate-900/60 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none ring-cyan-400/50 transition focus:border-cyan-300/50 focus:ring-2" 
               required
             >
@@ -149,7 +149,7 @@
       setupStatus.textContent = "Creating admin account...";
       setupStatus.className = "text-center text-sm font-medium text-slate-300";
 
-      const email = document.getElementById("admin-email").value.trim();
+      const username = document.getElementById("admin-email").value.trim();
       const password = document.getElementById("admin-password").value;
       const passwordConfirm = document.getElementById("admin-password-confirm").value;
 
@@ -157,7 +157,7 @@
         const response = await fetch("/api/setup/create-first-admin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, password_confirm: passwordConfirm })
+          body: JSON.stringify({ username, password, password_confirm: passwordConfirm })
         });
 
         const data = await response.json().catch(() => ({}));
