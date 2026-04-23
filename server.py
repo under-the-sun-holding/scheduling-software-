@@ -26,6 +26,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from auth_db import (
+    change_password,
     create_user,
     init_db,
     set_user_role,
@@ -1538,6 +1539,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         if self.path == "/api/login":
             self._handle_login()
             return
+        if self.path == "/api/password/reset":
+            self._handle_password_reset()
+            return
         if self.path == "/api/users":
             self._handle_get_users()
             return
@@ -2232,6 +2236,30 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         self._send_json(401, {"ok": False, "error": "invalid credentials"})
+
+    def _handle_password_reset(self) -> None:
+        payload = self._read_json_body()
+        username = str(payload.get("username", "")).strip()
+        new_password = str(payload.get("new_password", ""))
+
+        if not username or not new_password:
+            self._send_json(400, {"error": "username and new_password are required"})
+            return
+
+        try:
+            from auth_db import find_user_by_username
+
+            user = find_user_by_username(username)
+            if user is None:
+                self._send_json(404, {"error": "user not found"})
+                return
+
+            change_password(username, new_password)
+            self._send_json(200, {"ok": True, "message": "password reset successful"})
+        except ValueError as exc:
+            self._send_json(400, {"error": str(exc)})
+        except Exception as exc:
+            self._send_json(500, {"error": str(exc)})
 
     def _handle_get_users(self) -> None:
         # Fetch all users with their roles (admin-only endpoint)

@@ -149,6 +149,7 @@
               </div>
             </div>
             <button type="submit" class="w-full rounded-xl bg-cyan-500 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-400">Sign In</button>
+            <button id="forgot-password-btn" type="button" class="w-full rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10">Forgot Password?</button>
             <p id="login-status" class="text-sm font-medium text-slate-300" aria-live="polite"></p>
           </form>
 
@@ -199,6 +200,7 @@
     const registerForm = document.getElementById("register-form");
     const loginStatus = document.getElementById("login-status");
     const registerStatus = document.getElementById("register-status");
+    const forgotPasswordBtn = document.getElementById("forgot-password-btn");
     const loginPasswordInput = document.getElementById("login-password");
     const registerPasswordInput = document.getElementById("register-password");
     const toggleLoginPasswordBtn = document.getElementById("toggle-login-password");
@@ -236,6 +238,33 @@
           localStorage.setItem("fieldops_auth_role", data.role);
         }
         window.location.href = data.redirect || "/home.html";
+      } catch (error) {
+        loginStatus.textContent = error.message;
+        loginStatus.className = "text-sm font-medium text-rose-300";
+      }
+    });
+
+    forgotPasswordBtn?.addEventListener("click", async () => {
+      const username = String(window.prompt("Enter your account email:") || "").trim();
+      if (!username) return;
+
+      const newPassword = String(window.prompt("Enter your new password (8+ characters):") || "");
+      if (!newPassword) return;
+
+      const confirmPassword = String(window.prompt("Confirm your new password:") || "");
+      if (newPassword !== confirmPassword) {
+        loginStatus.textContent = "Passwords do not match.";
+        loginStatus.className = "text-sm font-medium text-rose-300";
+        return;
+      }
+
+      try {
+        const data = await postJson("/api/password/reset", {
+          username,
+          new_password: newPassword,
+        });
+        loginStatus.textContent = data.message || "Password reset successful.";
+        loginStatus.className = "text-sm font-medium text-emerald-300";
       } catch (error) {
         loginStatus.textContent = error.message;
         loginStatus.className = "text-sm font-medium text-rose-300";
