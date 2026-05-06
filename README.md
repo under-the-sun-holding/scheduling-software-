@@ -1,6 +1,51 @@
 # scheduling-software-
 schedules field services 
 
+## Deploy publicly with Git (Render)
+
+This repo is ready for Git-based deployment so the app is reachable outside your local network.
+
+### 1) Push your code to GitHub
+
+```bash
+git add .
+git commit -m "prepare cloud deploy"
+git push origin main
+```
+
+### 2) Create the web service on Render
+
+1. Go to Render dashboard: https://dashboard.render.com/
+2. New + -> **Blueprint**
+3. Connect your GitHub account/repo (`under-the-sun-holding/scheduling-software-`)
+4. Select branch: `main`
+5. Render will read `render.yaml` and create the web service
+
+### 3) Set environment variables in Render
+
+In Render -> Service -> Environment, add:
+
+- `APP_SECRET_KEY` = long random secret (required for secure token encryption)
+- `PRIME_ADMIN_USERNAME` = your prime admin username (optional override)
+- QuickBooks (if used):
+  - `QUICKBOOKS_CLIENT_ID`
+  - `QUICKBOOKS_CLIENT_SECRET`
+  - `QUICKBOOKS_REDIRECT_URI` = `https://<your-render-domain>/api/quickbooks/callback`
+- Google Calendar (if used):
+  - `GOOGLE_CLIENT_ID`
+  - `GOOGLE_CLIENT_SECRET`
+  - `GOOGLE_REDIRECT_URI` = `https://<your-render-domain>/api/google-calendar/callback`
+
+### 4) Deploy + test public URL
+
+After deploy completes, open:
+
+- `https://<your-render-domain>/`
+
+This URL is public and accessible outside your network.
+
+---
+
 ## Local User Database
 
 This project now includes a simple local SQLite user database with secure password hashing.
